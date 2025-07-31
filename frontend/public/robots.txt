@@ -1,0 +1,37 @@
+# BookFlow - Sistema de Gestión de Citas
+# robots.txt
+
+User-agent: *
+Allow: /
+
+# SEO friendly pages
+Allow: /
+Allow: /auth/login
+Allow: /auth/register
+Allow: /features
+Allow: /pricing
+Allow: /about
+Allow: /demo
+
+# Disallow private/protected areas
+Disallow: /dashboard
+Disallow: /onboarding
+Disallow: /appointments
+Disallow: /resources
+Disallow: /settings
+Disallow: /admin
+Disallow: /api/
+Disallow: /auth/forgot-password
+Disallow: /auth/reset-password
+
+# Allow static assets
+Allow: /assets/
+Allow: /bookingflowlogo.png
+Allow: /miniatura.webp
+Allow: /manifest.json
+
+# Sitemap location
+Sitemap: https://bookflow.app/sitemap.xml
+
+# Crawl delay (optional)
+Crawl-delay: 1

@@ -1,0 +1,210 @@
+/* BookFlow Loading Screen Styles */
+
+/* Loading screen styles */
+#loading-screen {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+#loading-screen .logo-container {
+  position: relative;
+  margin-bottom: 24px;
+}
+
+#loading-screen .logo {
+  width: 64px;
+  height: 64px;
+  background: linear-gradient(135deg, #2563eb, #1d4ed8);
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 8px 25px rgba(37, 99, 235, 0.3);
+  overflow: hidden;
+  position: relative;
+}
+
+#loading-screen .logo img {
+  width: 40px;
+  height: 40px;
+  object-fit: contain;
+  border-radius: 8px;
+}
+
+#loading-screen .logo-fallback {
+  width: 32px;
+  height: 32px;
+  color: white;
+}
+
+#loading-screen .spinner {
+  width: 32px;
+  height: 32px;
+  border: 3px solid #e5e7eb;
+  border-top: 3px solid #2563eb;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 16px;
+}
+
+#loading-screen .text {
+  color: #374151;
+  font-size: 18px;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+#loading-screen .subtext {
+  color: #6b7280;
+  font-size: 14px;
+  text-align: center;
+  max-width: 280px;
+  line-height: 1.4;
+}
+
+/* Pulse animation for logo */
+#loading-screen .logo {
+  animation: logoPulse 2s ease-in-out infinite;
+}
+
+@keyframes logoPulse {
+  0%, 100% {
+    transform: scale(1);
+    box-shadow: 0 8px 25px rgba(37, 99, 235, 0.3);
+  }
+  50% {
+    transform: scale(1.05);
+    box-shadow: 0 12px 35px rgba(37, 99, 235, 0.4);
+  }
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Hide loading screen when app loads */
+body.loaded #loading-screen {
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.5s ease, visibility 0.5s ease;
+}
+
+/* Prevent flash of unstyled content */
+#root {
+  opacity: 0;
+  transition: opacity 0.5s ease;
+}
+
+body.loaded #root {
+  opacity: 1;
+}
+
+/* Base styles to prevent layout shift */
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background-color: #ffffff;
+  overflow-x: hidden;
+}
+
+/* Loading progress bar */
+#loading-screen .progress-container {
+  width: 200px;
+  height: 4px;
+  background-color: #e5e7eb;
+  border-radius: 2px;
+  margin-top: 16px;
+  overflow: hidden;
+}
+
+#loading-screen .progress-bar {
+  height: 100%;
+  background: linear-gradient(90deg, #2563eb, #1d4ed8);
+  border-radius: 2px;
+  animation: progress 3s ease-in-out infinite;
+}
+
+@keyframes progress {
+  0% {
+    width: 0%;
+    transform: translateX(-100%);
+  }
+  50% {
+    width: 70%;
+    transform: translateX(0%);
+  }
+  100% {
+    width: 100%;
+    transform: translateX(0%);
+  }
+}
+
+/* Responsive adjustments */
+@media (max-width: 480px) {
+  #loading-screen .logo {
+    width: 56px;
+    height: 56px;
+  }
+  
+  #loading-screen .logo img {
+    width: 32px;
+    height: 32px;
+  }
+  
+  #loading-screen .text {
+    font-size: 16px;
+  }
+  
+  #loading-screen .subtext {
+    font-size: 13px;
+    max-width: 240px;
+  }
+  
+  #loading-screen .spinner {
+    width: 28px;
+    height: 28px;
+    border-width: 2px;
+  }
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  #loading-screen {
+    background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+  }
+  
+  #loading-screen .text {
+    color: #f1f5f9;
+  }
+  
+  #loading-screen .subtext {
+    color: #94a3b8;
+  }
+  
+  #loading-screen .spinner {
+    border-color: #334155;
+    border-top-color: #3b82f6;
+  }
+  
+  #loading-screen .progress-container {
+    background-color: #334155;
+  }
+}

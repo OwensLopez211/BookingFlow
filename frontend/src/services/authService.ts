@@ -1,0 +1,217 @@
+import axios from 'axios';
+
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+
+// Configure axios defaults
+const apiClient = axios.create({
+  baseURL: `${API_BASE_URL}`,
+  headers: {
+    'Content-Type': 'application/json',
+  },
+});
+
+// Add token to requests if available
+apiClient.interceptors.request.use((config) => {
+  const token = localStorage.getItem('accessToken');
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+});
+
+export interface LoginRequest {
+  email: string;
+  password: string;
+}
+
+export interface RegisterRequest {
+  email: string;
+  password: string;
+  firstName: string;
+  lastName: string;
+  organizationName: string;
+  templateType: 'beauty_salon' | 'hyperbaric_center';
+}
+
+export interface AuthResponse {
+  success: boolean;
+  user?: {
+    id: string;
+    email: string;
+    role: 'owner' | 'admin' | 'staff';
+    orgId?: string;
+    profile: {
+      firstName: string;
+      lastName: string;
+      phone?: string;
+      avatar?: string;
+    };
+  };
+  organization?: {
+    id: string;
+    name: string;
+    templateType: 'beauty_salon' | 'hyperbaric_center';
+  };
+  tokens?: {
+    accessToken: string;
+    idToken: string;
+    refreshToken: string;
+  };
+  message?: string;
+  error?: string;
+}
+
+export const authService = {
+  async login(data: LoginRequest): Promise<AuthResponse> {
+    try {
+      const response = await apiClient.post('/v1/auth/login', data);
+      
+      if (response.data.success && response.data.tokens) {
+        localStorage.setItem('accessToken', response.data.tokens.accessToken);
+        localStorage.setItem('idToken', response.data.tokens.idToken);
+        localStorage.setItem('refreshToken', response.data.tokens.refreshToken);
+        
+        // Store user data for easy access
+        if (response.data.user && response.data.organization) {
+          localStorage.setItem('userData', JSON.stringify({
+            user: response.data.user,
+            organization: response.data.organization
+          }));
+        }
+      }
+      
+      return response.data;
+    } catch (error: any) {
+      console.error('Login error:', error);
+      return {
+        success: false,
+        error: error.response?.data?.error || 'Error during login',
+      };
+    }
+  },
+
+  async register(data: RegisterRequest): Promise<AuthResponse> {
+    try {
+      console.log('🚀 Sending register request:', data);
+      console.log('🌐 API URL:', API_BASE_URL);
+      
+      const response = await apiClient.post('/v1/auth/register', data);
+      
+      console.log('✅ Register response:', response.data);
+      
+      if (response.data.success && response.data.tokens) {
+        localStorage.setItem('accessToken', response.data.tokens.accessToken);
+        localStorage.setItem('idToken', response.data.tokens.idToken);
+        localStorage.setItem('refreshToken', response.data.tokens.refreshToken);
+        
+        // Store user data for easy access
+        if (response.data.user && response.data.organization) {
+          localStorage.setItem('userData', JSON.stringify({
+            user: response.data.user,
+            organization: response.data.organization
+          }));
+        }
+      }
+      
+      return response.data;
+    } catch (error: any) {
+      console.error('❌ Register error:', error);
+      console.error('❌ Error response:', error.response?.data);
+      
+      return {
+        success: false,
+        error: error.response?.data?.error || 'Error during registration',
+      };
+    }
+  },
+
+  async logout(): Promise<void> {
+    localStorage.removeItem('accessToken');
+    localStorage.removeItem('idToken');
+    localStorage.removeItem('refreshToken');
+    localStorage.removeItem('userData');
+  },
+
+  isAuthenticated(): boolean {
+    const token = localStorage.getItem('accessToken');
+    if (!token) return false;
+    
+    try {
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      const currentTime = Date.now() / 1000;
+      return payload.exp > currentTime;
+    } catch {
+      return false;
+    }
+  },
+
+  getAccessToken(): string | null {
+    return localStorage.getItem('accessToken');
+  },
+
+  async getOrganizationById(orgId: string): Promise<any> {
+    try {
+      console.log('🌐 Fetching organization with ID:', orgId);
+      const response = await apiClient.get(`/v1/organizations/${orgId}`);
+      console.log('📥 Organization API response:', response.data);
+      return response.data;
+    } catch (error: any) {
+      console.error('❌ Error fetching organization:', error);
+      console.error('❌ Error details:', {
+        status: error.response?.status,
+        statusText: error.response?.statusText,
+        data: error.response?.data,
+        message: error.message
+      });
+      return null;
+    }
+  },
+
+  async getCurrentUser(): Promise<AuthResponse> {
+    try {
+      const response = await apiClient.get('/v1/auth/me');
+      return response.data;
+    } catch (error: any) {
+      console.error('Error getting current user:', error);
+      return {
+        success: false,
+        error: error.response?.data?.error || 'Error getting user info',
+      };
+    }
+  },
+
+  getUserInfo(): { user: any; organization: any } | null {
+    try {
+      const token = this.getAccessToken();
+      if (!token) return null;
+
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      
+      // Try to get stored user data from login/register response
+      const storedUserData = localStorage.getItem('userData');
+      if (storedUserData) {
+        return JSON.parse(storedUserData);
+      }
+
+      // Fallback to token info if available
+      return {
+        user: {
+          id: payload.sub || payload.userId,
+          email: payload.email,
+          role: payload.role || 'owner',
+          orgId: payload.orgId || payload['custom:orgId'],
+          profile: {
+            firstName: payload.firstName || payload['custom:firstName'] || 'Usuario',
+            lastName: payload.lastName || payload['custom:lastName'] || '',
+            phone: payload.phone || payload['custom:phone'],
+            avatar: payload.avatar || payload['custom:avatar'],
+          }
+        },
+        organization: null // Will be fetched separately
+      };
+    } catch (error) {
+      console.error('Error getting user info:', error);
+      return null;
+    }
+  },
+};

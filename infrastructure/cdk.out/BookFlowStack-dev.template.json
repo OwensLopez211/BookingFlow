@@ -1,0 +1,2774 @@
+{
+ "Resources": {
+  "OrganizationsTable01047E98": {
+   "Type": "AWS::DynamoDB::Table",
+   "Properties": {
+    "AttributeDefinitions": [
+     {
+      "AttributeName": "PK",
+      "AttributeType": "S"
+     },
+     {
+      "AttributeName": "SK",
+      "AttributeType": "S"
+     }
+    ],
+    "BillingMode": "PAY_PER_REQUEST",
+    "KeySchema": [
+     {
+      "AttributeName": "PK",
+      "KeyType": "HASH"
+     },
+     {
+      "AttributeName": "SK",
+      "KeyType": "RANGE"
+     }
+    ],
+    "PointInTimeRecoverySpecification": {
+     "PointInTimeRecoveryEnabled": false
+    },
+    "TableName": "bookflow-organizations-dev"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "BookFlowStack-dev/OrganizationsTable/Resource"
+   }
+  },
+  "UsersTable9725E9C8": {
+   "Type": "AWS::DynamoDB::Table",
+   "Properties": {
+    "AttributeDefinitions": [
+     {
+      "AttributeName": "PK",
+      "AttributeType": "S"
+     },
+     {
+      "AttributeName": "SK",
+      "AttributeType": "S"
+     },
+     {
+      "AttributeName": "cognitoId",
+      "AttributeType": "S"
+     }
+    ],
+    "BillingMode": "PAY_PER_REQUEST",
+    "GlobalSecondaryIndexes": [
+     {
+      "IndexName": "cognitoId-index",
+      "KeySchema": [
+       {
+        "AttributeName": "cognitoId",
+        "KeyType": "HASH"
+       }
+      ],
+      "Projection": {
+       "ProjectionType": "ALL"
+      }
+     }
+    ],
+    "KeySchema": [
+     {
+      "AttributeName": "PK",
+      "KeyType": "HASH"
+     },
+     {
+      "AttributeName": "SK",
+      "KeyType": "RANGE"
+     }
+    ],
+    "PointInTimeRecoverySpecification": {
+     "PointInTimeRecoveryEnabled": false
+    },
+    "TableName": "bookflow-users-dev"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "BookFlowStack-dev/UsersTable/Resource"
+   }
+  },
+  "AppointmentsTable8553CB1E": {
+   "Type": "AWS::DynamoDB::Table",
+   "Properties": {
+    "AttributeDefinitions": [
+     {
+      "AttributeName": "PK",
+      "AttributeType": "S"
+     },
+     {
+      "AttributeName": "SK",
+      "AttributeType": "S"
+     }
+    ],
+    "BillingMode": "PAY_PER_REQUEST",
+    "KeySchema": [
+     {
+      "AttributeName": "PK",
+      "KeyType": "HASH"
+     },
+     {
+      "AttributeName": "SK",
+      "KeyType": "RANGE"
+     }
+    ],
+    "PointInTimeRecoverySpecification": {
+     "PointInTimeRecoveryEnabled": false
+    },
+    "TableName": "bookflow-appointments-dev"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "BookFlowStack-dev/AppointmentsTable/Resource"
+   }
+  },
+  "UserPool6BA7E5F2": {
+   "Type": "AWS::Cognito::UserPool",
+   "Properties": {
+    "AccountRecoverySetting": {
+     "RecoveryMechanisms": [
+      {
+       "Name": "verified_email",
+       "Priority": 1
+      }
+     ]
+    },
+    "AdminCreateUserConfig": {
+     "AllowAdminCreateUserOnly": false
+    },
+    "AutoVerifiedAttributes": [
+     "email"
+    ],
+    "EmailVerificationMessage": "The verification code to your new account is {####}",
+    "EmailVerificationSubject": "Verify your new account",
+    "Policies": {
+     "PasswordPolicy": {
+      "MinimumLength": 8,
+      "RequireLowercase": true,
+      "RequireNumbers": true,
+      "RequireSymbols": false,
+      "RequireUppercase": true
+     }
+    },
+    "Schema": [
+     {
+      "Mutable": true,
+      "Name": "email",
+      "Required": true
+     },
+     {
+      "Mutable": true,
+      "Name": "given_name",
+      "Required": true
+     },
+     {
+      "Mutable": true,
+      "Name": "family_name",
+      "Required": true
+     },
+     {
+      "AttributeDataType": "String",
+      "Mutable": true,
+      "Name": "orgId",
+      "StringAttributeConstraints": {
+       "MaxLength": "50",
+       "MinLength": "1"
+      }
+     },
+     {
+      "AttributeDataType": "String",
+      "Mutable": true,
+      "Name": "role",
+      "StringAttributeConstraints": {
+       "MaxLength": "20",
+       "MinLength": "1"
+      }
+     }
+    ],
+    "SmsVerificationMessage": "The verification code to your new account is {####}",
+    "UserPoolName": "bookflow-users-dev",
+    "UsernameAttributes": [
+     "email"
+    ],
+    "VerificationMessageTemplate": {
+     "DefaultEmailOption": "CONFIRM_WITH_CODE",
+     "EmailMessage": "The verification code to your new account is {####}",
+     "EmailSubject": "Verify your new account",
+     "SmsMessage": "The verification code to your new account is {####}"
+    }
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "BookFlowStack-dev/UserPool/Resource"
+   }
+  },
+  "UserPoolClient2F5918F7": {
+   "Type": "AWS::Cognito::UserPoolClient",
+   "Properties": {
+    "AllowedOAuthFlows": [
+     "code"
+    ],
+    "AllowedOAuthFlowsUserPoolClient": true,
+    "AllowedOAuthScopes": [
+     "email",
+     "openid",
+     "profile"
+    ],
+    "CallbackURLs": [
+     "http://localhost:3000/auth/callback"
+    ],
+    "ClientName": "bookflow-client-dev",
+    "ExplicitAuthFlows": [
+     "ALLOW_USER_PASSWORD_AUTH",
+     "ALLOW_ADMIN_USER_PASSWORD_AUTH",
+     "ALLOW_USER_SRP_AUTH",
+     "ALLOW_REFRESH_TOKEN_AUTH"
+    ],
+    "GenerateSecret": false,
+    "SupportedIdentityProviders": [
+     "COGNITO"
+    ],
+    "UserPoolId": {
+     "Ref": "UserPool6BA7E5F2"
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "BookFlowStack-dev/UserPoolClient/Resource"
+   }
+  },
+  "IdentityPool": {
+   "Type": "AWS::Cognito::IdentityPool",
+   "Properties": {
+    "AllowUnauthenticatedIdentities": false,
+    "CognitoIdentityProviders": [
+     {
+      "ClientId": {
+       "Ref": "UserPoolClient2F5918F7"
+      },
+      "ProviderName": {
+       "Fn::GetAtt": [
+        "UserPool6BA7E5F2",
+        "ProviderName"
+       ]
+      }
+     }
+    ],
+    "IdentityPoolName": "bookflow_identity_dev"
+   },
+   "Metadata": {
+    "aws:cdk:path": "BookFlowStack-dev/IdentityPool"
+   }
+  },
+  "FrontendBucketEFE2E19C": {
+   "Type": "AWS::S3::Bucket",
+   "Properties": {
+    "BucketName": "bookflow-frontend-dev-812508052193",
+    "CorsConfiguration": {
+     "CorsRules": [
+      {
+       "AllowedHeaders": [
+        "*"
+       ],
+       "AllowedMethods": [
+        "GET"
+       ],
+       "AllowedOrigins": [
+        "*"
+       ]
+      }
+     ]
+    },
+    "PublicAccessBlockConfiguration": {
+     "BlockPublicAcls": false,
+     "BlockPublicPolicy": false,
+     "IgnorePublicAcls": false,
+     "RestrictPublicBuckets": false
+    },
+    "WebsiteConfiguration": {
+     "ErrorDocument": "index.html",
+     "IndexDocument": "index.html"
+    }
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "BookFlowStack-dev/FrontendBucket/Resource"
+   }
+  },
+  "FrontendBucketPolicy1DFF75D9": {
+   "Type": "AWS::S3::BucketPolicy",
+   "Properties": {
+    "Bucket": {
+     "Ref": "FrontendBucketEFE2E19C"
+    },
+    "PolicyDocument": {
+     "Statement": [
+      {
+       "Action": "s3:GetObject",
+       "Effect": "Allow",
+       "Principal": {
+        "AWS": "*"
+       },
+       "Resource": {
+        "Fn::Join": [
+         "",
+         [
+          {
+           "Fn::GetAtt": [
+            "FrontendBucketEFE2E19C",
+            "Arn"
+           ]
+          },
+          "/*"
+         ]
+        ]
+       }
+      }
+     ],
+     "Version": "2012-10-17"
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "BookFlowStack-dev/FrontendBucket/Policy/Resource"
+   }
+  },
+  "LambdaExecutionRoleD5C26073": {
+   "Type": "AWS::IAM::Role",
+   "Properties": {
+    "AssumeRolePolicyDocument": {
+     "Statement": [
+      {
+       "Action": "sts:AssumeRole",
+       "Effect": "Allow",
+       "Principal": {
+        "Service": "lambda.amazonaws.com"
+       }
+      }
+     ],
+     "Version": "2012-10-17"
+    },
+    "ManagedPolicyArns": [
+     {
+      "Fn::Join": [
+       "",
+       [
+        "arn:",
+        {
+         "Ref": "AWS::Partition"
+        },
+        ":iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+       ]
+      ]
+     }
+    ],
+    "Policies": [
+     {
+      "PolicyDocument": {
+       "Statement": [
+        {
+         "Action": [
+          "dynamodb:DeleteItem",
+          "dynamodb:GetItem",
+          "dynamodb:PutItem",
+          "dynamodb:Query",
+          "dynamodb:Scan",
+          "dynamodb:UpdateItem"
+         ],
+         "Effect": "Allow",
+         "Resource": [
+          {
+           "Fn::GetAtt": [
+            "AppointmentsTable8553CB1E",
+            "Arn"
+           ]
+          },
+          {
+           "Fn::GetAtt": [
+            "OrganizationsTable01047E98",
+            "Arn"
+           ]
+          },
+          {
+           "Fn::GetAtt": [
+            "UsersTable9725E9C8",
+            "Arn"
+           ]
+          },
+          {
+           "Fn::Join": [
+            "",
+            [
+             {
+              "Fn::GetAtt": [
+               "UsersTable9725E9C8",
+               "Arn"
+              ]
+             },
+             "/index/*"
+            ]
+           ]
+          }
+         ]
+        }
+       ],
+       "Version": "2012-10-17"
+      },
+      "PolicyName": "DynamoDBAccess"
+     },
+     {
+      "PolicyDocument": {
+       "Statement": [
+        {
+         "Action": [
+          "cognito-idp:AdminCreateUser",
+          "cognito-idp:AdminGetUser",
+          "cognito-idp:AdminSetUserPassword",
+          "cognito-idp:AdminUpdateUserAttributes",
+          "cognito-idp:ListUsers"
+         ],
+         "Effect": "Allow",
+         "Resource": {
+          "Fn::GetAtt": [
+           "UserPool6BA7E5F2",
+           "Arn"
+          ]
+         }
+        }
+       ],
+       "Version": "2012-10-17"
+      },
+      "PolicyName": "CognitoAccess"
+     }
+    ]
+   },
+   "Metadata": {
+    "aws:cdk:path": "BookFlowStack-dev/LambdaExecutionRole/Resource"
+   }
+  },
+  "AuthFunctionA1CD5E0F": {
+   "Type": "AWS::Lambda::Function",
+   "Properties": {
+    "Code": {
+     "ZipFile": "\n        const { CognitoIdentityProviderClient, AdminCreateUserCommand, AdminSetUserPasswordCommand, InitiateAuthCommand } = require('@aws-sdk/client-cognito-identity-provider');\n        const { DynamoDBClient } = require('@aws-sdk/client-dynamodb');\n        const { DynamoDBDocumentClient, PutCommand, QueryCommand, GetCommand } = require('@aws-sdk/lib-dynamodb');\n        \n        const cognitoClient = new CognitoIdentityProviderClient({ region: process.env.REGION });\n        const dynamoClient = DynamoDBDocumentClient.from(new DynamoDBClient({ region: process.env.REGION }));\n        \n        const USER_POOL_ID = process.env.USER_POOL_ID;\n        const USER_POOL_CLIENT_ID = process.env.USER_POOL_CLIENT_ID;\n        const USERS_TABLE = process.env.USERS_TABLE;\n        const ORGANIZATIONS_TABLE = process.env.ORGANIZATIONS_TABLE;\n        \n        const generateUUID = () => {\n          return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {\n            const r = Math.random() * 16 | 0;\n            const v = c == 'x' ? r : (r & 0x3 | 0x8);\n            return v.toString(16);\n          });\n        };\n        \n        const createResponse = (statusCode, body) => ({\n          statusCode,\n          headers: {\n            'Content-Type': 'application/json',\n            'Access-Control-Allow-Origin': '*',\n            'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',\n            'Access-Control-Allow-Headers': 'Content-Type, Authorization',\n          },\n          body: JSON.stringify(body),\n        });\n        \n        const createOrganization = async (name, templateType) => {\n          const orgId = generateUUID();\n          const now = new Date().toISOString();\n          \n          const organization = {\n            PK: `ORG#${orgId}`,\n            SK: 'PROFILE',\n            id: orgId,\n            name: name,\n            templateType: templateType,\n            settings: {\n              timezone: 'America/Santiago',\n              businessHours: {\n                monday: { isOpen: true, openTime: '09:00', closeTime: '18:00' },\n                tuesday: { isOpen: true, openTime: '09:00', closeTime: '18:00' },\n                wednesday: { isOpen: true, openTime: '09:00', closeTime: '18:00' },\n                thursday: { isOpen: true, openTime: '09:00', closeTime: '18:00' },\n                friday: { isOpen: true, openTime: '09:00', closeTime: '18:00' },\n                saturday: { isOpen: true, openTime: '09:00', closeTime: '15:00' },\n                sunday: { isOpen: false, openTime: '09:00', closeTime: '18:00' },\n              },\n              notifications: {\n                emailReminders: true,\n                smsReminders: false,\n                autoConfirmation: true,\n                reminderHours: 24,\n              },\n            },\n            subscription: {\n              plan: 'free',\n              limits: {\n                maxResources: templateType === 'beauty_salon' ? 2 : 1,\n                maxAppointmentsPerMonth: 100,\n                maxUsers: 3,\n              },\n            },\n            createdAt: now,\n            updatedAt: now,\n          };\n          \n          const command = new PutCommand({\n            TableName: ORGANIZATIONS_TABLE,\n            Item: organization,\n          });\n          \n          await dynamoClient.send(command);\n          return { id: orgId, name: name, templateType: templateType };\n        };\n        \n        const createUser = async (cognitoId, email, firstName, lastName, orgId) => {\n          const userId = generateUUID();\n          const now = new Date().toISOString();\n          \n          const user = {\n            PK: `USER#${userId}`,\n            SK: 'PROFILE',\n            id: userId,\n            cognitoId: cognitoId,\n            email: email,\n            role: 'owner',\n            orgId: orgId,\n            profile: { firstName: firstName, lastName: lastName },\n            createdAt: now,\n            updatedAt: now,\n          };\n          \n          const command = new PutCommand({\n            TableName: USERS_TABLE,\n            Item: user,\n          });\n          \n          await dynamoClient.send(command);\n          return {\n            id: userId,\n            email: email,\n            role: 'owner',\n            orgId: orgId,\n            profile: { firstName: firstName, lastName: lastName },\n            cognitoId: cognitoId,\n          };\n        };\n        \n        const getUserByCognitoId = async (cognitoId) => {\n          const command = new QueryCommand({\n            TableName: USERS_TABLE,\n            IndexName: 'cognitoId-index',\n            KeyConditionExpression: 'cognitoId = :cognitoId',\n            ExpressionAttributeValues: { ':cognitoId': cognitoId },\n          });\n          \n          const result = await dynamoClient.send(command);\n          if (result.Items && result.Items.length > 0) {\n            const item = result.Items[0];\n            const { PK, SK, ...user } = item;\n            return user;\n          }\n          return null;\n        };\n        \n        exports.handler = async (event) => {\n          console.log('=== REAL AUTH FUNCTION (NO CUSTOM ATTRS) ===');\n          console.log('Event:', JSON.stringify(event, null, 2));\n          \n          try {\n            const { httpMethod, path, body } = event;\n            let requestBody = {};\n            \n            if (body) {\n              try {\n                requestBody = JSON.parse(body);\n                console.log('Parsed body:', requestBody);\n              } catch (e) {\n                console.log('Error parsing body:', e);\n                return createResponse(400, { success: false, error: 'Invalid JSON in request body' });\n              }\n            }\n            \n            // Handle CORS preflight\n            if (httpMethod === 'OPTIONS') {\n              return {\n                statusCode: 200,\n                headers: {\n                  'Access-Control-Allow-Origin': '*',\n                  'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',\n                  'Access-Control-Allow-Headers': 'Content-Type, Authorization',\n                },\n                body: '',\n              };\n            }\n            \n            // REGISTER ENDPOINT (SIN CUSTOM ATTRIBUTES)\n            if (path && path.endsWith('/auth/register') && httpMethod === 'POST') {\n              console.log('=== REGISTRATION START (NO CUSTOM ATTRS) ===');\n              const { email, password, firstName, lastName, organizationName, templateType } = requestBody;\n              \n              // Validation\n              if (!email || !password || !firstName || !lastName || !organizationName || !templateType) {\n                return createResponse(400, { success: false, error: 'Todos los campos son requeridos' });\n              }\n              \n              if (password.length < 8) {\n                return createResponse(400, { success: false, error: 'La contraseña debe tener al menos 8 caracteres' });\n              }\n              \n              // Step 1: Create organization\n              console.log('Creating organization...');\n              const organization = await createOrganization(organizationName, templateType);\n              console.log('Organization created:', organization);\n              \n              // Step 2: Create user in Cognito (SIN custom attributes)\n              console.log('Creating user in Cognito...');\n              const tempPassword = password + 'Temp1!';\n              \n              const createUserCommand = new AdminCreateUserCommand({\n                UserPoolId: USER_POOL_ID,\n                Username: email,\n                UserAttributes: [\n                  { Name: 'email', Value: email },\n                  { Name: 'email_verified', Value: 'true' },\n                  { Name: 'given_name', Value: firstName },\n                  { Name: 'family_name', Value: lastName },\n                  // NO agregamos custom attributes por ahora\n                ],\n                MessageAction: 'SUPPRESS',\n                TemporaryPassword: tempPassword,\n              });\n              \n              const cognitoUser = await cognitoClient.send(createUserCommand);\n              const cognitoId = cognitoUser.User.Username;\n              console.log('Cognito user created:', cognitoId);\n              \n              // Step 3: Set permanent password\n              console.log('Setting permanent password...');\n              const setPasswordCommand = new AdminSetUserPasswordCommand({\n                UserPoolId: USER_POOL_ID,\n                Username: email,\n                Password: password,\n                Permanent: true,\n              });\n              \n              await cognitoClient.send(setPasswordCommand);\n              console.log('Password set successfully');\n              \n              // Step 4: Create user in DynamoDB\n              console.log('Creating user in DynamoDB...');\n              const user = await createUser(cognitoId, email, firstName, lastName, organization.id);\n              console.log('User created in DynamoDB:', user);\n              \n              // Step 5: Auto-login\n              console.log('Auto-login...');\n              const loginCommand = new InitiateAuthCommand({\n                ClientId: USER_POOL_CLIENT_ID,\n                AuthFlow: 'USER_PASSWORD_AUTH',\n                AuthParameters: { USERNAME: email, PASSWORD: password },\n              });\n              \n              const authResult = await cognitoClient.send(loginCommand);\n              console.log('Auto-login successful');\n              \n              return createResponse(200, {\n                success: true,\n                message: 'Usuario registrado exitosamente',\n                user: user,\n                organization: organization,\n                tokens: {\n                  accessToken: authResult.AuthenticationResult.AccessToken,\n                  idToken: authResult.AuthenticationResult.IdToken,\n                  refreshToken: authResult.AuthenticationResult.RefreshToken,\n                },\n              });\n            }\n            \n            // LOGIN ENDPOINT\n            if (path && path.endsWith('/auth/login') && httpMethod === 'POST') {\n              console.log('=== LOGIN START ===');\n              const { email, password } = requestBody;\n              \n              if (!email || !password) {\n                return createResponse(400, { success: false, error: 'Email y contraseña son requeridos' });\n              }\n              \n              // Authenticate with Cognito\n              console.log('Authenticating with Cognito...');\n              const loginCommand = new InitiateAuthCommand({\n                ClientId: USER_POOL_CLIENT_ID,\n                AuthFlow: 'USER_PASSWORD_AUTH',\n                AuthParameters: { USERNAME: email, PASSWORD: password },\n              });\n              \n              const authResult = await cognitoClient.send(loginCommand);\n              \n              if (authResult.ChallengeName) {\n                return createResponse(400, { success: false, error: 'Autenticación requiere pasos adicionales' });\n              }\n              \n              // Get user info from token\n              const accessToken = authResult.AuthenticationResult.AccessToken;\n              const tokenPayload = JSON.parse(Buffer.from(accessToken.split('.')[1], 'base64').toString());\n              const cognitoUsername = tokenPayload.username;\n              console.log('Token decoded, Cognito username:', cognitoUsername);\n              \n              // Get user from DynamoDB\n              console.log('Getting user from DynamoDB...');\n              const user = await getUserByCognitoId(cognitoUsername);\n              \n              if (!user) {\n                return createResponse(404, { success: false, error: 'Usuario no encontrado en el sistema' });\n              }\n              \n              console.log('Login successful for user:', user.email);\n              \n              return createResponse(200, {\n                success: true,\n                message: 'Login exitoso',\n                user: user,\n                tokens: {\n                  accessToken: authResult.AuthenticationResult.AccessToken,\n                  idToken: authResult.AuthenticationResult.IdToken,\n                  refreshToken: authResult.AuthenticationResult.RefreshToken,\n                },\n                expiresIn: authResult.AuthenticationResult.ExpiresIn,\n              });\n            }\n            \n            // GET CURRENT USER ENDPOINT\n            if (path && path.endsWith('/auth/me') && httpMethod === 'GET') {\n              console.log('=== GET CURRENT USER START ===');\n              \n              // Get authorization header\n              const authHeader = event.headers.Authorization || event.headers.authorization;\n              if (!authHeader || !authHeader.startsWith('Bearer ')) {\n                return createResponse(401, { success: false, error: 'Token de acceso requerido' });\n              }\n              \n              const accessToken = authHeader.substring(7);\n              \n              try {\n                // Get user info from token\n                const tokenPayload = JSON.parse(Buffer.from(accessToken.split('.')[1], 'base64').toString());\n                const cognitoUsername = tokenPayload.username;\n                console.log('Token decoded, Cognito username:', cognitoUsername);\n                \n                // Get user from DynamoDB\n                console.log('Getting user from DynamoDB...');\n                const user = await getUserByCognitoId(cognitoUsername);\n                \n                if (!user) {\n                  return createResponse(404, { success: false, error: 'Usuario no encontrado en el sistema' });\n                }\n                \n                // Get organization if user has orgId\n                let organization = null;\n                if (user.orgId) {\n                  const orgCommand = new GetCommand({\n                    TableName: ORGANIZATIONS_TABLE,\n                    Key: { PK: `ORG#${user.orgId}`, SK: 'PROFILE' },\n                  });\n                  \n                  const orgResult = await dynamoClient.send(orgCommand);\n                  if (orgResult.Item) {\n                    const { PK, SK, ...org } = orgResult.Item;\n                    organization = {\n                      id: org.id,\n                      name: org.name,\n                      templateType: org.templateType,\n                    };\n                  }\n                }\n                \n                console.log('Current user retrieved successfully:', user.email);\n                \n                return createResponse(200, {\n                  success: true,\n                  message: 'Usuario actual obtenido exitosamente',\n                  user: {\n                    id: user.id,\n                    email: user.email,\n                    role: user.role,\n                    orgId: user.orgId,\n                    profile: user.profile,\n                    cognitoId: user.cognitoId,\n                  },\n                  organization: organization,\n                });\n              } catch (tokenError) {\n                console.error('Error decoding token:', tokenError);\n                return createResponse(401, { success: false, error: 'Token inválido' });\n              }\n            }\n            \n            return createResponse(404, { success: false, error: 'Endpoint no encontrado' });\n            \n          } catch (error) {\n            console.error('=== AUTH ERROR ===');\n            console.error('Error:', error);\n            console.error('Stack:', error.stack);\n            \n            if (error.name === 'UsernameExistsException') {\n              return createResponse(400, { success: false, error: 'Ya existe un usuario con este email' });\n            }\n            \n            if (error.name === 'InvalidPasswordException') {\n              return createResponse(400, { success: false, error: 'La contraseña no cumple con los requisitos de seguridad' });\n            }\n            \n            if (error.name === 'NotAuthorizedException') {\n              return createResponse(400, { success: false, error: 'Email o contraseña incorrectos' });\n            }\n            \n            return createResponse(500, { success: false, error: 'Error interno del servidor: ' + error.message });\n          }\n        };\n      "
+    },
+    "Environment": {
+     "Variables": {
+      "STAGE": "dev",
+      "USER_POOL_ID": {
+       "Ref": "UserPool6BA7E5F2"
+      },
+      "USER_POOL_CLIENT_ID": {
+       "Ref": "UserPoolClient2F5918F7"
+      },
+      "ORGANIZATIONS_TABLE": {
+       "Ref": "OrganizationsTable01047E98"
+      },
+      "USERS_TABLE": {
+       "Ref": "UsersTable9725E9C8"
+      },
+      "APPOINTMENTS_TABLE": {
+       "Ref": "AppointmentsTable8553CB1E"
+      },
+      "REGION": "sa-east-1"
+     }
+    },
+    "FunctionName": "bookflow-auth-dev",
+    "Handler": "index.handler",
+    "Role": {
+     "Fn::GetAtt": [
+      "LambdaExecutionRoleD5C26073",
+      "Arn"
+     ]
+    },
+    "Runtime": "nodejs18.x",
+    "Timeout": 30
+   },
+   "DependsOn": [
+    "LambdaExecutionRoleD5C26073"
+   ],
+   "Metadata": {
+    "aws:cdk:path": "BookFlowStack-dev/AuthFunction/Resource"
+   }
+  },
+  "OrganizationsFunction00DF16AC": {
+   "Type": "AWS::Lambda::Function",
+   "Properties": {
+    "Code": {
+     "ZipFile": "\n        const { CognitoIdentityProviderClient, GetUserCommand } = require('@aws-sdk/client-cognito-identity-provider');\n        const { DynamoDBClient } = require('@aws-sdk/client-dynamodb');\n        const { DynamoDBDocumentClient, GetCommand, PutCommand, QueryCommand } = require('@aws-sdk/lib-dynamodb');\n        \n        const cognitoClient = new CognitoIdentityProviderClient({ region: process.env.REGION });\n        const dynamoClient = DynamoDBDocumentClient.from(new DynamoDBClient({ region: process.env.REGION }));\n        \n        const ORGANIZATIONS_TABLE = process.env.ORGANIZATIONS_TABLE;\n        const USERS_TABLE = process.env.USERS_TABLE;\n        \n        const createResponse = (statusCode, body) => ({\n          statusCode,\n          headers: {\n            'Content-Type': 'application/json',\n            'Access-Control-Allow-Origin': '*',\n            'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',\n            'Access-Control-Allow-Headers': 'Content-Type, Authorization',\n          },\n          body: JSON.stringify(body),\n        });\n        \n        const getCurrentUser = async (accessToken) => {\n          try {\n            const command = new GetUserCommand({ AccessToken: accessToken });\n            const cognitoUser = await cognitoClient.send(command);\n            \n            const cognitoId = cognitoUser.Username;\n            \n            const userQuery = new QueryCommand({\n              TableName: USERS_TABLE,\n              IndexName: 'cognitoId-index',\n              KeyConditionExpression: 'cognitoId = :cognitoId',\n              ExpressionAttributeValues: { ':cognitoId': cognitoId },\n            });\n            \n            const userResult = await dynamoClient.send(userQuery);\n            \n            if (!userResult.Items || userResult.Items.length === 0) {\n              throw new Error('Usuario no encontrado');\n            }\n            \n            const { PK, SK, ...user } = userResult.Items[0];\n            return user;\n          } catch (error) {\n            throw new Error('Token inválido o usuario no encontrado');\n          }\n        };\n        \n        const getOrganization = async (orgId) => {\n          const command = new GetCommand({\n            TableName: ORGANIZATIONS_TABLE,\n            Key: { PK: `ORG#${orgId}`, SK: 'PROFILE' },\n          });\n          \n          const result = await dynamoClient.send(command);\n          if (!result.Item) return null;\n          \n          const { PK, SK, ...organization } = result.Item;\n          return organization;\n        };\n        \n        const updateOrganization = async (orgId, updates) => {\n          const updatedData = {\n            ...updates,\n            updatedAt: new Date().toISOString(),\n          };\n\n          const item = {\n            PK: `ORG#${orgId}`,\n            SK: 'PROFILE',\n            ...updatedData,\n          };\n\n          const command = new PutCommand({\n            TableName: ORGANIZATIONS_TABLE,\n            Item: item,\n          });\n\n          await dynamoClient.send(command);\n          \n          const { PK, SK, ...organization } = item;\n          return organization;\n        };\n        \n        exports.handler = async (event) => {\n          console.log('=== ORGANIZATIONS HANDLER ===');\n          console.log('Event:', JSON.stringify(event, null, 2));\n          \n          try {\n            const { httpMethod, path, body, headers, pathParameters } = event;\n            \n            // Handle CORS preflight\n            if (httpMethod === 'OPTIONS') {\n              return createResponse(200, {});\n            }\n            \n            // Parse request body if present\n            let requestData = {};\n            if (body) {\n              try {\n                requestData = JSON.parse(body);\n              } catch (error) {\n                return createResponse(400, { success: false, error: 'Invalid JSON in request body' });\n              }\n            }\n            \n            // Extract user from token for protected endpoints\n            const authHeader = headers.Authorization || headers.authorization;\n            if (!authHeader || !authHeader.startsWith('Bearer ')) {\n              return createResponse(401, { success: false, error: 'Token de acceso requerido' });\n            }\n            \n            const accessToken = authHeader.substring(7);\n            let currentUser;\n            \n            try {\n              currentUser = await getCurrentUser(accessToken);\n            } catch (error) {\n              return createResponse(401, { success: false, error: error.message });\n            }\n            \n            // GET USER'S ORGANIZATION\n            if (path?.endsWith('/organizations/me') && httpMethod === 'GET') {\n              console.log('=== GET MY ORGANIZATION REQUEST ===');\n              \n              if (!currentUser.orgId) {\n                return createResponse(404, { success: false, error: 'El usuario no pertenece a ninguna organización' });\n              }\n              \n              if (currentUser.orgId !== currentUser.orgId) {\n                return createResponse(403, { success: false, error: 'No tienes permisos para acceder a esta organización' });\n              }\n              \n              const organization = await getOrganization(currentUser.orgId);\n              if (!organization) {\n                return createResponse(404, { success: false, error: 'Organización no encontrada' });\n              }\n              \n              return createResponse(200, {\n                success: true,\n                organization: {\n                  id: organization.id,\n                  name: organization.name,\n                  templateType: organization.templateType,\n                  settings: organization.settings,\n                  subscription: organization.subscription,\n                  createdAt: organization.createdAt,\n                  updatedAt: organization.updatedAt,\n                },\n                message: 'Organización del usuario obtenida exitosamente'\n              });\n            }\n            \n            // UPDATE ORGANIZATION SETTINGS\n            if (path?.match(/\\/organizations\\/[^/]+\\/settings$/) && httpMethod === 'PUT') {\n              console.log('=== UPDATE ORGANIZATION SETTINGS REQUEST ===');\n              \n              const orgId = pathParameters?.orgId;\n              if (!orgId) {\n                return createResponse(400, { success: false, error: 'ID de organización requerido' });\n              }\n              \n              if (currentUser.role !== 'owner') {\n                return createResponse(403, { success: false, error: 'Solo los propietarios pueden modificar las configuraciones de la organización' });\n              }\n              \n              if (currentUser.orgId !== orgId) {\n                return createResponse(403, { success: false, error: 'No tienes permisos para modificar esta organización' });\n              }\n              \n              const currentOrg = await getOrganization(orgId);\n              if (!currentOrg) {\n                return createResponse(404, { success: false, error: 'Organización no encontrada' });\n              }\n              \n              const organizationToUpdate = {\n                ...currentOrg,\n                settings: {\n                  ...currentOrg.settings,\n                  ...(requestData.timezone && { timezone: requestData.timezone }),\n                  ...(requestData.businessHours && { \n                    businessHours: {\n                      ...currentOrg.settings.businessHours,\n                      ...requestData.businessHours,\n                    }\n                  }),\n                  ...(requestData.notifications && { \n                    notifications: {\n                      ...currentOrg.settings.notifications,\n                      ...requestData.notifications,\n                    }\n                  }),\n                }\n              };\n              \n              const updatedOrganization = await updateOrganization(orgId, organizationToUpdate);\n              \n              return createResponse(200, {\n                success: true,\n                organization: {\n                  id: updatedOrganization.id,\n                  name: updatedOrganization.name,\n                  templateType: updatedOrganization.templateType,\n                  settings: updatedOrganization.settings,\n                  subscription: updatedOrganization.subscription,\n                  updatedAt: updatedOrganization.updatedAt,\n                },\n                message: 'Configuraciones de la organización actualizadas exitosamente'\n              });\n            }\n            \n            return createResponse(404, { success: false, error: 'Endpoint no encontrado' });\n            \n          } catch (error) {\n            console.error('=== ORGANIZATIONS HANDLER ERROR ===');\n            console.error('Error:', error);\n            \n            return createResponse(500, { success: false, error: 'Error interno del servidor: ' + error.message });\n          }\n        };\n      "
+    },
+    "Environment": {
+     "Variables": {
+      "STAGE": "dev",
+      "USER_POOL_ID": {
+       "Ref": "UserPool6BA7E5F2"
+      },
+      "USER_POOL_CLIENT_ID": {
+       "Ref": "UserPoolClient2F5918F7"
+      },
+      "ORGANIZATIONS_TABLE": {
+       "Ref": "OrganizationsTable01047E98"
+      },
+      "USERS_TABLE": {
+       "Ref": "UsersTable9725E9C8"
+      },
+      "APPOINTMENTS_TABLE": {
+       "Ref": "AppointmentsTable8553CB1E"
+      },
+      "REGION": "sa-east-1"
+     }
+    },
+    "FunctionName": "bookflow-organizations-dev",
+    "Handler": "index.handler",
+    "Role": {
+     "Fn::GetAtt": [
+      "LambdaExecutionRoleD5C26073",
+      "Arn"
+     ]
+    },
+    "Runtime": "nodejs18.x",
+    "Timeout": 30
+   },
+   "DependsOn": [
+    "LambdaExecutionRoleD5C26073"
+   ],
+   "Metadata": {
+    "aws:cdk:path": "BookFlowStack-dev/OrganizationsFunction/Resource"
+   }
+  },
+  "ApiF70053CD": {
+   "Type": "AWS::ApiGateway::RestApi",
+   "Properties": {
+    "Description": "BookFlow API for dev",
+    "Name": "bookflow-api-dev"
+   },
+   "Metadata": {
+    "aws:cdk:path": "BookFlowStack-dev/Api/Resource"
+   }
+  },
+  "ApiCloudWatchRole73EC6FC4": {
+   "Type": "AWS::IAM::Role",
+   "Properties": {
+    "AssumeRolePolicyDocument": {
+     "Statement": [
+      {
+       "Action": "sts:AssumeRole",
+       "Effect": "Allow",
+       "Principal": {
+        "Service": "apigateway.amazonaws.com"
+       }
+      }
+     ],
+     "Version": "2012-10-17"
+    },
+    "ManagedPolicyArns": [
+     {
+      "Fn::Join": [
+       "",
+       [
+        "arn:",
+        {
+         "Ref": "AWS::Partition"
+        },
+        ":iam::aws:policy/service-role/AmazonAPIGatewayPushToCloudWatchLogs"
+       ]
+      ]
+     }
+    ]
+   },
+   "UpdateReplacePolicy": "Retain",
+   "DeletionPolicy": "Retain",
+   "Metadata": {
+    "aws:cdk:path": "BookFlowStack-dev/Api/CloudWatchRole/Resource"
+   }
+  },
+  "ApiAccountA18C9B29": {
+   "Type": "AWS::ApiGateway::Account",
+   "Properties": {
+    "CloudWatchRoleArn": {
+     "Fn::GetAtt": [
+      "ApiCloudWatchRole73EC6FC4",
+      "Arn"
+     ]
+    }
+   },
+   "DependsOn": [
+    "ApiF70053CD"
+   ],
+   "UpdateReplacePolicy": "Retain",
+   "DeletionPolicy": "Retain",
+   "Metadata": {
+    "aws:cdk:path": "BookFlowStack-dev/Api/Account"
+   }
+  },
+  "ApiDeploymentB17BE62Da65529a52f3c8a6f3c448b51f409d9d0": {
+   "Type": "AWS::ApiGateway::Deployment",
+   "Properties": {
+    "Description": "BookFlow API for dev",
+    "RestApiId": {
+     "Ref": "ApiF70053CD"
+    }
+   },
+   "DependsOn": [
+    "ApiOPTIONS5886EA5D",
+    "Apiv1authforgotpasswordOPTIONS72399692",
+    "Apiv1authforgotpasswordPOST8FAEA524",
+    "Apiv1authforgotpasswordEC5B994F",
+    "Apiv1authloginOPTIONSBDCDAF10",
+    "Apiv1authloginPOST617B2453",
+    "Apiv1authlogin413519B5",
+    "Apiv1authmeGETF4ABDBEC",
+    "Apiv1authmeOPTIONS1096DDA9",
+    "Apiv1authme146D1F4A",
+    "Apiv1authOPTIONS0926D288",
+    "Apiv1authrefreshOPTIONS59927910",
+    "Apiv1authrefreshPOST6E22DA1D",
+    "Apiv1authrefresh5918088A",
+    "Apiv1authregisterOPTIONSC32AE5E5",
+    "Apiv1authregisterPOST93679536",
+    "Apiv1authregisterA689072E",
+    "Apiv1authresetpasswordOPTIONS0B4D6C40",
+    "Apiv1authresetpasswordPOSTBCDF4CD0",
+    "Apiv1authresetpassword88CD45D3",
+    "Apiv1authE828A432",
+    "Apiv1OPTIONSE755CB03",
+    "Apiv1organizationsorgIdGET207635F6",
+    "Apiv1organizationsorgIdOPTIONS613D8F53",
+    "Apiv1organizationsorgIdPUTCB63DE05",
+    "Apiv1organizationsorgIdE0F0D229",
+    "Apiv1organizationsorgIdsettingsOPTIONSC3A725FD",
+    "Apiv1organizationsorgIdsettingsPUT204D1ABB",
+    "Apiv1organizationsorgIdsettingsE4B735DE",
+    "Apiv1organizationsGET37C81B0E",
+    "Apiv1organizationsmeGET66879B56",
+    "Apiv1organizationsmeOPTIONS8763FAD9",
+    "Apiv1organizationsmeD7A935D5",
+    "Apiv1organizationsOPTIONS8C50CEEC",
+    "Apiv1organizationsPOSTF5013CD4",
+    "Apiv1organizations8E7FC934",
+    "Apiv1D42035C8"
+   ],
+   "Metadata": {
+    "aws:cdk:path": "BookFlowStack-dev/Api/Deployment/Resource",
+    "aws:cdk:do-not-refactor": true
+   }
+  },
+  "ApiDeploymentStagedev51EE5D56": {
+   "Type": "AWS::ApiGateway::Stage",
+   "Properties": {
+    "DeploymentId": {
+     "Ref": "ApiDeploymentB17BE62Da65529a52f3c8a6f3c448b51f409d9d0"
+    },
+    "RestApiId": {
+     "Ref": "ApiF70053CD"
+    },
+    "StageName": "dev"
+   },
+   "DependsOn": [
+    "ApiAccountA18C9B29"
+   ],
+   "Metadata": {
+    "aws:cdk:path": "BookFlowStack-dev/Api/DeploymentStage.dev/Resource"
+   }
+  },
+  "ApiOPTIONS5886EA5D": {
+   "Type": "AWS::ApiGateway::Method",
+   "Properties": {
+    "ApiKeyRequired": false,
+    "AuthorizationType": "NONE",
+    "HttpMethod": "OPTIONS",
+    "Integration": {
+     "IntegrationResponses": [
+      {
+       "ResponseParameters": {
+        "method.response.header.Access-Control-Allow-Headers": "'Content-Type,Authorization'",
+        "method.response.header.Access-Control-Allow-Origin": "'http://localhost:3000'",
+        "method.response.header.Vary": "'Origin'",
+        "method.response.header.Access-Control-Allow-Methods": "'OPTIONS,GET,PUT,POST,DELETE,PATCH,HEAD'"
+       },
+       "ResponseTemplates": {
+        "application/json": "#set($origin = $input.params().header.get(\"Origin\"))\n#if($origin == \"\")\n  #set($origin = $input.params().header.get(\"origin\"))\n#end\n#if($origin == \"http://localhost:5173\")\n  #set($context.responseOverride.header.Access-Control-Allow-Origin = $origin)\n#end"
+       },
+       "StatusCode": "204"
+      }
+     ],
+     "RequestTemplates": {
+      "application/json": "{ statusCode: 200 }"
+     },
+     "Type": "MOCK"
+    },
+    "MethodResponses": [
+     {
+      "ResponseParameters": {
+       "method.response.header.Access-Control-Allow-Headers": true,
+       "method.response.header.Access-Control-Allow-Origin": true,
+       "method.response.header.Vary": true,
+       "method.response.header.Access-Control-Allow-Methods": true
+      },
+      "StatusCode": "204"
+     }
+    ],
+    "ResourceId": {
+     "Fn::GetAtt": [
+      "ApiF70053CD",
+      "RootResourceId"
+     ]
+    },
+    "RestApiId": {
+     "Ref": "ApiF70053CD"
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "BookFlowStack-dev/Api/Default/OPTIONS/Resource"
+   }
+  },
+  "Apiv1D42035C8": {
+   "Type": "AWS::ApiGateway::Resource",
+   "Properties": {
+    "ParentId": {
+     "Fn::GetAtt": [
+      "ApiF70053CD",
+      "RootResourceId"
+     ]
+    },
+    "PathPart": "v1",
+    "RestApiId": {
+     "Ref": "ApiF70053CD"
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "BookFlowStack-dev/Api/Default/v1/Resource"
+   }
+  },
+  "Apiv1OPTIONSE755CB03": {
+   "Type": "AWS::ApiGateway::Method",
+   "Properties": {
+    "ApiKeyRequired": false,
+    "AuthorizationType": "NONE",
+    "HttpMethod": "OPTIONS",
+    "Integration": {
+     "IntegrationResponses": [
+      {
+       "ResponseParameters": {
+        "method.response.header.Access-Control-Allow-Headers": "'Content-Type,Authorization'",
+        "method.response.header.Access-Control-Allow-Origin": "'http://localhost:3000'",
+        "method.response.header.Vary": "'Origin'",
+        "method.response.header.Access-Control-Allow-Methods": "'OPTIONS,GET,PUT,POST,DELETE,PATCH,HEAD'"
+       },
+       "ResponseTemplates": {
+        "application/json": "#set($origin = $input.params().header.get(\"Origin\"))\n#if($origin == \"\")\n  #set($origin = $input.params().header.get(\"origin\"))\n#end\n#if($origin == \"http://localhost:5173\")\n  #set($context.responseOverride.header.Access-Control-Allow-Origin = $origin)\n#end"
+       },
+       "StatusCode": "204"
+      }
+     ],
+     "RequestTemplates": {
+      "application/json": "{ statusCode: 200 }"
+     },
+     "Type": "MOCK"
+    },
+    "MethodResponses": [
+     {
+      "ResponseParameters": {
+       "method.response.header.Access-Control-Allow-Headers": true,
+       "method.response.header.Access-Control-Allow-Origin": true,
+       "method.response.header.Vary": true,
+       "method.response.header.Access-Control-Allow-Methods": true
+      },
+      "StatusCode": "204"
+     }
+    ],
+    "ResourceId": {
+     "Ref": "Apiv1D42035C8"
+    },
+    "RestApiId": {
+     "Ref": "ApiF70053CD"
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "BookFlowStack-dev/Api/Default/v1/OPTIONS/Resource"
+   }
+  },
+  "Apiv1authE828A432": {
+   "Type": "AWS::ApiGateway::Resource",
+   "Properties": {
+    "ParentId": {
+     "Ref": "Apiv1D42035C8"
+    },
+    "PathPart": "auth",
+    "RestApiId": {
+     "Ref": "ApiF70053CD"
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "BookFlowStack-dev/Api/Default/v1/auth/Resource"
+   }
+  },
+  "Apiv1authOPTIONS0926D288": {
+   "Type": "AWS::ApiGateway::Method",
+   "Properties": {
+    "ApiKeyRequired": false,
+    "AuthorizationType": "NONE",
+    "HttpMethod": "OPTIONS",
+    "Integration": {
+     "IntegrationResponses": [
+      {
+       "ResponseParameters": {
+        "method.response.header.Access-Control-Allow-Headers": "'Content-Type,Authorization'",
+        "method.response.header.Access-Control-Allow-Origin": "'http://localhost:3000'",
+        "method.response.header.Vary": "'Origin'",
+        "method.response.header.Access-Control-Allow-Methods": "'GET,POST,PUT,DELETE,OPTIONS'"
+       },
+       "ResponseTemplates": {
+        "application/json": "#set($origin = $input.params().header.get(\"Origin\"))\n#if($origin == \"\")\n  #set($origin = $input.params().header.get(\"origin\"))\n#end\n#if($origin == \"http://localhost:5173\")\n  #set($context.responseOverride.header.Access-Control-Allow-Origin = $origin)\n#end"
+       },
+       "StatusCode": "204"
+      }
+     ],
+     "RequestTemplates": {
+      "application/json": "{ statusCode: 200 }"
+     },
+     "Type": "MOCK"
+    },
+    "MethodResponses": [
+     {
+      "ResponseParameters": {
+       "method.response.header.Access-Control-Allow-Headers": true,
+       "method.response.header.Access-Control-Allow-Origin": true,
+       "method.response.header.Vary": true,
+       "method.response.header.Access-Control-Allow-Methods": true
+      },
+      "StatusCode": "204"
+     }
+    ],
+    "ResourceId": {
+     "Ref": "Apiv1authE828A432"
+    },
+    "RestApiId": {
+     "Ref": "ApiF70053CD"
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "BookFlowStack-dev/Api/Default/v1/auth/OPTIONS/Resource"
+   }
+  },
+  "Apiv1authlogin413519B5": {
+   "Type": "AWS::ApiGateway::Resource",
+   "Properties": {
+    "ParentId": {
+     "Ref": "Apiv1authE828A432"
+    },
+    "PathPart": "login",
+    "RestApiId": {
+     "Ref": "ApiF70053CD"
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "BookFlowStack-dev/Api/Default/v1/auth/login/Resource"
+   }
+  },
+  "Apiv1authloginOPTIONSBDCDAF10": {
+   "Type": "AWS::ApiGateway::Method",
+   "Properties": {
+    "ApiKeyRequired": false,
+    "AuthorizationType": "NONE",
+    "HttpMethod": "OPTIONS",
+    "Integration": {
+     "IntegrationResponses": [
+      {
+       "ResponseParameters": {
+        "method.response.header.Access-Control-Allow-Headers": "'Content-Type,Authorization'",
+        "method.response.header.Access-Control-Allow-Origin": "'http://localhost:3000'",
+        "method.response.header.Vary": "'Origin'",
+        "method.response.header.Access-Control-Allow-Methods": "'GET,POST,PUT,DELETE,OPTIONS'"
+       },
+       "ResponseTemplates": {
+        "application/json": "#set($origin = $input.params().header.get(\"Origin\"))\n#if($origin == \"\")\n  #set($origin = $input.params().header.get(\"origin\"))\n#end\n#if($origin == \"http://localhost:5173\")\n  #set($context.responseOverride.header.Access-Control-Allow-Origin = $origin)\n#end"
+       },
+       "StatusCode": "204"
+      }
+     ],
+     "RequestTemplates": {
+      "application/json": "{ statusCode: 200 }"
+     },
+     "Type": "MOCK"
+    },
+    "MethodResponses": [
+     {
+      "ResponseParameters": {
+       "method.response.header.Access-Control-Allow-Headers": true,
+       "method.response.header.Access-Control-Allow-Origin": true,
+       "method.response.header.Vary": true,
+       "method.response.header.Access-Control-Allow-Methods": true
+      },
+      "StatusCode": "204"
+     }
+    ],
+    "ResourceId": {
+     "Ref": "Apiv1authlogin413519B5"
+    },
+    "RestApiId": {
+     "Ref": "ApiF70053CD"
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "BookFlowStack-dev/Api/Default/v1/auth/login/OPTIONS/Resource"
+   }
+  },
+  "Apiv1authloginPOSTApiPermissionBookFlowStackdevApi35F7A340POSTv1authlogin43CE3495": {
+   "Type": "AWS::Lambda::Permission",
+   "Properties": {
+    "Action": "lambda:InvokeFunction",
+    "FunctionName": {
+     "Fn::GetAtt": [
+      "AuthFunctionA1CD5E0F",
+      "Arn"
+     ]
+    },
+    "Principal": "apigateway.amazonaws.com",
+    "SourceArn": {
+     "Fn::Join": [
+      "",
+      [
+       "arn:aws:execute-api:sa-east-1:812508052193:",
+       {
+        "Ref": "ApiF70053CD"
+       },
+       "/",
+       {
+        "Ref": "ApiDeploymentStagedev51EE5D56"
+       },
+       "/POST/v1/auth/login"
+      ]
+     ]
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "BookFlowStack-dev/Api/Default/v1/auth/login/POST/ApiPermission.BookFlowStackdevApi35F7A340.POST..v1.auth.login"
+   }
+  },
+  "Apiv1authloginPOSTApiPermissionTestBookFlowStackdevApi35F7A340POSTv1authloginEA4406A4": {
+   "Type": "AWS::Lambda::Permission",
+   "Properties": {
+    "Action": "lambda:InvokeFunction",
+    "FunctionName": {
+     "Fn::GetAtt": [
+      "AuthFunctionA1CD5E0F",
+      "Arn"
+     ]
+    },
+    "Principal": "apigateway.amazonaws.com",
+    "SourceArn": {
+     "Fn::Join": [
+      "",
+      [
+       "arn:aws:execute-api:sa-east-1:812508052193:",
+       {
+        "Ref": "ApiF70053CD"
+       },
+       "/test-invoke-stage/POST/v1/auth/login"
+      ]
+     ]
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "BookFlowStack-dev/Api/Default/v1/auth/login/POST/ApiPermission.Test.BookFlowStackdevApi35F7A340.POST..v1.auth.login"
+   }
+  },
+  "Apiv1authloginPOST617B2453": {
+   "Type": "AWS::ApiGateway::Method",
+   "Properties": {
+    "AuthorizationType": "NONE",
+    "HttpMethod": "POST",
+    "Integration": {
+     "IntegrationHttpMethod": "POST",
+     "Type": "AWS_PROXY",
+     "Uri": {
+      "Fn::Join": [
+       "",
+       [
+        "arn:aws:apigateway:sa-east-1:lambda:path/2015-03-31/functions/",
+        {
+         "Fn::GetAtt": [
+          "AuthFunctionA1CD5E0F",
+          "Arn"
+         ]
+        },
+        "/invocations"
+       ]
+      ]
+     }
+    },
+    "ResourceId": {
+     "Ref": "Apiv1authlogin413519B5"
+    },
+    "RestApiId": {
+     "Ref": "ApiF70053CD"
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "BookFlowStack-dev/Api/Default/v1/auth/login/POST/Resource"
+   }
+  },
+  "Apiv1authregisterA689072E": {
+   "Type": "AWS::ApiGateway::Resource",
+   "Properties": {
+    "ParentId": {
+     "Ref": "Apiv1authE828A432"
+    },
+    "PathPart": "register",
+    "RestApiId": {
+     "Ref": "ApiF70053CD"
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "BookFlowStack-dev/Api/Default/v1/auth/register/Resource"
+   }
+  },
+  "Apiv1authregisterOPTIONSC32AE5E5": {
+   "Type": "AWS::ApiGateway::Method",
+   "Properties": {
+    "ApiKeyRequired": false,
+    "AuthorizationType": "NONE",
+    "HttpMethod": "OPTIONS",
+    "Integration": {
+     "IntegrationResponses": [
+      {
+       "ResponseParameters": {
+        "method.response.header.Access-Control-Allow-Headers": "'Content-Type,Authorization'",
+        "method.response.header.Access-Control-Allow-Origin": "'http://localhost:3000'",
+        "method.response.header.Vary": "'Origin'",
+        "method.response.header.Access-Control-Allow-Methods": "'GET,POST,PUT,DELETE,OPTIONS'"
+       },
+       "ResponseTemplates": {
+        "application/json": "#set($origin = $input.params().header.get(\"Origin\"))\n#if($origin == \"\")\n  #set($origin = $input.params().header.get(\"origin\"))\n#end\n#if($origin == \"http://localhost:5173\")\n  #set($context.responseOverride.header.Access-Control-Allow-Origin = $origin)\n#end"
+       },
+       "StatusCode": "204"
+      }
+     ],
+     "RequestTemplates": {
+      "application/json": "{ statusCode: 200 }"
+     },
+     "Type": "MOCK"
+    },
+    "MethodResponses": [
+     {
+      "ResponseParameters": {
+       "method.response.header.Access-Control-Allow-Headers": true,
+       "method.response.header.Access-Control-Allow-Origin": true,
+       "method.response.header.Vary": true,
+       "method.response.header.Access-Control-Allow-Methods": true
+      },
+      "StatusCode": "204"
+     }
+    ],
+    "ResourceId": {
+     "Ref": "Apiv1authregisterA689072E"
+    },
+    "RestApiId": {
+     "Ref": "ApiF70053CD"
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "BookFlowStack-dev/Api/Default/v1/auth/register/OPTIONS/Resource"
+   }
+  },
+  "Apiv1authregisterPOSTApiPermissionBookFlowStackdevApi35F7A340POSTv1authregister27920AB5": {
+   "Type": "AWS::Lambda::Permission",
+   "Properties": {
+    "Action": "lambda:InvokeFunction",
+    "FunctionName": {
+     "Fn::GetAtt": [
+      "AuthFunctionA1CD5E0F",
+      "Arn"
+     ]
+    },
+    "Principal": "apigateway.amazonaws.com",
+    "SourceArn": {
+     "Fn::Join": [
+      "",
+      [
+       "arn:aws:execute-api:sa-east-1:812508052193:",
+       {
+        "Ref": "ApiF70053CD"
+       },
+       "/",
+       {
+        "Ref": "ApiDeploymentStagedev51EE5D56"
+       },
+       "/POST/v1/auth/register"
+      ]
+     ]
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "BookFlowStack-dev/Api/Default/v1/auth/register/POST/ApiPermission.BookFlowStackdevApi35F7A340.POST..v1.auth.register"
+   }
+  },
+  "Apiv1authregisterPOSTApiPermissionTestBookFlowStackdevApi35F7A340POSTv1authregister27D0B423": {
+   "Type": "AWS::Lambda::Permission",
+   "Properties": {
+    "Action": "lambda:InvokeFunction",
+    "FunctionName": {
+     "Fn::GetAtt": [
+      "AuthFunctionA1CD5E0F",
+      "Arn"
+     ]
+    },
+    "Principal": "apigateway.amazonaws.com",
+    "SourceArn": {
+     "Fn::Join": [
+      "",
+      [
+       "arn:aws:execute-api:sa-east-1:812508052193:",
+       {
+        "Ref": "ApiF70053CD"
+       },
+       "/test-invoke-stage/POST/v1/auth/register"
+      ]
+     ]
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "BookFlowStack-dev/Api/Default/v1/auth/register/POST/ApiPermission.Test.BookFlowStackdevApi35F7A340.POST..v1.auth.register"
+   }
+  },
+  "Apiv1authregisterPOST93679536": {
+   "Type": "AWS::ApiGateway::Method",
+   "Properties": {
+    "AuthorizationType": "NONE",
+    "HttpMethod": "POST",
+    "Integration": {
+     "IntegrationHttpMethod": "POST",
+     "Type": "AWS_PROXY",
+     "Uri": {
+      "Fn::Join": [
+       "",
+       [
+        "arn:aws:apigateway:sa-east-1:lambda:path/2015-03-31/functions/",
+        {
+         "Fn::GetAtt": [
+          "AuthFunctionA1CD5E0F",
+          "Arn"
+         ]
+        },
+        "/invocations"
+       ]
+      ]
+     }
+    },
+    "ResourceId": {
+     "Ref": "Apiv1authregisterA689072E"
+    },
+    "RestApiId": {
+     "Ref": "ApiF70053CD"
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "BookFlowStack-dev/Api/Default/v1/auth/register/POST/Resource"
+   }
+  },
+  "Apiv1authforgotpasswordEC5B994F": {
+   "Type": "AWS::ApiGateway::Resource",
+   "Properties": {
+    "ParentId": {
+     "Ref": "Apiv1authE828A432"
+    },
+    "PathPart": "forgot-password",
+    "RestApiId": {
+     "Ref": "ApiF70053CD"
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "BookFlowStack-dev/Api/Default/v1/auth/forgot-password/Resource"
+   }
+  },
+  "Apiv1authforgotpasswordOPTIONS72399692": {
+   "Type": "AWS::ApiGateway::Method",
+   "Properties": {
+    "ApiKeyRequired": false,
+    "AuthorizationType": "NONE",
+    "HttpMethod": "OPTIONS",
+    "Integration": {
+     "IntegrationResponses": [
+      {
+       "ResponseParameters": {
+        "method.response.header.Access-Control-Allow-Headers": "'Content-Type,Authorization'",
+        "method.response.header.Access-Control-Allow-Origin": "'http://localhost:3000'",
+        "method.response.header.Vary": "'Origin'",
+        "method.response.header.Access-Control-Allow-Methods": "'GET,POST,PUT,DELETE,OPTIONS'"
+       },
+       "ResponseTemplates": {
+        "application/json": "#set($origin = $input.params().header.get(\"Origin\"))\n#if($origin == \"\")\n  #set($origin = $input.params().header.get(\"origin\"))\n#end\n#if($origin == \"http://localhost:5173\")\n  #set($context.responseOverride.header.Access-Control-Allow-Origin = $origin)\n#end"
+       },
+       "StatusCode": "204"
+      }
+     ],
+     "RequestTemplates": {
+      "application/json": "{ statusCode: 200 }"
+     },
+     "Type": "MOCK"
+    },
+    "MethodResponses": [
+     {
+      "ResponseParameters": {
+       "method.response.header.Access-Control-Allow-Headers": true,
+       "method.response.header.Access-Control-Allow-Origin": true,
+       "method.response.header.Vary": true,
+       "method.response.header.Access-Control-Allow-Methods": true
+      },
+      "StatusCode": "204"
+     }
+    ],
+    "ResourceId": {
+     "Ref": "Apiv1authforgotpasswordEC5B994F"
+    },
+    "RestApiId": {
+     "Ref": "ApiF70053CD"
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "BookFlowStack-dev/Api/Default/v1/auth/forgot-password/OPTIONS/Resource"
+   }
+  },
+  "Apiv1authforgotpasswordPOSTApiPermissionBookFlowStackdevApi35F7A340POSTv1authforgotpassword4BD1F2EA": {
+   "Type": "AWS::Lambda::Permission",
+   "Properties": {
+    "Action": "lambda:InvokeFunction",
+    "FunctionName": {
+     "Fn::GetAtt": [
+      "AuthFunctionA1CD5E0F",
+      "Arn"
+     ]
+    },
+    "Principal": "apigateway.amazonaws.com",
+    "SourceArn": {
+     "Fn::Join": [
+      "",
+      [
+       "arn:aws:execute-api:sa-east-1:812508052193:",
+       {
+        "Ref": "ApiF70053CD"
+       },
+       "/",
+       {
+        "Ref": "ApiDeploymentStagedev51EE5D56"
+       },
+       "/POST/v1/auth/forgot-password"
+      ]
+     ]
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "BookFlowStack-dev/Api/Default/v1/auth/forgot-password/POST/ApiPermission.BookFlowStackdevApi35F7A340.POST..v1.auth.forgot-password"
+   }
+  },
+  "Apiv1authforgotpasswordPOSTApiPermissionTestBookFlowStackdevApi35F7A340POSTv1authforgotpasswordE8BC3F9A": {
+   "Type": "AWS::Lambda::Permission",
+   "Properties": {
+    "Action": "lambda:InvokeFunction",
+    "FunctionName": {
+     "Fn::GetAtt": [
+      "AuthFunctionA1CD5E0F",
+      "Arn"
+     ]
+    },
+    "Principal": "apigateway.amazonaws.com",
+    "SourceArn": {
+     "Fn::Join": [
+      "",
+      [
+       "arn:aws:execute-api:sa-east-1:812508052193:",
+       {
+        "Ref": "ApiF70053CD"
+       },
+       "/test-invoke-stage/POST/v1/auth/forgot-password"
+      ]
+     ]
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "BookFlowStack-dev/Api/Default/v1/auth/forgot-password/POST/ApiPermission.Test.BookFlowStackdevApi35F7A340.POST..v1.auth.forgot-password"
+   }
+  },
+  "Apiv1authforgotpasswordPOST8FAEA524": {
+   "Type": "AWS::ApiGateway::Method",
+   "Properties": {
+    "AuthorizationType": "NONE",
+    "HttpMethod": "POST",
+    "Integration": {
+     "IntegrationHttpMethod": "POST",
+     "Type": "AWS_PROXY",
+     "Uri": {
+      "Fn::Join": [
+       "",
+       [
+        "arn:aws:apigateway:sa-east-1:lambda:path/2015-03-31/functions/",
+        {
+         "Fn::GetAtt": [
+          "AuthFunctionA1CD5E0F",
+          "Arn"
+         ]
+        },
+        "/invocations"
+       ]
+      ]
+     }
+    },
+    "ResourceId": {
+     "Ref": "Apiv1authforgotpasswordEC5B994F"
+    },
+    "RestApiId": {
+     "Ref": "ApiF70053CD"
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "BookFlowStack-dev/Api/Default/v1/auth/forgot-password/POST/Resource"
+   }
+  },
+  "Apiv1authresetpassword88CD45D3": {
+   "Type": "AWS::ApiGateway::Resource",
+   "Properties": {
+    "ParentId": {
+     "Ref": "Apiv1authE828A432"
+    },
+    "PathPart": "reset-password",
+    "RestApiId": {
+     "Ref": "ApiF70053CD"
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "BookFlowStack-dev/Api/Default/v1/auth/reset-password/Resource"
+   }
+  },
+  "Apiv1authresetpasswordOPTIONS0B4D6C40": {
+   "Type": "AWS::ApiGateway::Method",
+   "Properties": {
+    "ApiKeyRequired": false,
+    "AuthorizationType": "NONE",
+    "HttpMethod": "OPTIONS",
+    "Integration": {
+     "IntegrationResponses": [
+      {
+       "ResponseParameters": {
+        "method.response.header.Access-Control-Allow-Headers": "'Content-Type,Authorization'",
+        "method.response.header.Access-Control-Allow-Origin": "'http://localhost:3000'",
+        "method.response.header.Vary": "'Origin'",
+        "method.response.header.Access-Control-Allow-Methods": "'GET,POST,PUT,DELETE,OPTIONS'"
+       },
+       "ResponseTemplates": {
+        "application/json": "#set($origin = $input.params().header.get(\"Origin\"))\n#if($origin == \"\")\n  #set($origin = $input.params().header.get(\"origin\"))\n#end\n#if($origin == \"http://localhost:5173\")\n  #set($context.responseOverride.header.Access-Control-Allow-Origin = $origin)\n#end"
+       },
+       "StatusCode": "204"
+      }
+     ],
+     "RequestTemplates": {
+      "application/json": "{ statusCode: 200 }"
+     },
+     "Type": "MOCK"
+    },
+    "MethodResponses": [
+     {
+      "ResponseParameters": {
+       "method.response.header.Access-Control-Allow-Headers": true,
+       "method.response.header.Access-Control-Allow-Origin": true,
+       "method.response.header.Vary": true,
+       "method.response.header.Access-Control-Allow-Methods": true
+      },
+      "StatusCode": "204"
+     }
+    ],
+    "ResourceId": {
+     "Ref": "Apiv1authresetpassword88CD45D3"
+    },
+    "RestApiId": {
+     "Ref": "ApiF70053CD"
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "BookFlowStack-dev/Api/Default/v1/auth/reset-password/OPTIONS/Resource"
+   }
+  },
+  "Apiv1authresetpasswordPOSTApiPermissionBookFlowStackdevApi35F7A340POSTv1authresetpassword2347E6E3": {
+   "Type": "AWS::Lambda::Permission",
+   "Properties": {
+    "Action": "lambda:InvokeFunction",
+    "FunctionName": {
+     "Fn::GetAtt": [
+      "AuthFunctionA1CD5E0F",
+      "Arn"
+     ]
+    },
+    "Principal": "apigateway.amazonaws.com",
+    "SourceArn": {
+     "Fn::Join": [
+      "",
+      [
+       "arn:aws:execute-api:sa-east-1:812508052193:",
+       {
+        "Ref": "ApiF70053CD"
+       },
+       "/",
+       {
+        "Ref": "ApiDeploymentStagedev51EE5D56"
+       },
+       "/POST/v1/auth/reset-password"
+      ]
+     ]
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "BookFlowStack-dev/Api/Default/v1/auth/reset-password/POST/ApiPermission.BookFlowStackdevApi35F7A340.POST..v1.auth.reset-password"
+   }
+  },
+  "Apiv1authresetpasswordPOSTApiPermissionTestBookFlowStackdevApi35F7A340POSTv1authresetpassword9454E49A": {
+   "Type": "AWS::Lambda::Permission",
+   "Properties": {
+    "Action": "lambda:InvokeFunction",
+    "FunctionName": {
+     "Fn::GetAtt": [
+      "AuthFunctionA1CD5E0F",
+      "Arn"
+     ]
+    },
+    "Principal": "apigateway.amazonaws.com",
+    "SourceArn": {
+     "Fn::Join": [
+      "",
+      [
+       "arn:aws:execute-api:sa-east-1:812508052193:",
+       {
+        "Ref": "ApiF70053CD"
+       },
+       "/test-invoke-stage/POST/v1/auth/reset-password"
+      ]
+     ]
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "BookFlowStack-dev/Api/Default/v1/auth/reset-password/POST/ApiPermission.Test.BookFlowStackdevApi35F7A340.POST..v1.auth.reset-password"
+   }
+  },
+  "Apiv1authresetpasswordPOSTBCDF4CD0": {
+   "Type": "AWS::ApiGateway::Method",
+   "Properties": {
+    "AuthorizationType": "NONE",
+    "HttpMethod": "POST",
+    "Integration": {
+     "IntegrationHttpMethod": "POST",
+     "Type": "AWS_PROXY",
+     "Uri": {
+      "Fn::Join": [
+       "",
+       [
+        "arn:aws:apigateway:sa-east-1:lambda:path/2015-03-31/functions/",
+        {
+         "Fn::GetAtt": [
+          "AuthFunctionA1CD5E0F",
+          "Arn"
+         ]
+        },
+        "/invocations"
+       ]
+      ]
+     }
+    },
+    "ResourceId": {
+     "Ref": "Apiv1authresetpassword88CD45D3"
+    },
+    "RestApiId": {
+     "Ref": "ApiF70053CD"
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "BookFlowStack-dev/Api/Default/v1/auth/reset-password/POST/Resource"
+   }
+  },
+  "Apiv1authrefresh5918088A": {
+   "Type": "AWS::ApiGateway::Resource",
+   "Properties": {
+    "ParentId": {
+     "Ref": "Apiv1authE828A432"
+    },
+    "PathPart": "refresh",
+    "RestApiId": {
+     "Ref": "ApiF70053CD"
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "BookFlowStack-dev/Api/Default/v1/auth/refresh/Resource"
+   }
+  },
+  "Apiv1authrefreshOPTIONS59927910": {
+   "Type": "AWS::ApiGateway::Method",
+   "Properties": {
+    "ApiKeyRequired": false,
+    "AuthorizationType": "NONE",
+    "HttpMethod": "OPTIONS",
+    "Integration": {
+     "IntegrationResponses": [
+      {
+       "ResponseParameters": {
+        "method.response.header.Access-Control-Allow-Headers": "'Content-Type,Authorization'",
+        "method.response.header.Access-Control-Allow-Origin": "'http://localhost:3000'",
+        "method.response.header.Vary": "'Origin'",
+        "method.response.header.Access-Control-Allow-Methods": "'GET,POST,PUT,DELETE,OPTIONS'"
+       },
+       "ResponseTemplates": {
+        "application/json": "#set($origin = $input.params().header.get(\"Origin\"))\n#if($origin == \"\")\n  #set($origin = $input.params().header.get(\"origin\"))\n#end\n#if($origin == \"http://localhost:5173\")\n  #set($context.responseOverride.header.Access-Control-Allow-Origin = $origin)\n#end"
+       },
+       "StatusCode": "204"
+      }
+     ],
+     "RequestTemplates": {
+      "application/json": "{ statusCode: 200 }"
+     },
+     "Type": "MOCK"
+    },
+    "MethodResponses": [
+     {
+      "ResponseParameters": {
+       "method.response.header.Access-Control-Allow-Headers": true,
+       "method.response.header.Access-Control-Allow-Origin": true,
+       "method.response.header.Vary": true,
+       "method.response.header.Access-Control-Allow-Methods": true
+      },
+      "StatusCode": "204"
+     }
+    ],
+    "ResourceId": {
+     "Ref": "Apiv1authrefresh5918088A"
+    },
+    "RestApiId": {
+     "Ref": "ApiF70053CD"
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "BookFlowStack-dev/Api/Default/v1/auth/refresh/OPTIONS/Resource"
+   }
+  },
+  "Apiv1authrefreshPOSTApiPermissionBookFlowStackdevApi35F7A340POSTv1authrefresh91C7BD97": {
+   "Type": "AWS::Lambda::Permission",
+   "Properties": {
+    "Action": "lambda:InvokeFunction",
+    "FunctionName": {
+     "Fn::GetAtt": [
+      "AuthFunctionA1CD5E0F",
+      "Arn"
+     ]
+    },
+    "Principal": "apigateway.amazonaws.com",
+    "SourceArn": {
+     "Fn::Join": [
+      "",
+      [
+       "arn:aws:execute-api:sa-east-1:812508052193:",
+       {
+        "Ref": "ApiF70053CD"
+       },
+       "/",
+       {
+        "Ref": "ApiDeploymentStagedev51EE5D56"
+       },
+       "/POST/v1/auth/refresh"
+      ]
+     ]
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "BookFlowStack-dev/Api/Default/v1/auth/refresh/POST/ApiPermission.BookFlowStackdevApi35F7A340.POST..v1.auth.refresh"
+   }
+  },
+  "Apiv1authrefreshPOSTApiPermissionTestBookFlowStackdevApi35F7A340POSTv1authrefresh0573A8C4": {
+   "Type": "AWS::Lambda::Permission",
+   "Properties": {
+    "Action": "lambda:InvokeFunction",
+    "FunctionName": {
+     "Fn::GetAtt": [
+      "AuthFunctionA1CD5E0F",
+      "Arn"
+     ]
+    },
+    "Principal": "apigateway.amazonaws.com",
+    "SourceArn": {
+     "Fn::Join": [
+      "",
+      [
+       "arn:aws:execute-api:sa-east-1:812508052193:",
+       {
+        "Ref": "ApiF70053CD"
+       },
+       "/test-invoke-stage/POST/v1/auth/refresh"
+      ]
+     ]
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "BookFlowStack-dev/Api/Default/v1/auth/refresh/POST/ApiPermission.Test.BookFlowStackdevApi35F7A340.POST..v1.auth.refresh"
+   }
+  },
+  "Apiv1authrefreshPOST6E22DA1D": {
+   "Type": "AWS::ApiGateway::Method",
+   "Properties": {
+    "AuthorizationType": "NONE",
+    "HttpMethod": "POST",
+    "Integration": {
+     "IntegrationHttpMethod": "POST",
+     "Type": "AWS_PROXY",
+     "Uri": {
+      "Fn::Join": [
+       "",
+       [
+        "arn:aws:apigateway:sa-east-1:lambda:path/2015-03-31/functions/",
+        {
+         "Fn::GetAtt": [
+          "AuthFunctionA1CD5E0F",
+          "Arn"
+         ]
+        },
+        "/invocations"
+       ]
+      ]
+     }
+    },
+    "ResourceId": {
+     "Ref": "Apiv1authrefresh5918088A"
+    },
+    "RestApiId": {
+     "Ref": "ApiF70053CD"
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "BookFlowStack-dev/Api/Default/v1/auth/refresh/POST/Resource"
+   }
+  },
+  "Apiv1authme146D1F4A": {
+   "Type": "AWS::ApiGateway::Resource",
+   "Properties": {
+    "ParentId": {
+     "Ref": "Apiv1authE828A432"
+    },
+    "PathPart": "me",
+    "RestApiId": {
+     "Ref": "ApiF70053CD"
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "BookFlowStack-dev/Api/Default/v1/auth/me/Resource"
+   }
+  },
+  "Apiv1authmeOPTIONS1096DDA9": {
+   "Type": "AWS::ApiGateway::Method",
+   "Properties": {
+    "ApiKeyRequired": false,
+    "AuthorizationType": "NONE",
+    "HttpMethod": "OPTIONS",
+    "Integration": {
+     "IntegrationResponses": [
+      {
+       "ResponseParameters": {
+        "method.response.header.Access-Control-Allow-Headers": "'Content-Type,Authorization'",
+        "method.response.header.Access-Control-Allow-Origin": "'http://localhost:3000'",
+        "method.response.header.Vary": "'Origin'",
+        "method.response.header.Access-Control-Allow-Methods": "'GET,POST,PUT,DELETE,OPTIONS'"
+       },
+       "ResponseTemplates": {
+        "application/json": "#set($origin = $input.params().header.get(\"Origin\"))\n#if($origin == \"\")\n  #set($origin = $input.params().header.get(\"origin\"))\n#end\n#if($origin == \"http://localhost:5173\")\n  #set($context.responseOverride.header.Access-Control-Allow-Origin = $origin)\n#end"
+       },
+       "StatusCode": "204"
+      }
+     ],
+     "RequestTemplates": {
+      "application/json": "{ statusCode: 200 }"
+     },
+     "Type": "MOCK"
+    },
+    "MethodResponses": [
+     {
+      "ResponseParameters": {
+       "method.response.header.Access-Control-Allow-Headers": true,
+       "method.response.header.Access-Control-Allow-Origin": true,
+       "method.response.header.Vary": true,
+       "method.response.header.Access-Control-Allow-Methods": true
+      },
+      "StatusCode": "204"
+     }
+    ],
+    "ResourceId": {
+     "Ref": "Apiv1authme146D1F4A"
+    },
+    "RestApiId": {
+     "Ref": "ApiF70053CD"
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "BookFlowStack-dev/Api/Default/v1/auth/me/OPTIONS/Resource"
+   }
+  },
+  "Apiv1authmeGETApiPermissionBookFlowStackdevApi35F7A340GETv1authme52AB7354": {
+   "Type": "AWS::Lambda::Permission",
+   "Properties": {
+    "Action": "lambda:InvokeFunction",
+    "FunctionName": {
+     "Fn::GetAtt": [
+      "AuthFunctionA1CD5E0F",
+      "Arn"
+     ]
+    },
+    "Principal": "apigateway.amazonaws.com",
+    "SourceArn": {
+     "Fn::Join": [
+      "",
+      [
+       "arn:aws:execute-api:sa-east-1:812508052193:",
+       {
+        "Ref": "ApiF70053CD"
+       },
+       "/",
+       {
+        "Ref": "ApiDeploymentStagedev51EE5D56"
+       },
+       "/GET/v1/auth/me"
+      ]
+     ]
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "BookFlowStack-dev/Api/Default/v1/auth/me/GET/ApiPermission.BookFlowStackdevApi35F7A340.GET..v1.auth.me"
+   }
+  },
+  "Apiv1authmeGETApiPermissionTestBookFlowStackdevApi35F7A340GETv1authme27FA558B": {
+   "Type": "AWS::Lambda::Permission",
+   "Properties": {
+    "Action": "lambda:InvokeFunction",
+    "FunctionName": {
+     "Fn::GetAtt": [
+      "AuthFunctionA1CD5E0F",
+      "Arn"
+     ]
+    },
+    "Principal": "apigateway.amazonaws.com",
+    "SourceArn": {
+     "Fn::Join": [
+      "",
+      [
+       "arn:aws:execute-api:sa-east-1:812508052193:",
+       {
+        "Ref": "ApiF70053CD"
+       },
+       "/test-invoke-stage/GET/v1/auth/me"
+      ]
+     ]
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "BookFlowStack-dev/Api/Default/v1/auth/me/GET/ApiPermission.Test.BookFlowStackdevApi35F7A340.GET..v1.auth.me"
+   }
+  },
+  "Apiv1authmeGETF4ABDBEC": {
+   "Type": "AWS::ApiGateway::Method",
+   "Properties": {
+    "AuthorizationType": "NONE",
+    "HttpMethod": "GET",
+    "Integration": {
+     "IntegrationHttpMethod": "POST",
+     "Type": "AWS_PROXY",
+     "Uri": {
+      "Fn::Join": [
+       "",
+       [
+        "arn:aws:apigateway:sa-east-1:lambda:path/2015-03-31/functions/",
+        {
+         "Fn::GetAtt": [
+          "AuthFunctionA1CD5E0F",
+          "Arn"
+         ]
+        },
+        "/invocations"
+       ]
+      ]
+     }
+    },
+    "ResourceId": {
+     "Ref": "Apiv1authme146D1F4A"
+    },
+    "RestApiId": {
+     "Ref": "ApiF70053CD"
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "BookFlowStack-dev/Api/Default/v1/auth/me/GET/Resource"
+   }
+  },
+  "Apiv1organizations8E7FC934": {
+   "Type": "AWS::ApiGateway::Resource",
+   "Properties": {
+    "ParentId": {
+     "Ref": "Apiv1D42035C8"
+    },
+    "PathPart": "organizations",
+    "RestApiId": {
+     "Ref": "ApiF70053CD"
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "BookFlowStack-dev/Api/Default/v1/organizations/Resource"
+   }
+  },
+  "Apiv1organizationsOPTIONS8C50CEEC": {
+   "Type": "AWS::ApiGateway::Method",
+   "Properties": {
+    "ApiKeyRequired": false,
+    "AuthorizationType": "NONE",
+    "HttpMethod": "OPTIONS",
+    "Integration": {
+     "IntegrationResponses": [
+      {
+       "ResponseParameters": {
+        "method.response.header.Access-Control-Allow-Headers": "'Content-Type,Authorization'",
+        "method.response.header.Access-Control-Allow-Origin": "'http://localhost:3000'",
+        "method.response.header.Vary": "'Origin'",
+        "method.response.header.Access-Control-Allow-Methods": "'GET,POST,PUT,DELETE,OPTIONS'"
+       },
+       "ResponseTemplates": {
+        "application/json": "#set($origin = $input.params().header.get(\"Origin\"))\n#if($origin == \"\")\n  #set($origin = $input.params().header.get(\"origin\"))\n#end\n#if($origin == \"http://localhost:5173\")\n  #set($context.responseOverride.header.Access-Control-Allow-Origin = $origin)\n#end"
+       },
+       "StatusCode": "204"
+      }
+     ],
+     "RequestTemplates": {
+      "application/json": "{ statusCode: 200 }"
+     },
+     "Type": "MOCK"
+    },
+    "MethodResponses": [
+     {
+      "ResponseParameters": {
+       "method.response.header.Access-Control-Allow-Headers": true,
+       "method.response.header.Access-Control-Allow-Origin": true,
+       "method.response.header.Vary": true,
+       "method.response.header.Access-Control-Allow-Methods": true
+      },
+      "StatusCode": "204"
+     }
+    ],
+    "ResourceId": {
+     "Ref": "Apiv1organizations8E7FC934"
+    },
+    "RestApiId": {
+     "Ref": "ApiF70053CD"
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "BookFlowStack-dev/Api/Default/v1/organizations/OPTIONS/Resource"
+   }
+  },
+  "Apiv1organizationsGETApiPermissionBookFlowStackdevApi35F7A340GETv1organizations3BA31542": {
+   "Type": "AWS::Lambda::Permission",
+   "Properties": {
+    "Action": "lambda:InvokeFunction",
+    "FunctionName": {
+     "Fn::GetAtt": [
+      "OrganizationsFunction00DF16AC",
+      "Arn"
+     ]
+    },
+    "Principal": "apigateway.amazonaws.com",
+    "SourceArn": {
+     "Fn::Join": [
+      "",
+      [
+       "arn:aws:execute-api:sa-east-1:812508052193:",
+       {
+        "Ref": "ApiF70053CD"
+       },
+       "/",
+       {
+        "Ref": "ApiDeploymentStagedev51EE5D56"
+       },
+       "/GET/v1/organizations"
+      ]
+     ]
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "BookFlowStack-dev/Api/Default/v1/organizations/GET/ApiPermission.BookFlowStackdevApi35F7A340.GET..v1.organizations"
+   }
+  },
+  "Apiv1organizationsGETApiPermissionTestBookFlowStackdevApi35F7A340GETv1organizations1028BD3C": {
+   "Type": "AWS::Lambda::Permission",
+   "Properties": {
+    "Action": "lambda:InvokeFunction",
+    "FunctionName": {
+     "Fn::GetAtt": [
+      "OrganizationsFunction00DF16AC",
+      "Arn"
+     ]
+    },
+    "Principal": "apigateway.amazonaws.com",
+    "SourceArn": {
+     "Fn::Join": [
+      "",
+      [
+       "arn:aws:execute-api:sa-east-1:812508052193:",
+       {
+        "Ref": "ApiF70053CD"
+       },
+       "/test-invoke-stage/GET/v1/organizations"
+      ]
+     ]
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "BookFlowStack-dev/Api/Default/v1/organizations/GET/ApiPermission.Test.BookFlowStackdevApi35F7A340.GET..v1.organizations"
+   }
+  },
+  "Apiv1organizationsGET37C81B0E": {
+   "Type": "AWS::ApiGateway::Method",
+   "Properties": {
+    "AuthorizationType": "NONE",
+    "HttpMethod": "GET",
+    "Integration": {
+     "IntegrationHttpMethod": "POST",
+     "Type": "AWS_PROXY",
+     "Uri": {
+      "Fn::Join": [
+       "",
+       [
+        "arn:aws:apigateway:sa-east-1:lambda:path/2015-03-31/functions/",
+        {
+         "Fn::GetAtt": [
+          "OrganizationsFunction00DF16AC",
+          "Arn"
+         ]
+        },
+        "/invocations"
+       ]
+      ]
+     }
+    },
+    "ResourceId": {
+     "Ref": "Apiv1organizations8E7FC934"
+    },
+    "RestApiId": {
+     "Ref": "ApiF70053CD"
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "BookFlowStack-dev/Api/Default/v1/organizations/GET/Resource"
+   }
+  },
+  "Apiv1organizationsPOSTApiPermissionBookFlowStackdevApi35F7A340POSTv1organizationsFAB8C445": {
+   "Type": "AWS::Lambda::Permission",
+   "Properties": {
+    "Action": "lambda:InvokeFunction",
+    "FunctionName": {
+     "Fn::GetAtt": [
+      "OrganizationsFunction00DF16AC",
+      "Arn"
+     ]
+    },
+    "Principal": "apigateway.amazonaws.com",
+    "SourceArn": {
+     "Fn::Join": [
+      "",
+      [
+       "arn:aws:execute-api:sa-east-1:812508052193:",
+       {
+        "Ref": "ApiF70053CD"
+       },
+       "/",
+       {
+        "Ref": "ApiDeploymentStagedev51EE5D56"
+       },
+       "/POST/v1/organizations"
+      ]
+     ]
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "BookFlowStack-dev/Api/Default/v1/organizations/POST/ApiPermission.BookFlowStackdevApi35F7A340.POST..v1.organizations"
+   }
+  },
+  "Apiv1organizationsPOSTApiPermissionTestBookFlowStackdevApi35F7A340POSTv1organizations70B1041C": {
+   "Type": "AWS::Lambda::Permission",
+   "Properties": {
+    "Action": "lambda:InvokeFunction",
+    "FunctionName": {
+     "Fn::GetAtt": [
+      "OrganizationsFunction00DF16AC",
+      "Arn"
+     ]
+    },
+    "Principal": "apigateway.amazonaws.com",
+    "SourceArn": {
+     "Fn::Join": [
+      "",
+      [
+       "arn:aws:execute-api:sa-east-1:812508052193:",
+       {
+        "Ref": "ApiF70053CD"
+       },
+       "/test-invoke-stage/POST/v1/organizations"
+      ]
+     ]
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "BookFlowStack-dev/Api/Default/v1/organizations/POST/ApiPermission.Test.BookFlowStackdevApi35F7A340.POST..v1.organizations"
+   }
+  },
+  "Apiv1organizationsPOSTF5013CD4": {
+   "Type": "AWS::ApiGateway::Method",
+   "Properties": {
+    "AuthorizationType": "NONE",
+    "HttpMethod": "POST",
+    "Integration": {
+     "IntegrationHttpMethod": "POST",
+     "Type": "AWS_PROXY",
+     "Uri": {
+      "Fn::Join": [
+       "",
+       [
+        "arn:aws:apigateway:sa-east-1:lambda:path/2015-03-31/functions/",
+        {
+         "Fn::GetAtt": [
+          "OrganizationsFunction00DF16AC",
+          "Arn"
+         ]
+        },
+        "/invocations"
+       ]
+      ]
+     }
+    },
+    "ResourceId": {
+     "Ref": "Apiv1organizations8E7FC934"
+    },
+    "RestApiId": {
+     "Ref": "ApiF70053CD"
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "BookFlowStack-dev/Api/Default/v1/organizations/POST/Resource"
+   }
+  },
+  "Apiv1organizationsmeD7A935D5": {
+   "Type": "AWS::ApiGateway::Resource",
+   "Properties": {
+    "ParentId": {
+     "Ref": "Apiv1organizations8E7FC934"
+    },
+    "PathPart": "me",
+    "RestApiId": {
+     "Ref": "ApiF70053CD"
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "BookFlowStack-dev/Api/Default/v1/organizations/me/Resource"
+   }
+  },
+  "Apiv1organizationsmeOPTIONS8763FAD9": {
+   "Type": "AWS::ApiGateway::Method",
+   "Properties": {
+    "ApiKeyRequired": false,
+    "AuthorizationType": "NONE",
+    "HttpMethod": "OPTIONS",
+    "Integration": {
+     "IntegrationResponses": [
+      {
+       "ResponseParameters": {
+        "method.response.header.Access-Control-Allow-Headers": "'Content-Type,Authorization'",
+        "method.response.header.Access-Control-Allow-Origin": "'http://localhost:3000'",
+        "method.response.header.Vary": "'Origin'",
+        "method.response.header.Access-Control-Allow-Methods": "'GET,POST,PUT,DELETE,OPTIONS'"
+       },
+       "ResponseTemplates": {
+        "application/json": "#set($origin = $input.params().header.get(\"Origin\"))\n#if($origin == \"\")\n  #set($origin = $input.params().header.get(\"origin\"))\n#end\n#if($origin == \"http://localhost:5173\")\n  #set($context.responseOverride.header.Access-Control-Allow-Origin = $origin)\n#end"
+       },
+       "StatusCode": "204"
+      }
+     ],
+     "RequestTemplates": {
+      "application/json": "{ statusCode: 200 }"
+     },
+     "Type": "MOCK"
+    },
+    "MethodResponses": [
+     {
+      "ResponseParameters": {
+       "method.response.header.Access-Control-Allow-Headers": true,
+       "method.response.header.Access-Control-Allow-Origin": true,
+       "method.response.header.Vary": true,
+       "method.response.header.Access-Control-Allow-Methods": true
+      },
+      "StatusCode": "204"
+     }
+    ],
+    "ResourceId": {
+     "Ref": "Apiv1organizationsmeD7A935D5"
+    },
+    "RestApiId": {
+     "Ref": "ApiF70053CD"
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "BookFlowStack-dev/Api/Default/v1/organizations/me/OPTIONS/Resource"
+   }
+  },
+  "Apiv1organizationsmeGETApiPermissionBookFlowStackdevApi35F7A340GETv1organizationsme90EEF584": {
+   "Type": "AWS::Lambda::Permission",
+   "Properties": {
+    "Action": "lambda:InvokeFunction",
+    "FunctionName": {
+     "Fn::GetAtt": [
+      "OrganizationsFunction00DF16AC",
+      "Arn"
+     ]
+    },
+    "Principal": "apigateway.amazonaws.com",
+    "SourceArn": {
+     "Fn::Join": [
+      "",
+      [
+       "arn:aws:execute-api:sa-east-1:812508052193:",
+       {
+        "Ref": "ApiF70053CD"
+       },
+       "/",
+       {
+        "Ref": "ApiDeploymentStagedev51EE5D56"
+       },
+       "/GET/v1/organizations/me"
+      ]
+     ]
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "BookFlowStack-dev/Api/Default/v1/organizations/me/GET/ApiPermission.BookFlowStackdevApi35F7A340.GET..v1.organizations.me"
+   }
+  },
+  "Apiv1organizationsmeGETApiPermissionTestBookFlowStackdevApi35F7A340GETv1organizationsme8FA8AF65": {
+   "Type": "AWS::Lambda::Permission",
+   "Properties": {
+    "Action": "lambda:InvokeFunction",
+    "FunctionName": {
+     "Fn::GetAtt": [
+      "OrganizationsFunction00DF16AC",
+      "Arn"
+     ]
+    },
+    "Principal": "apigateway.amazonaws.com",
+    "SourceArn": {
+     "Fn::Join": [
+      "",
+      [
+       "arn:aws:execute-api:sa-east-1:812508052193:",
+       {
+        "Ref": "ApiF70053CD"
+       },
+       "/test-invoke-stage/GET/v1/organizations/me"
+      ]
+     ]
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "BookFlowStack-dev/Api/Default/v1/organizations/me/GET/ApiPermission.Test.BookFlowStackdevApi35F7A340.GET..v1.organizations.me"
+   }
+  },
+  "Apiv1organizationsmeGET66879B56": {
+   "Type": "AWS::ApiGateway::Method",
+   "Properties": {
+    "AuthorizationType": "NONE",
+    "HttpMethod": "GET",
+    "Integration": {
+     "IntegrationHttpMethod": "POST",
+     "Type": "AWS_PROXY",
+     "Uri": {
+      "Fn::Join": [
+       "",
+       [
+        "arn:aws:apigateway:sa-east-1:lambda:path/2015-03-31/functions/",
+        {
+         "Fn::GetAtt": [
+          "OrganizationsFunction00DF16AC",
+          "Arn"
+         ]
+        },
+        "/invocations"
+       ]
+      ]
+     }
+    },
+    "ResourceId": {
+     "Ref": "Apiv1organizationsmeD7A935D5"
+    },
+    "RestApiId": {
+     "Ref": "ApiF70053CD"
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "BookFlowStack-dev/Api/Default/v1/organizations/me/GET/Resource"
+   }
+  },
+  "Apiv1organizationsorgIdE0F0D229": {
+   "Type": "AWS::ApiGateway::Resource",
+   "Properties": {
+    "ParentId": {
+     "Ref": "Apiv1organizations8E7FC934"
+    },
+    "PathPart": "{orgId}",
+    "RestApiId": {
+     "Ref": "ApiF70053CD"
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "BookFlowStack-dev/Api/Default/v1/organizations/{orgId}/Resource"
+   }
+  },
+  "Apiv1organizationsorgIdOPTIONS613D8F53": {
+   "Type": "AWS::ApiGateway::Method",
+   "Properties": {
+    "ApiKeyRequired": false,
+    "AuthorizationType": "NONE",
+    "HttpMethod": "OPTIONS",
+    "Integration": {
+     "IntegrationResponses": [
+      {
+       "ResponseParameters": {
+        "method.response.header.Access-Control-Allow-Headers": "'Content-Type,Authorization'",
+        "method.response.header.Access-Control-Allow-Origin": "'http://localhost:3000'",
+        "method.response.header.Vary": "'Origin'",
+        "method.response.header.Access-Control-Allow-Methods": "'GET,POST,PUT,DELETE,OPTIONS'"
+       },
+       "ResponseTemplates": {
+        "application/json": "#set($origin = $input.params().header.get(\"Origin\"))\n#if($origin == \"\")\n  #set($origin = $input.params().header.get(\"origin\"))\n#end\n#if($origin == \"http://localhost:5173\")\n  #set($context.responseOverride.header.Access-Control-Allow-Origin = $origin)\n#end"
+       },
+       "StatusCode": "204"
+      }
+     ],
+     "RequestTemplates": {
+      "application/json": "{ statusCode: 200 }"
+     },
+     "Type": "MOCK"
+    },
+    "MethodResponses": [
+     {
+      "ResponseParameters": {
+       "method.response.header.Access-Control-Allow-Headers": true,
+       "method.response.header.Access-Control-Allow-Origin": true,
+       "method.response.header.Vary": true,
+       "method.response.header.Access-Control-Allow-Methods": true
+      },
+      "StatusCode": "204"
+     }
+    ],
+    "ResourceId": {
+     "Ref": "Apiv1organizationsorgIdE0F0D229"
+    },
+    "RestApiId": {
+     "Ref": "ApiF70053CD"
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "BookFlowStack-dev/Api/Default/v1/organizations/{orgId}/OPTIONS/Resource"
+   }
+  },
+  "Apiv1organizationsorgIdGETApiPermissionBookFlowStackdevApi35F7A340GETv1organizationsorgId558FCC7F": {
+   "Type": "AWS::Lambda::Permission",
+   "Properties": {
+    "Action": "lambda:InvokeFunction",
+    "FunctionName": {
+     "Fn::GetAtt": [
+      "OrganizationsFunction00DF16AC",
+      "Arn"
+     ]
+    },
+    "Principal": "apigateway.amazonaws.com",
+    "SourceArn": {
+     "Fn::Join": [
+      "",
+      [
+       "arn:aws:execute-api:sa-east-1:812508052193:",
+       {
+        "Ref": "ApiF70053CD"
+       },
+       "/",
+       {
+        "Ref": "ApiDeploymentStagedev51EE5D56"
+       },
+       "/GET/v1/organizations/*"
+      ]
+     ]
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "BookFlowStack-dev/Api/Default/v1/organizations/{orgId}/GET/ApiPermission.BookFlowStackdevApi35F7A340.GET..v1.organizations.{orgId}"
+   }
+  },
+  "Apiv1organizationsorgIdGETApiPermissionTestBookFlowStackdevApi35F7A340GETv1organizationsorgIdF45BDBF1": {
+   "Type": "AWS::Lambda::Permission",
+   "Properties": {
+    "Action": "lambda:InvokeFunction",
+    "FunctionName": {
+     "Fn::GetAtt": [
+      "OrganizationsFunction00DF16AC",
+      "Arn"
+     ]
+    },
+    "Principal": "apigateway.amazonaws.com",
+    "SourceArn": {
+     "Fn::Join": [
+      "",
+      [
+       "arn:aws:execute-api:sa-east-1:812508052193:",
+       {
+        "Ref": "ApiF70053CD"
+       },
+       "/test-invoke-stage/GET/v1/organizations/*"
+      ]
+     ]
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "BookFlowStack-dev/Api/Default/v1/organizations/{orgId}/GET/ApiPermission.Test.BookFlowStackdevApi35F7A340.GET..v1.organizations.{orgId}"
+   }
+  },
+  "Apiv1organizationsorgIdGET207635F6": {
+   "Type": "AWS::ApiGateway::Method",
+   "Properties": {
+    "AuthorizationType": "NONE",
+    "HttpMethod": "GET",
+    "Integration": {
+     "IntegrationHttpMethod": "POST",
+     "Type": "AWS_PROXY",
+     "Uri": {
+      "Fn::Join": [
+       "",
+       [
+        "arn:aws:apigateway:sa-east-1:lambda:path/2015-03-31/functions/",
+        {
+         "Fn::GetAtt": [
+          "OrganizationsFunction00DF16AC",
+          "Arn"
+         ]
+        },
+        "/invocations"
+       ]
+      ]
+     }
+    },
+    "ResourceId": {
+     "Ref": "Apiv1organizationsorgIdE0F0D229"
+    },
+    "RestApiId": {
+     "Ref": "ApiF70053CD"
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "BookFlowStack-dev/Api/Default/v1/organizations/{orgId}/GET/Resource"
+   }
+  },
+  "Apiv1organizationsorgIdPUTApiPermissionBookFlowStackdevApi35F7A340PUTv1organizationsorgId993D0742": {
+   "Type": "AWS::Lambda::Permission",
+   "Properties": {
+    "Action": "lambda:InvokeFunction",
+    "FunctionName": {
+     "Fn::GetAtt": [
+      "OrganizationsFunction00DF16AC",
+      "Arn"
+     ]
+    },
+    "Principal": "apigateway.amazonaws.com",
+    "SourceArn": {
+     "Fn::Join": [
+      "",
+      [
+       "arn:aws:execute-api:sa-east-1:812508052193:",
+       {
+        "Ref": "ApiF70053CD"
+       },
+       "/",
+       {
+        "Ref": "ApiDeploymentStagedev51EE5D56"
+       },
+       "/PUT/v1/organizations/*"
+      ]
+     ]
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "BookFlowStack-dev/Api/Default/v1/organizations/{orgId}/PUT/ApiPermission.BookFlowStackdevApi35F7A340.PUT..v1.organizations.{orgId}"
+   }
+  },
+  "Apiv1organizationsorgIdPUTApiPermissionTestBookFlowStackdevApi35F7A340PUTv1organizationsorgId09D789B1": {
+   "Type": "AWS::Lambda::Permission",
+   "Properties": {
+    "Action": "lambda:InvokeFunction",
+    "FunctionName": {
+     "Fn::GetAtt": [
+      "OrganizationsFunction00DF16AC",
+      "Arn"
+     ]
+    },
+    "Principal": "apigateway.amazonaws.com",
+    "SourceArn": {
+     "Fn::Join": [
+      "",
+      [
+       "arn:aws:execute-api:sa-east-1:812508052193:",
+       {
+        "Ref": "ApiF70053CD"
+       },
+       "/test-invoke-stage/PUT/v1/organizations/*"
+      ]
+     ]
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "BookFlowStack-dev/Api/Default/v1/organizations/{orgId}/PUT/ApiPermission.Test.BookFlowStackdevApi35F7A340.PUT..v1.organizations.{orgId}"
+   }
+  },
+  "Apiv1organizationsorgIdPUTCB63DE05": {
+   "Type": "AWS::ApiGateway::Method",
+   "Properties": {
+    "AuthorizationType": "NONE",
+    "HttpMethod": "PUT",
+    "Integration": {
+     "IntegrationHttpMethod": "POST",
+     "Type": "AWS_PROXY",
+     "Uri": {
+      "Fn::Join": [
+       "",
+       [
+        "arn:aws:apigateway:sa-east-1:lambda:path/2015-03-31/functions/",
+        {
+         "Fn::GetAtt": [
+          "OrganizationsFunction00DF16AC",
+          "Arn"
+         ]
+        },
+        "/invocations"
+       ]
+      ]
+     }
+    },
+    "ResourceId": {
+     "Ref": "Apiv1organizationsorgIdE0F0D229"
+    },
+    "RestApiId": {
+     "Ref": "ApiF70053CD"
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "BookFlowStack-dev/Api/Default/v1/organizations/{orgId}/PUT/Resource"
+   }
+  },
+  "Apiv1organizationsorgIdsettingsE4B735DE": {
+   "Type": "AWS::ApiGateway::Resource",
+   "Properties": {
+    "ParentId": {
+     "Ref": "Apiv1organizationsorgIdE0F0D229"
+    },
+    "PathPart": "settings",
+    "RestApiId": {
+     "Ref": "ApiF70053CD"
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "BookFlowStack-dev/Api/Default/v1/organizations/{orgId}/settings/Resource"
+   }
+  },
+  "Apiv1organizationsorgIdsettingsOPTIONSC3A725FD": {
+   "Type": "AWS::ApiGateway::Method",
+   "Properties": {
+    "ApiKeyRequired": false,
+    "AuthorizationType": "NONE",
+    "HttpMethod": "OPTIONS",
+    "Integration": {
+     "IntegrationResponses": [
+      {
+       "ResponseParameters": {
+        "method.response.header.Access-Control-Allow-Headers": "'Content-Type,Authorization'",
+        "method.response.header.Access-Control-Allow-Origin": "'http://localhost:3000'",
+        "method.response.header.Vary": "'Origin'",
+        "method.response.header.Access-Control-Allow-Methods": "'GET,POST,PUT,DELETE,OPTIONS'"
+       },
+       "ResponseTemplates": {
+        "application/json": "#set($origin = $input.params().header.get(\"Origin\"))\n#if($origin == \"\")\n  #set($origin = $input.params().header.get(\"origin\"))\n#end\n#if($origin == \"http://localhost:5173\")\n  #set($context.responseOverride.header.Access-Control-Allow-Origin = $origin)\n#end"
+       },
+       "StatusCode": "204"
+      }
+     ],
+     "RequestTemplates": {
+      "application/json": "{ statusCode: 200 }"
+     },
+     "Type": "MOCK"
+    },
+    "MethodResponses": [
+     {
+      "ResponseParameters": {
+       "method.response.header.Access-Control-Allow-Headers": true,
+       "method.response.header.Access-Control-Allow-Origin": true,
+       "method.response.header.Vary": true,
+       "method.response.header.Access-Control-Allow-Methods": true
+      },
+      "StatusCode": "204"
+     }
+    ],
+    "ResourceId": {
+     "Ref": "Apiv1organizationsorgIdsettingsE4B735DE"
+    },
+    "RestApiId": {
+     "Ref": "ApiF70053CD"
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "BookFlowStack-dev/Api/Default/v1/organizations/{orgId}/settings/OPTIONS/Resource"
+   }
+  },
+  "Apiv1organizationsorgIdsettingsPUTApiPermissionBookFlowStackdevApi35F7A340PUTv1organizationsorgIdsettings7451EE1A": {
+   "Type": "AWS::Lambda::Permission",
+   "Properties": {
+    "Action": "lambda:InvokeFunction",
+    "FunctionName": {
+     "Fn::GetAtt": [
+      "OrganizationsFunction00DF16AC",
+      "Arn"
+     ]
+    },
+    "Principal": "apigateway.amazonaws.com",
+    "SourceArn": {
+     "Fn::Join": [
+      "",
+      [
+       "arn:aws:execute-api:sa-east-1:812508052193:",
+       {
+        "Ref": "ApiF70053CD"
+       },
+       "/",
+       {
+        "Ref": "ApiDeploymentStagedev51EE5D56"
+       },
+       "/PUT/v1/organizations/*/settings"
+      ]
+     ]
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "BookFlowStack-dev/Api/Default/v1/organizations/{orgId}/settings/PUT/ApiPermission.BookFlowStackdevApi35F7A340.PUT..v1.organizations.{orgId}.settings"
+   }
+  },
+  "Apiv1organizationsorgIdsettingsPUTApiPermissionTestBookFlowStackdevApi35F7A340PUTv1organizationsorgIdsettingsDA286A1D": {
+   "Type": "AWS::Lambda::Permission",
+   "Properties": {
+    "Action": "lambda:InvokeFunction",
+    "FunctionName": {
+     "Fn::GetAtt": [
+      "OrganizationsFunction00DF16AC",
+      "Arn"
+     ]
+    },
+    "Principal": "apigateway.amazonaws.com",
+    "SourceArn": {
+     "Fn::Join": [
+      "",
+      [
+       "arn:aws:execute-api:sa-east-1:812508052193:",
+       {
+        "Ref": "ApiF70053CD"
+       },
+       "/test-invoke-stage/PUT/v1/organizations/*/settings"
+      ]
+     ]
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "BookFlowStack-dev/Api/Default/v1/organizations/{orgId}/settings/PUT/ApiPermission.Test.BookFlowStackdevApi35F7A340.PUT..v1.organizations.{orgId}.settings"
+   }
+  },
+  "Apiv1organizationsorgIdsettingsPUT204D1ABB": {
+   "Type": "AWS::ApiGateway::Method",
+   "Properties": {
+    "AuthorizationType": "NONE",
+    "HttpMethod": "PUT",
+    "Integration": {
+     "IntegrationHttpMethod": "POST",
+     "Type": "AWS_PROXY",
+     "Uri": {
+      "Fn::Join": [
+       "",
+       [
+        "arn:aws:apigateway:sa-east-1:lambda:path/2015-03-31/functions/",
+        {
+         "Fn::GetAtt": [
+          "OrganizationsFunction00DF16AC",
+          "Arn"
+         ]
+        },
+        "/invocations"
+       ]
+      ]
+     }
+    },
+    "ResourceId": {
+     "Ref": "Apiv1organizationsorgIdsettingsE4B735DE"
+    },
+    "RestApiId": {
+     "Ref": "ApiF70053CD"
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "BookFlowStack-dev/Api/Default/v1/organizations/{orgId}/settings/PUT/Resource"
+   }
+  },
+  "CDKMetadata": {
+   "Type": "AWS::CDK::Metadata",
+   "Properties": {
+    "Analytics": "v2:deflate64:H4sIAAAAAAAA/1WOTU/DMAyGf8vuWSjlwHkbQuKAmDo4Izcxw1saV41DVUX576gfY+P0Pn4fyXapy+JRFyvow9rY89pRrdNBwJwV9OEz2cFDw7bW6R1qh2r35SfIyvDRk7BOHwG7PbMb3R9fYOcIvdyqa/Ni0QvJMLZZhQedttGccXILzbFnR2a41vOcFUGjU8XzW2Nm5aCpLej0HL0RYj+aW95j11AIxD4raOkIgj0MOlUYZNPStOiKG2M4elFP2DoemuXvm+kgcJyuz1Bh4NgZ3EJA9YryzXaUC13scmTinP/Vb1HaKFl5tqhP4e6nLPV9qYvVKRCtu+iFGtTVnL9RVZrGvAEAAA=="
+   },
+   "Metadata": {
+    "aws:cdk:path": "BookFlowStack-dev/CDKMetadata/Default"
+   }
+  }
+ },
+ "Outputs": {
+  "ApiEndpoint4F160690": {
+   "Value": {
+    "Fn::Join": [
+     "",
+     [
+      "https://",
+      {
+       "Ref": "ApiF70053CD"
+      },
+      ".execute-api.sa-east-1.",
+      {
+       "Ref": "AWS::URLSuffix"
+      },
+      "/",
+      {
+       "Ref": "ApiDeploymentStagedev51EE5D56"
+      },
+      "/"
+     ]
+    ]
+   }
+  },
+  "UserPoolId": {
+   "Description": "Cognito User Pool ID",
+   "Value": {
+    "Ref": "UserPool6BA7E5F2"
+   },
+   "Export": {
+    "Name": "BookFlow-dev-UserPoolId"
+   }
+  },
+  "UserPoolClientId": {
+   "Description": "Cognito User Pool Client ID",
+   "Value": {
+    "Ref": "UserPoolClient2F5918F7"
+   },
+   "Export": {
+    "Name": "BookFlow-dev-UserPoolClientId"
+   }
+  },
+  "IdentityPoolId": {
+   "Description": "Cognito Identity Pool ID",
+   "Value": {
+    "Ref": "IdentityPool"
+   },
+   "Export": {
+    "Name": "BookFlow-dev-IdentityPoolId"
+   }
+  },
+  "ApiUrl": {
+   "Description": "API Gateway URL",
+   "Value": {
+    "Fn::Join": [
+     "",
+     [
+      "https://",
+      {
+       "Ref": "ApiF70053CD"
+      },
+      ".execute-api.sa-east-1.",
+      {
+       "Ref": "AWS::URLSuffix"
+      },
+      "/",
+      {
+       "Ref": "ApiDeploymentStagedev51EE5D56"
+      },
+      "/"
+     ]
+    ]
+   },
+   "Export": {
+    "Name": "BookFlow-dev-ApiUrl"
+   }
+  },
+  "FrontendBucketName": {
+   "Description": "S3 Frontend Bucket Name",
+   "Value": {
+    "Ref": "FrontendBucketEFE2E19C"
+   },
+   "Export": {
+    "Name": "BookFlow-dev-FrontendBucketName"
+   }
+  },
+  "WebsiteUrl": {
+   "Description": "Frontend Website URL",
+   "Value": {
+    "Fn::GetAtt": [
+     "FrontendBucketEFE2E19C",
+     "WebsiteURL"
+    ]
+   },
+   "Export": {
+    "Name": "BookFlow-dev-WebsiteUrl"
+   }
+  },
+  "Region": {
+   "Description": "AWS Region",
+   "Value": "sa-east-1",
+   "Export": {
+    "Name": "BookFlow-dev-Region"
+   }
+  }
+ },
+ "Parameters": {
+  "BootstrapVersion": {
+   "Type": "AWS::SSM::Parameter::Value<String>",
+   "Default": "/cdk-bootstrap/hnb659fds/version",
+   "Description": "Version of the CDK Bootstrap resources in this environment, automatically retrieved from SSM Parameter Store. [cdk:skip]"
+  }
+ },
+ "Rules": {
+  "CheckBootstrapVersion": {
+   "Assertions": [
+    {
+     "Assert": {
+      "Fn::Not": [
+       {
+        "Fn::Contains": [
+         [
+          "1",
+          "2",
+          "3",
+          "4",
+          "5"
+         ],
+         {
+          "Ref": "BootstrapVersion"
+         }
+        ]
+       }
+      ]
+     },
+     "AssertDescription": "CDK bootstrap stack version 6 required. Please run 'cdk bootstrap' with a recent version of the CDK CLI."
+    }
+   ]
+  }
+ }
+}

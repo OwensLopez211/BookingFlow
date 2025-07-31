@@ -1,0 +1,21 @@
+{
+  "version": "45.0.0",
+  "files": {
+    "edb677ca9bcaf4812e25181123df01a2d204a9470657637901bf04088ebc1d24": {
+      "displayName": "BookFlowStack-dev Template",
+      "source": {
+        "path": "BookFlowStack-dev.template.json",
+        "packaging": "file"
+      },
+      "destinations": {
+        "812508052193-sa-east-1-e627739f": {
+          "bucketName": "cdk-hnb659fds-assets-812508052193-sa-east-1",
+          "objectKey": "edb677ca9bcaf4812e25181123df01a2d204a9470657637901bf04088ebc1d24.json",
+          "region": "sa-east-1",
+          "assumeRoleArn": "arn:${AWS::Partition}:iam::812508052193:role/cdk-hnb659fds-file-publishing-role-812508052193-sa-east-1"
+        }
+      }
+    }
+  },
+  "dockerImages": {}
+}
