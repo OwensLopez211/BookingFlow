@@ -34,7 +34,7 @@ export const OnboardingLayout: React.FC<OnboardingLayoutProps> = ({
     <div className="h-screen flex flex-col bg-gradient-to-br from-slate-50 via-white to-blue-50">
       {/* Header */}
       <div className="bg-white border-b border-gray-200 shadow-sm flex-shrink-0">
-        <div className="w-full px-4 sm:px-6">
+        <div className="w-full px-4 sm:px-6 lg:px-12 xl:px-20 2xl:px-32 max-w-7xl mx-auto">
           <div className="flex items-center justify-between py-2">
             {/* Left: Back + Logo */}
             <div className="flex items-center space-x-4">
@@ -145,7 +145,7 @@ export const OnboardingLayout: React.FC<OnboardingLayoutProps> = ({
 
       {/* Main Content */}
       <div className="flex-1 flex flex-col overflow-hidden">
-        <div className="w-full px-4 sm:px-6 py-3 flex-1 flex flex-col min-h-0">
+        <div className="w-full px-4 sm:px-6 lg:px-12 xl:px-20 2xl:px-32 py-3 flex-1 flex flex-col min-h-0 max-w-7xl mx-auto">
           <div className="text-center mb-3 flex-shrink-0">
             <h1 className="text-lg sm:text-xl font-bold text-gray-900 mb-1">
               {title}
@@ -157,7 +157,7 @@ export const OnboardingLayout: React.FC<OnboardingLayoutProps> = ({
             )}
           </div>
 
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-3 sm:p-4 flex-1 min-h-0 overflow-hidden w-full">
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-3 sm:p-4 lg:p-6 xl:p-8 flex-1 min-h-0 overflow-hidden w-full">
             {showBackInFooter && React.isValidElement(children) 
               ? React.cloneElement(children, { 
                   onPreviousStep, 

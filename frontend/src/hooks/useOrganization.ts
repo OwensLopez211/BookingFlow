@@ -191,18 +191,48 @@ export const useOrganization = () => {
     setError(null);
 
     try {
+      console.log('🔄 Actualizando configuración:', settings);
       const result = await organizationService.updateOrganizationSettings(
         organization.id, 
         settings
       );
       
-      return handleApiResponse(result, 'Configuración actualizada exitosamente', 'Error actualizando la configuración');
-    } catch {
+      console.log('📥 Resultado de actualización:', result);
+      console.log('📊 Análisis de respuesta:');
+      console.log('  - result.success:', result.success);
+      console.log('  - result.organization:', result.organization);
+      console.log('  - result.data:', result.data);
+      console.log('  - result.error:', result.error);
+      console.log('📋 Estructura completa de result:', JSON.stringify(result, null, 2));
+      
+      // Handle direct response format
+      if (result.success && result.organization) {
+        // Actualizar la organización local con los nuevos datos
+        console.log('🔄 Actualizando estado local con organización:', result.organization);
+        
+        // Forzar actualización creando una nueva referencia
+        const updatedOrganization = { ...result.organization };
+        setOrganization(updatedOrganization);
+        setLoadingState('success');
+        setError(null);
+        console.log('✅ Configuración actualizada exitosamente');
+        
+        // Nota: organization aquí todavía mostrará el valor anterior debido al closure
+        console.log('📊 Nueva organización establecida:', updatedOrganization);
+        return true;
+      } else {
+        setError(result.error || 'Error actualizando la configuración');
+        setLoadingState('error');
+        console.log('❌ Error en la actualización:', result.error);
+        return false;
+      }
+    } catch (error) {
+      console.error('❌ Error de conexión:', error);
       setError('Error de conexión al actualizar la configuración');
       setLoadingState('error');
       return false;
     }
-  }, [organization, handleApiResponse, validateToken]);
+  }, [organization, validateToken]);
 
   useEffect(() => {
     fetchOrganization();
@@ -214,6 +244,11 @@ export const useOrganization = () => {
       }
     };
   }, [fetchOrganization]);
+
+  // Debug: observar cambios en la organización
+  useEffect(() => {
+    console.log('🔍 Organization state changed:', organization);
+  }, [organization]);
 
   return {
     organization,

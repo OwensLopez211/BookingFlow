@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Card, Button, Input, LoadingSpinner, showToast } from '@/components/ui';
 import { useOrganization } from '../../hooks/useOrganization';
-import { BusinessHours, DaySchedule, NotificationSettings, AppointmentSystemSettings, BusinessInfo } from '../../../types/organization';
+import { BusinessHours, DaySchedule, NotificationSettings, AppointmentSystemSettings, BusinessInfo, Service, Professional } from '../../../types/organization';
 import { 
   CogIcon,
   ClockIcon,
@@ -9,37 +9,68 @@ import {
   UserIcon,
   ShieldCheckIcon,
   PaintBrushIcon,
-  CalendarIcon
+  CalendarIcon,
+  PhotoIcon,
+  PlusIcon,
+  TrashIcon,
+  UserCircleIcon,
+  ClockIcon as ClockOutlineIcon
 } from '@heroicons/react/24/outline';
 
 export const SettingsPage: React.FC = () => {
   const { organization, loadingState, error, updateSettings } = useOrganization();
-  const [activeTab, setActiveTab] = useState<'general' | 'hours' | 'appointments' | 'notifications' | 'security' | 'appearance'>('general');
+  const [activeTab, setActiveTab] = useState<'general' | 'hours' | 'appointments' | 'services' | 'notifications' | 'security' | 'appearance'>('general');
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [professionalScheduleModal, setProfessionalScheduleModal] = useState<{isOpen: boolean, professionalIndex: number | null}>({isOpen: false, professionalIndex: null});
+  const [professionalScheduleForm, setProfessionalScheduleForm] = useState<{
+    useCustomSchedule: boolean;
+    schedule: BusinessHours;
+  }>({useCustomSchedule: false, schedule: {}});
   
   // Local state for form editing
   const [formData, setFormData] = useState({
+    // Organization root-level fields
+    name: '',
+    address: '',
+    phone: '',
+    email: '',
+    // Settings
     businessHours: {} as BusinessHours,
     notifications: {} as NotificationSettings,
     appointmentSystem: {} as AppointmentSystemSettings,
     businessInfo: {} as BusinessInfo,
+    services: [] as Service[],
     timezone: 'America/Santiago',
     currency: 'CLP',
   });
 
   useEffect(() => {
+    console.log('📄 SettingsPage useEffect triggered');
+    console.log('📊 Current organization:', organization);
+    
     if (organization && organization.settings) {
+      console.log('✅ Organization and settings exist, updating formData');
+      
       // Usar datos de businessConfiguration si appointmentSystem no existe
       const appointmentConfig = organization.settings.appointmentSystem || 
                                organization.settings.businessConfiguration || {
         appointmentModel: 'professional_based',
         allowClientSelection: true,
         bufferBetweenAppointments: 15,
-        maxAdvanceBookingDays: 30
+        maxAdvanceBookingDays: 30,
+        maxProfessionals: 1,
+        maxResources: 1,
+        professionals: []
       };
 
-      setFormData({
+      const newFormData = {
+        // Organization root-level fields
+        name: organization.name,
+        address: organization.address || '',
+        phone: organization.phone || '',
+        email: organization.email || '',
+        // Settings
         businessHours: organization.settings.businessHours || {},
         notifications: organization.settings.notifications || {
           emailReminders: false,
@@ -54,31 +85,51 @@ export const SettingsPage: React.FC = () => {
           businessPhone: organization.phone || '',
           businessEmail: organization.email || ''
         },
-        timezone: organization.settings.timezone || organization.currency ? 'America/Santiago' : 'America/Santiago',
+        services: organization.settings.services || [],
+        timezone: organization.settings.timezone || 'America/Santiago',
         currency: organization.currency || organization.settings.currency || 'CLP',
-      });
+      };
+      
+      console.log('📝 New formData to set:', newFormData);
+      setFormData(newFormData);
+      console.log('✅ FormData updated successfully');
+    } else {
+      console.log('❌ Organization or settings not available yet');
     }
   }, [organization]);
 
   const handleSaveSettings = async () => {
     setIsSaving(true);
     
-    const success = await updateSettings({
+    const dataToSend = {
+      // Datos básicos de la organización (usar desde root del formData si existen, sino desde businessInfo)
+      name: formData.name || formData.businessInfo.businessName,
+      address: formData.address || formData.businessInfo.businessAddress,
+      phone: formData.phone || formData.businessInfo.businessPhone,
+      email: formData.email || formData.businessInfo.businessEmail,
+      currency: formData.currency,
+      // Settings
+      timezone: formData.timezone,
       businessHours: formData.businessHours,
       notifications: formData.notifications,
       appointmentSystem: formData.appointmentSystem,
       businessInfo: formData.businessInfo,
-      timezone: formData.timezone,
-      currency: formData.currency,
-    });
+      services: formData.services,
+    };
+    
+    console.log('🚀 SettingsPage: Datos a enviar al updateSettings:', JSON.stringify(dataToSend, null, 2));
+    
+    const success = await updateSettings(dataToSend);
 
     if (success) {
+      console.log('✅ Success: Saliendo del modo edición');
       setIsEditing(false);
       showToast.success(
         '¡Configuración actualizada!',
         'Los cambios se han guardado exitosamente.'
       );
     } else {
+      console.log('❌ Error: Manteniéndose en modo edición');
       showToast.error(
         'Error al guardar',
         'No se pudieron guardar los cambios. Intenta de nuevo.'
@@ -86,27 +137,46 @@ export const SettingsPage: React.FC = () => {
     }
     
     setIsSaving(false);
+    console.log('📊 Final state - isEditing:', false, 'isSaving:', false);
   };
 
   const handleCancelEdit = () => {
     if (organization && organization.settings) {
+      const appointmentConfig = organization.settings.appointmentSystem || 
+                               organization.settings.businessConfiguration || {
+        appointmentModel: 'professional_based',
+        allowClientSelection: true,
+        bufferBetweenAppointments: 15,
+        maxAdvanceBookingDays: 30,
+        maxProfessionals: 1,
+        maxResources: 1,
+        professionals: []
+      };
+
       setFormData({
+        // Organization root-level fields
+        name: organization.name,
+        address: organization.address || '',
+        phone: organization.phone || '',
+        email: organization.email || '',
+        // Settings
         businessHours: organization.settings.businessHours || {},
-        notifications: organization.settings.notifications || {},
-        appointmentSystem: organization.settings.appointmentSystem || {
-          appointmentModel: 'professional_based',
-          allowClientSelection: true,
-          bufferBetweenAppointments: 15,
-          maxAdvanceBookingDays: 30
+        notifications: organization.settings.notifications || {
+          emailReminders: false,
+          smsReminders: false,
+          autoConfirmation: false,
+          reminderHours: 24
         },
+        appointmentSystem: appointmentConfig,
         businessInfo: organization.settings.businessInfo || {
           businessName: organization.name,
-          businessAddress: '',
-          businessPhone: '',
-          businessEmail: ''
+          businessAddress: organization.address || '',
+          businessPhone: organization.phone || '',
+          businessEmail: organization.email || ''
         },
+        services: organization.settings.services || [],
         timezone: organization.settings.timezone || 'America/Santiago',
-        currency: organization.settings.currency || 'CLP',
+        currency: organization.currency || organization.settings.currency || 'CLP',
       });
     }
     setIsEditing(false);
@@ -133,13 +203,55 @@ export const SettingsPage: React.FC = () => {
   };
 
   const updateAppointmentSystem = (key: keyof AppointmentSystemSettings, value: any) => {
-    setFormData(prev => ({
-      ...prev,
-      appointmentSystem: {
+    // Validar límites del plan
+    if ((key === 'maxProfessionals' || key === 'maxResources') && organization?.subscription?.plan === 'free') {
+      const numValue = parseInt(value) || 1;
+      if (numValue > 5) {
+        showToast.error(
+          'Límite del plan básico',
+          'El plan básico permite máximo 5 profesionales/recursos. Actualiza tu plan para tener más.'
+        );
+        return;
+      }
+    }
+
+    setFormData(prev => {
+      const newAppointmentSystem = {
         ...prev.appointmentSystem,
         [key]: value,
-      },
-    }));
+      };
+
+      // Si se está cambiando maxProfessionals, ajustar la lista de profesionales
+      if (key === 'maxProfessionals') {
+        const newMaxProfessionals = parseInt(value) || 1;
+        const currentProfessionals = prev.appointmentSystem.professionals || [];
+        
+        if (newMaxProfessionals > currentProfessionals.length) {
+          // Agregar profesionales vacíos hasta alcanzar el máximo
+          const professionalsToAdd = newMaxProfessionals - currentProfessionals.length;
+          const newProfessionals = [...currentProfessionals];
+          
+          for (let i = 0; i < professionalsToAdd; i++) {
+            newProfessionals.push({
+              id: `professional_${Date.now()}_${Math.random().toString(36).substr(2, 9)}_${i}`,
+              name: '',
+              photo: '',
+              isActive: true
+            });
+          }
+          
+          newAppointmentSystem.professionals = newProfessionals;
+        } else if (newMaxProfessionals < currentProfessionals.length) {
+          // Mantener solo los primeros N profesionales
+          newAppointmentSystem.professionals = currentProfessionals.slice(0, newMaxProfessionals);
+        }
+      }
+
+      return {
+        ...prev,
+        appointmentSystem: newAppointmentSystem,
+      };
+    });
   };
 
   const updateBusinessInfo = (key: keyof BusinessInfo, value: string) => {
@@ -149,6 +261,166 @@ export const SettingsPage: React.FC = () => {
         ...prev.businessInfo,
         [key]: value,
       },
+    }));
+  };
+
+  // Función para sincronizar cambios en campos que afectan tanto organización como businessInfo
+  const updateSyncedField = (orgField: string, businessInfoField: keyof BusinessInfo, value: string) => {
+    setFormData(prev => ({
+      ...prev,
+      // Actualizar businessInfo
+      businessInfo: {
+        ...prev.businessInfo,
+        [businessInfoField]: value,
+      },
+      // También mantener un registro del cambio para la organización
+      [orgField]: value,
+    }));
+  };
+
+  const updateService = (index: number, key: keyof Service, value: any) => {
+    setFormData(prev => ({
+      ...prev,
+      services: prev.services.map((service, i) => 
+        i === index ? { ...service, [key]: value } : service
+      ),
+    }));
+  };
+
+  const addService = () => {
+    setFormData(prev => ({
+      ...prev,
+      services: [...prev.services, {
+        name: '',
+        description: '',
+        duration: 60,
+        price: 0,
+        isActive: true
+      }],
+    }));
+  };
+
+  const removeService = (index: number) => {
+    setFormData(prev => ({
+      ...prev,
+      services: prev.services.filter((_, i) => i !== index),
+    }));
+  };
+
+  const addProfessional = () => {
+    const maxAllowed = organization?.subscription?.plan === 'free' ? 5 : 50;
+    const currentCount = formData.appointmentSystem.professionals?.length || 0;
+    
+    if (currentCount >= maxAllowed) {
+      showToast.error(
+        'Límite alcanzado',
+        `El plan ${organization?.subscription?.plan === 'free' ? 'básico' : 'premium'} permite máximo ${maxAllowed} profesionales.`
+      );
+      return;
+    }
+
+    setFormData(prev => ({
+      ...prev,
+      appointmentSystem: {
+        ...prev.appointmentSystem,
+        professionals: [...(prev.appointmentSystem.professionals || []), {
+          id: `professional_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+          name: '',
+          photo: '',
+          isActive: true
+        }],
+      },
+    }));
+  };
+
+  const updateProfessional = (index: number, key: keyof Professional, value: any) => {
+    setFormData(prev => ({
+      ...prev,
+      appointmentSystem: {
+        ...prev.appointmentSystem,
+        professionals: prev.appointmentSystem.professionals?.map((professional, i) => 
+          i === index ? { ...professional, [key]: value } : professional
+        ) || [],
+      },
+    }));
+  };
+
+  const removeProfessional = (index: number) => {
+    setFormData(prev => ({
+      ...prev,
+      appointmentSystem: {
+        ...prev.appointmentSystem,
+        professionals: prev.appointmentSystem.professionals?.filter((_, i) => i !== index) || [],
+      },
+    }));
+  };
+
+  const handlePhotoUpload = (index: number, event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    // Validar tamaño del archivo (máximo 2MB)
+    if (file.size > 2 * 1024 * 1024) {
+      showToast.error('Archivo muy grande', 'La foto debe ser menor a 2MB');
+      return;
+    }
+
+    // Validar tipo de archivo
+    if (!file.type.startsWith('image/')) {
+      showToast.error('Tipo de archivo inválido', 'Solo se permiten imágenes');
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const base64 = e.target?.result as string;
+      updateProfessional(index, 'photo', base64);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const openScheduleModal = (professionalIndex: number) => {
+    const professional = formData.appointmentSystem.professionals?.[professionalIndex];
+    const hasCustomSchedule = professional?.schedule && Object.keys(professional.schedule).length > 0;
+    
+    setProfessionalScheduleForm({
+      useCustomSchedule: hasCustomSchedule || false,
+      schedule: hasCustomSchedule ? professional.schedule : formData.businessHours
+    });
+    
+    setProfessionalScheduleModal({isOpen: true, professionalIndex});
+  };
+
+  const closeScheduleModal = () => {
+    setProfessionalScheduleModal({isOpen: false, professionalIndex: null});
+  };
+
+  const updateProfessionalSchedule = () => {
+    if (professionalScheduleModal.professionalIndex !== null) {
+      const scheduleToSave = professionalScheduleForm.useCustomSchedule 
+        ? professionalScheduleForm.schedule 
+        : null; // null significa usar horarios del negocio
+        
+      updateProfessional(professionalScheduleModal.professionalIndex, 'schedule', scheduleToSave);
+      closeScheduleModal();
+    }
+  };
+
+  const updateProfessionalScheduleDay = (day: keyof BusinessHours, schedule: DaySchedule) => {
+    setProfessionalScheduleForm(prev => ({
+      ...prev,
+      schedule: {
+        ...prev.schedule,
+        [day]: schedule,
+      },
+    }));
+  };
+
+  const toggleCustomSchedule = (useCustom: boolean) => {
+    setProfessionalScheduleForm(prev => ({
+      ...prev,
+      useCustomSchedule: useCustom,
+      schedule: useCustom ? (prev.schedule || formData.businessHours) : formData.businessHours
     }));
   };
 
@@ -201,6 +473,7 @@ export const SettingsPage: React.FC = () => {
     { id: 'general', name: 'General', icon: UserIcon },
     { id: 'hours', name: 'Horarios', icon: ClockIcon },
     { id: 'appointments', name: 'Citas', icon: CalendarIcon },
+    { id: 'services', name: 'Servicios', icon: CogIcon },
     { id: 'notifications', name: 'Notificaciones', icon: BellIcon },
     { id: 'security', name: 'Seguridad', icon: ShieldCheckIcon },
     { id: 'appearance', name: 'Apariencia', icon: PaintBrushIcon },
@@ -220,7 +493,7 @@ export const SettingsPage: React.FC = () => {
                   <input
                     type="text" 
                     value={formData.businessInfo.businessName || organization.name}
-                    onChange={(e) => updateBusinessInfo('businessName', e.target.value)}
+                    onChange={(e) => updateSyncedField('name', 'businessName', e.target.value)}
                     disabled={!isEditing}
                     className="w-full px-3 py-2.5 lg:px-4 lg:py-3 bg-white border-2 border-gray-200 rounded-xl text-gray-800 font-medium disabled:bg-gray-100 disabled:text-gray-600 transition-all duration-200 focus:border-blue-500 focus:ring-2 lg:focus:ring-4 focus:ring-blue-500/10 text-sm lg:text-base"
                   />
@@ -259,7 +532,7 @@ export const SettingsPage: React.FC = () => {
                   <input
                     type="text" 
                     value={formData.businessInfo.businessAddress || ''}
-                    onChange={(e) => updateBusinessInfo('businessAddress', e.target.value)}
+                    onChange={(e) => updateSyncedField('address', 'businessAddress', e.target.value)}
                     disabled={!isEditing}
                     placeholder="Ej: Av. Providencia 1234, Santiago"
                     className="w-full px-3 py-2.5 lg:px-4 lg:py-3 bg-white border-2 border-gray-200 rounded-xl text-gray-800 font-medium disabled:bg-gray-100 disabled:text-gray-600 transition-all duration-200 focus:border-blue-500 focus:ring-2 lg:focus:ring-4 focus:ring-blue-500/10 text-sm lg:text-base"
@@ -276,7 +549,7 @@ export const SettingsPage: React.FC = () => {
                   <input
                     type="tel" 
                     value={formData.businessInfo.businessPhone || ''}
-                    onChange={(e) => updateBusinessInfo('businessPhone', e.target.value)}
+                    onChange={(e) => updateSyncedField('phone', 'businessPhone', e.target.value)}
                     disabled={!isEditing}
                     placeholder="Ej: +56 9 1234 5678"
                     className="w-full px-3 py-2.5 lg:px-4 lg:py-3 bg-white border-2 border-gray-200 rounded-xl text-gray-800 font-medium disabled:bg-gray-100 disabled:text-gray-600 transition-all duration-200 focus:border-blue-500 focus:ring-2 lg:focus:ring-4 focus:ring-blue-500/10 text-sm lg:text-base"
@@ -295,7 +568,7 @@ export const SettingsPage: React.FC = () => {
                   <input
                     type="email" 
                     value={formData.businessInfo.businessEmail || ''}
-                    onChange={(e) => updateBusinessInfo('businessEmail', e.target.value)}
+                    onChange={(e) => updateSyncedField('email', 'businessEmail', e.target.value)}
                     disabled={!isEditing}
                     placeholder="Ej: contacto@minegocios.com"
                     className="w-full px-3 py-2.5 lg:px-4 lg:py-3 bg-white border-2 border-gray-200 rounded-xl text-gray-800 font-medium disabled:bg-gray-100 disabled:text-gray-600 transition-all duration-200 focus:border-blue-500 focus:ring-2 lg:focus:ring-4 focus:ring-blue-500/10 text-sm lg:text-base"
@@ -550,6 +823,193 @@ export const SettingsPage: React.FC = () => {
               </div>
             </div>
 
+            {/* Configuración de Capacidad */}
+            {(formData.appointmentSystem.appointmentModel === 'professional_based' || 
+              formData.appointmentSystem.appointmentModel === 'resource_based') && (
+              <div className="space-y-4">
+                <h3 className="text-lg font-semibold text-gray-800">Configuración de Capacidad</h3>
+                
+                <div className="p-4 bg-white border-2 border-gray-200 rounded-xl">
+                  <div className="space-y-4">
+                    {formData.appointmentSystem.appointmentModel === 'professional_based' && (
+                      <div>
+                        <label className="block text-sm font-semibold text-gray-800 mb-2">
+                          Cantidad de Profesionales
+                        </label>
+                        <p className="text-xs text-gray-600 mb-3">
+                          Número máximo de profesionales que trabajarán en tu negocio
+                        </p>
+                        <div className="flex items-center space-x-3">
+                          <input
+                            type="number"
+                            min="1"
+                            max={organization?.subscription?.plan === 'free' ? 5 : 50}
+                            value={formData.appointmentSystem.maxProfessionals || 1}
+                            onChange={(e) => updateAppointmentSystem('maxProfessionals', parseInt(e.target.value) || 1)}
+                            disabled={!isEditing}
+                            className="w-20 px-3 py-2 bg-white border border-gray-300 rounded-lg text-sm disabled:bg-gray-100"
+                          />
+                          <span className="text-sm text-gray-600">profesionales</span>
+                          {organization?.subscription?.plan === 'free' && (
+                            <span className="text-xs text-orange-600 bg-orange-50 px-2 py-1 rounded">
+                              Plan básico: máx. 5
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    )}
+                    
+                    {/* Lista de Profesionales */}
+                    {formData.appointmentSystem.appointmentModel === 'professional_based' && (
+                      <div className="mt-6">
+                        <div className="flex items-center justify-between mb-4">
+                          <div>
+                            <h4 className="text-sm font-semibold text-gray-800">Profesionales</h4>
+                            <p className="text-xs text-gray-600">Agrega los profesionales que trabajarán en tu negocio</p>
+                          </div>
+                          {isEditing && (
+                            <button
+                              onClick={addProfessional}
+                              className="flex items-center space-x-2 bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded-lg text-sm font-medium transition-colors duration-200"
+                            >
+                              <PlusIcon className="h-4 w-4" />
+                              <span>Agregar</span>
+                            </button>
+                          )}
+                        </div>
+                        
+                        {(!formData.appointmentSystem.professionals || formData.appointmentSystem.professionals.length === 0) ? (
+                          <div className="text-center py-8 bg-gray-50 rounded-lg border-2 border-dashed border-gray-300">
+                            <UserCircleIcon className="h-12 w-12 text-gray-400 mx-auto mb-2" />
+                            <p className="text-gray-500 text-sm">No hay profesionales agregados</p>
+                            {isEditing && (
+                              <button
+                                onClick={addProfessional}
+                                className="mt-2 text-blue-600 hover:text-blue-800 text-sm font-medium"
+                              >
+                                Agregar el primer profesional
+                              </button>
+                            )}
+                          </div>
+                        ) : (
+                          <div className="space-y-3">
+                            {formData.appointmentSystem.professionals?.map((professional, index) => (
+                              <div key={professional.id} className="p-4 bg-gray-50 rounded-lg border border-gray-200">
+                                <div className="flex items-start space-x-4">
+                                  {/* Foto del profesional */}
+                                  <div className="relative">
+                                    <div className="w-16 h-16 bg-gray-200 rounded-full overflow-hidden flex items-center justify-center">
+                                      {professional.photo ? (
+                                        <img 
+                                          src={professional.photo} 
+                                          alt={professional.name} 
+                                          className="w-full h-full object-cover"
+                                        />
+                                      ) : (
+                                        <UserCircleIcon className="h-10 w-10 text-gray-400" />
+                                      )}
+                                    </div>
+                                    
+                                    {isEditing && (
+                                      <label className="absolute -bottom-1 -right-1 bg-blue-600 hover:bg-blue-700 text-white p-1 rounded-full cursor-pointer transition-colors">
+                                        <PhotoIcon className="h-3 w-3" />
+                                        <input
+                                          type="file"
+                                          accept="image/*"
+                                          onChange={(e) => handlePhotoUpload(index, e)}
+                                          className="hidden"
+                                        />
+                                      </label>
+                                    )}
+                                  </div>
+                                  
+                                  {/* Información del profesional */}
+                                  <div className="flex-1">
+                                    <div className="flex items-start justify-between">
+                                      <div className="flex-1 space-y-2">
+                                        <input
+                                          type="text"
+                                          value={professional.name}
+                                          onChange={(e) => updateProfessional(index, 'name', e.target.value)}
+                                          disabled={!isEditing}
+                                          placeholder="Nombre del profesional"
+                                          className="w-full px-3 py-2 bg-white border border-gray-300 rounded-lg text-sm disabled:bg-gray-100 disabled:text-gray-600 font-medium"
+                                        />
+                                        
+                                        <div className="flex items-center justify-between">
+                                          <label className="flex items-center space-x-2">
+                                            <input
+                                              type="checkbox"
+                                              checked={professional.isActive}
+                                              onChange={(e) => updateProfessional(index, 'isActive', e.target.checked)}
+                                              disabled={!isEditing}
+                                              className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                                            />
+                                            <span className="text-sm text-gray-600">Activo</span>
+                                          </label>
+                                          
+                                          {isEditing && (
+                                            <button
+                                              onClick={() => openScheduleModal(index)}
+                                              className="flex items-center space-x-1 bg-blue-50 hover:bg-blue-100 text-blue-600 px-2 py-1 rounded-md text-xs font-medium transition-colors duration-200"
+                                            >
+                                              <ClockOutlineIcon className="h-3 w-3" />
+                                              <span>Horarios</span>
+                                            </button>
+                                          )}
+                                        </div>
+                                      </div>
+                                      
+                                      {isEditing && (
+                                        <button
+                                          onClick={() => removeProfessional(index)}
+                                          className="text-red-600 hover:text-red-800 p-1 ml-2"
+                                        >
+                                          <TrashIcon className="h-4 w-4" />
+                                        </button>
+                                      )}
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    )}
+                    
+                    {formData.appointmentSystem.appointmentModel === 'resource_based' && (
+                      <div>
+                        <label className="block text-sm font-semibold text-gray-800 mb-2">
+                          Cantidad de Salas/Equipos
+                        </label>
+                        <p className="text-xs text-gray-600 mb-3">
+                          Número máximo de salas, equipos o instalaciones disponibles
+                        </p>
+                        <div className="flex items-center space-x-3">
+                          <input
+                            type="number"
+                            min="1"
+                            max={organization?.subscription?.plan === 'free' ? 5 : 50}
+                            value={formData.appointmentSystem.maxResources || 1}
+                            onChange={(e) => updateAppointmentSystem('maxResources', parseInt(e.target.value) || 1)}
+                            disabled={!isEditing}
+                            className="w-20 px-3 py-2 bg-white border border-gray-300 rounded-lg text-sm disabled:bg-gray-100"
+                          />
+                          <span className="text-sm text-gray-600">recursos</span>
+                          {organization?.subscription?.plan === 'free' && (
+                            <span className="text-xs text-orange-600 bg-orange-50 px-2 py-1 rounded">
+                              Plan básico: máx. 5
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
+
             {/* Configuraciones Adicionales */}
             <div className="space-y-4">
               <h3 className="text-lg font-semibold text-gray-800">Configuraciones Adicionales</h3>
@@ -632,6 +1092,153 @@ export const SettingsPage: React.FC = () => {
                   </div>
                 </div>
               </div>
+            </div>
+          </div>
+        );
+
+      case 'services':
+        return (
+          <div className="space-y-6">
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <h3 className="text-lg font-semibold text-gray-800">Servicios Configurados</h3>
+                {isEditing && (
+                  <button
+                    onClick={addService}
+                    className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors duration-200"
+                  >
+                    + Agregar Servicio
+                  </button>
+                )}
+              </div>
+
+              {formData.services.length === 0 ? (
+                <div className="text-center py-12 bg-gray-50 rounded-xl">
+                  <div className="w-16 h-16 bg-gray-200 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <CogIcon className="h-8 w-8 text-gray-400" />
+                  </div>
+                  <h4 className="text-lg font-semibold text-gray-800 mb-2">No hay servicios configurados</h4>
+                  <p className="text-gray-600 text-sm mb-4">
+                    Los servicios configurados en el onboarding aparecerán aquí
+                  </p>
+                  {isEditing && (
+                    <button
+                      onClick={addService}
+                      className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors duration-200"
+                    >
+                      Agregar Primer Servicio
+                    </button>
+                  )}
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {formData.services.map((service, index) => (
+                    <div key={index} className="p-4 bg-white border-2 border-gray-200 rounded-xl">
+                      <div className="flex items-start justify-between mb-4">
+                        <div className="flex items-center space-x-3">
+                          <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                            <span className="text-blue-600 font-semibold text-sm">#{index + 1}</span>
+                          </div>
+                          <div>
+                            <h4 className="font-semibold text-gray-800">
+                              {service.name || 'Nuevo Servicio'}
+                            </h4>
+                            <p className="text-xs text-gray-600">
+                              {service.duration} min • ${service.price.toLocaleString()}
+                            </p>
+                          </div>
+                        </div>
+                        
+                        {isEditing && (
+                          <div className="flex items-center space-x-2">
+                            <label className="flex items-center space-x-2">
+                              <input
+                                type="checkbox"
+                                checked={service.isActive !== false}
+                                onChange={(e) => updateService(index, 'isActive', e.target.checked)}
+                                className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                              />
+                              <span className="text-sm text-gray-600">Activo</span>
+                            </label>
+                            <button
+                              onClick={() => removeService(index)}
+                              className="text-red-600 hover:text-red-800 p-1"
+                            >
+                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                              </svg>
+                            </button>
+                          </div>
+                        )}
+                      </div>
+
+                      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <label className="block text-sm font-medium text-gray-700">
+                            Nombre del Servicio
+                          </label>
+                          <input
+                            type="text"
+                            value={service.name}
+                            onChange={(e) => updateService(index, 'name', e.target.value)}
+                            disabled={!isEditing}
+                            placeholder="Ej: Corte de cabello"
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm disabled:bg-gray-100 disabled:text-gray-600"
+                          />
+                        </div>
+
+                        <div className="space-y-2">
+                          <label className="block text-sm font-medium text-gray-700">
+                            Descripción
+                          </label>
+                          <input
+                            type="text"
+                            value={service.description || ''}
+                            onChange={(e) => updateService(index, 'description', e.target.value)}
+                            disabled={!isEditing}
+                            placeholder="Descripción opcional"
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm disabled:bg-gray-100 disabled:text-gray-600"
+                          />
+                        </div>
+
+                        <div className="space-y-2">
+                          <label className="block text-sm font-medium text-gray-700">
+                            Duración (minutos)
+                          </label>
+                          <select
+                            value={service.duration}
+                            onChange={(e) => updateService(index, 'duration', parseInt(e.target.value))}
+                            disabled={!isEditing}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm disabled:bg-gray-100 disabled:text-gray-600"
+                          >
+                            <option value={15}>15 minutos</option>
+                            <option value={30}>30 minutos</option>
+                            <option value={45}>45 minutos</option>
+                            <option value={60}>1 hora</option>
+                            <option value={90}>1.5 horas</option>
+                            <option value={120}>2 horas</option>
+                          </select>
+                        </div>
+
+                        <div className="space-y-2">
+                          <label className="block text-sm font-medium text-gray-700">
+                            Precio ({formData.currency})
+                          </label>
+                          <input
+                            type="number"
+                            min="0"
+                            step="1000"
+                            value={service.price}
+                            onChange={(e) => updateService(index, 'price', parseInt(e.target.value) || 0)}
+                            disabled={!isEditing}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm disabled:bg-gray-100 disabled:text-gray-600"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
         );
@@ -864,7 +1471,7 @@ export const SettingsPage: React.FC = () => {
                 </div>
               )}
               
-              {!isEditing && (activeTab === 'general' || activeTab === 'hours' || activeTab === 'appointments' || activeTab === 'notifications') && (
+              {!isEditing && (activeTab === 'general' || activeTab === 'hours' || activeTab === 'appointments' || activeTab === 'services' || activeTab === 'notifications') && (
                 <button 
                   onClick={() => setIsEditing(true)}
                   className="bg-white/20 hover:bg-white/30 backdrop-blur-sm text-white px-4 py-2 rounded-xl font-medium transition-all duration-200 border border-white/20"
@@ -950,7 +1557,7 @@ export const SettingsPage: React.FC = () => {
                 </div>
               )}
               
-              {!isEditing && (activeTab === 'general' || activeTab === 'hours' || activeTab === 'appointments' || activeTab === 'notifications') && (
+              {!isEditing && (activeTab === 'general' || activeTab === 'hours' || activeTab === 'appointments' || activeTab === 'services' || activeTab === 'notifications') && (
                 <button 
                   onClick={() => setIsEditing(true)}
                   className="bg-white/20 hover:bg-white/30 backdrop-blur-sm text-white px-3 py-2 rounded-xl text-sm font-medium transition-all duration-200 border border-white/20"
@@ -997,6 +1604,184 @@ export const SettingsPage: React.FC = () => {
           </div>
         </div>
       </div>
+      
+      {/* Modal de Configuración de Horarios */}
+      {professionalScheduleModal.isOpen && professionalScheduleModal.professionalIndex !== null && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="p-6">
+              {/* Header */}
+              <div className="flex items-center justify-between mb-6">
+                <div className="flex items-center space-x-3">
+                  <div className="w-10 h-10 bg-blue-100 rounded-xl flex items-center justify-center">
+                    <ClockIcon className="h-5 w-5 text-blue-600" />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-semibold text-gray-800">Configurar Horarios</h3>
+                    <p className="text-sm text-gray-600">
+                      {formData.appointmentSystem.professionals?.[professionalScheduleModal.professionalIndex]?.name || 'Profesional'}
+                    </p>
+                  </div>
+                </div>
+                <button
+                  onClick={closeScheduleModal}
+                  className="text-gray-400 hover:text-gray-600 p-2 hover:bg-gray-100 rounded-full transition-colors"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+              
+              {/* Contenido del Modal */}
+              <div className="space-y-4">
+                <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
+                  <div className="flex items-center space-x-2 mb-2">
+                    <svg className="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <h4 className="text-sm font-semibold text-blue-800">Información</h4>
+                  </div>
+                  <p className="text-xs text-blue-700 leading-relaxed">
+                    Por defecto, los profesionales heredan los horarios de negocio configurados en la pestaña "Horarios". 
+                    Aquí puedes personalizar horarios específicos para este profesional.
+                  </p>
+                </div>
+                
+                <div className="space-y-4">
+                  {/* Toggle para horarios personalizados */}
+                  <div className="flex items-center justify-between">
+                    <label className="flex items-center space-x-2">
+                      <input
+                        type="checkbox"
+                        checked={professionalScheduleForm.useCustomSchedule}
+                        onChange={(e) => toggleCustomSchedule(e.target.checked)}
+                        className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                      />
+                      <span className="text-sm font-medium text-gray-700">Usar horarios personalizados</span>
+                    </label>
+                  </div>
+                  
+                  {!professionalScheduleForm.useCustomSchedule ? (
+                    <div className="text-xs text-gray-500 bg-gray-50 p-3 rounded-lg">
+                      <p className="font-medium mb-2">Horarios del negocio (se aplicarán por defecto):</p>
+                      {days.map(({ key, name }) => {
+                        const daySchedule = formData.businessHours[key];
+                        return (
+                          <div key={key} className="flex justify-between mt-1">
+                            <span>{name}:</span>
+                            <span>
+                              {daySchedule?.isOpen 
+                                ? `${daySchedule.openTime} - ${daySchedule.closeTime}`
+                                : 'Cerrado'
+                              }
+                            </span>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  ) : (
+                    <div className="space-y-3">
+                      <h4 className="text-sm font-semibold text-gray-800">Configurar horarios personalizados:</h4>
+                      {days.map(({ key, name }) => (
+                        <div key={key} className="p-3 bg-gray-50 border border-gray-200 rounded-lg">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center space-x-3">
+                              <div className="w-20 text-sm font-medium text-gray-800">{name}</div>
+                              
+                              <label className="flex items-center space-x-2 cursor-pointer">
+                                <div className="relative">
+                                  <input
+                                    type="checkbox"
+                                    checked={professionalScheduleForm.schedule[key]?.isOpen || false}
+                                    onChange={(e) => updateProfessionalScheduleDay(key, {
+                                      ...professionalScheduleForm.schedule[key],
+                                      isOpen: e.target.checked,
+                                      openTime: professionalScheduleForm.schedule[key]?.openTime || '09:00',
+                                      closeTime: professionalScheduleForm.schedule[key]?.closeTime || '18:00',
+                                    })}
+                                    className="sr-only"
+                                  />
+                                  <div className={`w-8 h-4 rounded-full transition-colors duration-200 ${
+                                    professionalScheduleForm.schedule[key]?.isOpen 
+                                      ? 'bg-blue-600' 
+                                      : 'bg-gray-300'
+                                  }`}>
+                                    <div className={`w-3 h-3 bg-white rounded-full shadow-md transform transition-transform duration-200 ${
+                                      professionalScheduleForm.schedule[key]?.isOpen ? 'translate-x-4' : 'translate-x-0.5'
+                                    } mt-0.5`}></div>
+                                  </div>
+                                </div>
+                                <span className={`text-xs font-medium ${
+                                  professionalScheduleForm.schedule[key]?.isOpen ? 'text-green-600' : 'text-gray-500'
+                                }`}>
+                                  {professionalScheduleForm.schedule[key]?.isOpen ? 'Abierto' : 'Cerrado'}
+                                </span>
+                              </label>
+                            </div>
+                            
+                            {professionalScheduleForm.schedule[key]?.isOpen && (
+                              <div className="flex items-center space-x-2">
+                                <div className="flex items-center space-x-1">
+                                  <label className="text-xs font-medium text-gray-600">De</label>
+                                  <input
+                                    type="time"
+                                    value={professionalScheduleForm.schedule[key]?.openTime || '09:00'}
+                                    onChange={(e) => updateProfessionalScheduleDay(key, {
+                                      ...professionalScheduleForm.schedule[key],
+                                      isOpen: professionalScheduleForm.schedule[key]?.isOpen || true,
+                                      openTime: e.target.value,
+                                      closeTime: professionalScheduleForm.schedule[key]?.closeTime || '18:00',
+                                    })}
+                                    className="px-2 py-1 bg-white border border-gray-300 rounded text-xs w-16"
+                                  />
+                                </div>
+                                
+                                <div className="text-xs text-gray-400">a</div>
+                                
+                                <div className="flex items-center space-x-1">
+                                  <label className="text-xs font-medium text-gray-600">a</label>
+                                  <input
+                                    type="time"
+                                    value={professionalScheduleForm.schedule[key]?.closeTime || '18:00'}
+                                    onChange={(e) => updateProfessionalScheduleDay(key, {
+                                      ...professionalScheduleForm.schedule[key],
+                                      isOpen: professionalScheduleForm.schedule[key]?.isOpen || true,
+                                      openTime: professionalScheduleForm.schedule[key]?.openTime || '09:00',
+                                      closeTime: e.target.value,
+                                    })}
+                                    className="px-2 py-1 bg-white border border-gray-300 rounded text-xs w-16"
+                                  />
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+              
+              {/* Botones */}
+              <div className="flex items-center justify-end space-x-3 mt-6 pt-4 border-t border-gray-200">
+                <button
+                  onClick={closeScheduleModal}
+                  className="px-4 py-2 text-gray-600 hover:text-gray-800 font-medium transition-colors"
+                >
+                  Cancelar
+                </button>
+                <button
+                  onClick={updateProfessionalSchedule}
+                  className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors"
+                >
+                  Guardar Configuración
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 };

@@ -12,6 +12,7 @@ import { useAuthStore } from '@/stores/authStore';
 
 // Public Pages
 import { HomePage } from '@/pages/HomePage';
+import { BookingPage } from '@/pages/public/BookingPage';
 
 // Auth Pages
 import { LoginPage } from '@/pages/auth/LoginPage';
@@ -26,6 +27,7 @@ import { DashboardPage } from '@/pages/dashboard/DashboardPage';
 import { AppointmentsPage } from '@/pages/appointments/AppointmentsPage';
 import { ResourcesPage } from '@/pages/resources/ResourcesPage';
 import { SettingsPage } from '@/pages/settings/SettingsPage';
+import { MetricsPage } from '@/pages/MetricsPage';
 
 // 404 Page
 import { NotFoundPage } from '@/pages/NotFoundPage';
@@ -49,6 +51,9 @@ function App() {
             <Route path="about" element={<div>About Page</div>} />
             <Route path="demo" element={<div>Demo Page</div>} />
           </Route>
+
+          {/* Public Booking Routes - No layout wrapper for mobile app experience */}
+          <Route path="/book/:orgId" element={<BookingPage />} />
 
           {/* Auth Routes */}
           {/* Login and Register have their own custom layouts */}
@@ -116,6 +121,14 @@ function App() {
             </ProtectedRoute>
           }>
             <Route index element={<SettingsPage />} />
+          </Route>
+
+          <Route path="/metrics" element={
+            <ProtectedRoute>
+              <PrivateLayout />
+            </ProtectedRoute>
+          }>
+            <Route index element={<MetricsPage />} />
           </Route>
 
           {/* 404 */}

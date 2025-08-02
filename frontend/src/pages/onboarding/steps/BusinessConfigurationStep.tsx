@@ -108,8 +108,20 @@ export const BusinessConfigurationStep: React.FC<BusinessConfigurationStepProps>
               {appointmentModels.map((model) => {
                 const IconComponent = model.icon;
                 const isSelected = formData.appointmentModel === model.value;
+                const isDisabled = model.value === 'hybrid'; // Disable hybrid option
                 
-                const getColorClasses = (color: string, selected: boolean) => {
+                const getColorClasses = (color: string, selected: boolean, disabled: boolean) => {
+                  if (disabled) {
+                    return {
+                      bg: 'bg-gray-50',
+                      border: 'border-gray-200',
+                      text: 'text-gray-400',
+                      icon: 'text-gray-300',
+                      badge: 'bg-gray-100 text-gray-400',
+                      iconBg: 'bg-gray-100'
+                    };
+                  }
+                  
                   const colors = {
                     blue: selected 
                       ? { bg: 'bg-blue-50', border: 'border-blue-500', text: 'text-blue-900', icon: 'text-blue-600', badge: 'bg-blue-100 text-blue-700', iconBg: 'bg-blue-100' }
@@ -124,23 +136,33 @@ export const BusinessConfigurationStep: React.FC<BusinessConfigurationStepProps>
                   return colors[color as keyof typeof colors] || colors.blue;
                 };
                 
-                const colorClasses = getColorClasses(model.color, isSelected);
+                const colorClasses = getColorClasses(model.color, isSelected, isDisabled);
                 
                 return (
                   <label
                     key={model.value}
                     className={`
-                      relative flex flex-col p-2 border-2 rounded-lg cursor-pointer transition-all duration-200
-                      hover:shadow-sm group
+                      relative flex flex-col p-2 border-2 rounded-lg transition-all duration-200
+                      ${isDisabled ? 'cursor-not-allowed opacity-75' : 'cursor-pointer hover:shadow-sm group'}
                       ${colorClasses.bg} ${colorClasses.border}
-                      ${isSelected ? 'shadow-sm' : 'hover:shadow-md'}
+                      ${isSelected ? 'shadow-sm' : !isDisabled && 'hover:shadow-md'}
                     `}
                   >
+                    {/* Próximamente Badge for Hybrid */}
+                    {isDisabled && (
+                      <div className="absolute -top-2 -right-2 z-10">
+                        <span className="inline-flex items-center px-2 py-1 text-xs font-medium bg-amber-100 text-amber-800 rounded-full border border-amber-200 shadow-sm">
+                          Próximamente
+                        </span>
+                      </div>
+                    )}
+                    
                     <input
                       type="radio"
                       name="appointmentModel"
                       value={model.value}
                       checked={isSelected}
+                      disabled={isDisabled}
                       onChange={(e) => handleInputChange('appointmentModel', e.target.value)}
                       className="sr-only"
                     />
@@ -202,37 +224,69 @@ export const BusinessConfigurationStep: React.FC<BusinessConfigurationStepProps>
 
           {/* Additional Settings */}
           <div className="border-t pt-3">
-            <h3 className="text-sm font-semibold text-gray-900 mb-2">
-              Configuraciones adicionales
-            </h3>
+            <div className="flex items-center space-x-2 mb-3">
+              <div className="w-6 h-6 bg-gradient-to-br from-slate-100 to-slate-200 rounded-lg flex items-center justify-center">
+                <svg className="w-3 h-3 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                </svg>
+              </div>
+              <h3 className="text-sm font-semibold text-gray-900">
+                Configuraciones adicionales
+              </h3>
+            </div>
             
-            <div className="space-y-3">
+            <div className="bg-gradient-to-br from-gray-50 to-slate-50 rounded-xl p-4 space-y-4 border border-gray-200">
               {/* Client Selection */}
-              <div className="flex items-start space-x-2">
-                <input
-                  type="checkbox"
-                  id="allowClientSelection"
-                  checked={formData.allowClientSelection}
-                  onChange={(e) => handleInputChange('allowClientSelection', e.target.checked)}
-                  className="mt-0.5 w-3 h-3 text-blue-600 bg-white border-gray-300 rounded focus:ring-blue-500 focus:ring-1"
-                />
-                <div className="flex-1">
-                  <label htmlFor="allowClientSelection" className="text-xs font-medium text-gray-700">
-                    Permitir que los clientes elijan profesional/recurso específico
-                  </label>
+              <div className="bg-white rounded-lg p-3 border border-gray-200 shadow-sm">
+                <div className="flex items-start space-x-3">
+                  <div className="relative">
+                    <input
+                      type="checkbox"
+                      id="allowClientSelection"
+                      checked={formData.allowClientSelection}
+                      onChange={(e) => handleInputChange('allowClientSelection', e.target.checked)}
+                      className="w-4 h-4 text-blue-600 bg-white border-gray-300 rounded focus:ring-blue-500 focus:ring-2 transition-all duration-200"
+                    />
+                    {formData.allowClientSelection && (
+                      <div className="absolute inset-0 bg-blue-600 rounded flex items-center justify-center">
+                        <svg className="w-2.5 h-2.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                        </svg>
+                      </div>
+                    )}
+                  </div>
+                  <div className="flex-1">
+                    <label htmlFor="allowClientSelection" className="block text-xs font-semibold text-gray-900 mb-1">
+                      Selección específica por cliente
+                    </label>
+                    <p className="text-xs text-gray-600 leading-relaxed">
+                      Permite que los clientes elijan profesional o recurso específico al hacer su reserva
+                    </p>
+                  </div>
+                  <div className="flex-shrink-0">
+                    <div className={`w-2 h-2 rounded-full ${formData.allowClientSelection ? 'bg-green-400' : 'bg-gray-300'}`}></div>
+                  </div>
                 </div>
               </div>
 
               {/* Buffer Time & Advance Booking */}
-              <div className="grid gap-3 md:grid-cols-2">
-                <div>
-                  <label className="block text-xs font-medium text-gray-700 mb-1">
-                    Buffer entre citas (min)
-                  </label>
+              <div className="grid gap-3 sm:grid-cols-2">
+                <div className="bg-white rounded-lg p-3 border border-gray-200 shadow-sm">
+                  <div className="flex items-center space-x-2 mb-2">
+                    <div className="w-5 h-5 bg-gradient-to-br from-blue-100 to-blue-200 rounded-md flex items-center justify-center">
+                      <svg className="w-3 h-3 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                    </div>
+                    <label className="text-xs font-semibold text-gray-900">
+                      Buffer entre citas
+                    </label>
+                  </div>
                   <select
                     value={formData.bufferBetweenAppointments}
                     onChange={(e) => handleInputChange('bufferBetweenAppointments', parseInt(e.target.value))}
-                    className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
+                    className="w-full px-3 py-2 text-xs border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-white shadow-sm"
                   >
                     <option value={0}>Sin buffer</option>
                     <option value={5}>5 minutos</option>
@@ -241,16 +295,26 @@ export const BusinessConfigurationStep: React.FC<BusinessConfigurationStepProps>
                     <option value={20}>20 minutos</option>
                     <option value={30}>30 minutos</option>
                   </select>
+                  <p className="text-xs text-gray-500 mt-1">
+                    Tiempo libre entre citas consecutivas
+                  </p>
                 </div>
 
-                <div>
-                  <label className="block text-xs font-medium text-gray-700 mb-1">
-                    Anticipación máxima
-                  </label>
+                <div className="bg-white rounded-lg p-3 border border-gray-200 shadow-sm">
+                  <div className="flex items-center space-x-2 mb-2">
+                    <div className="w-5 h-5 bg-gradient-to-br from-green-100 to-green-200 rounded-md flex items-center justify-center">
+                      <svg className="w-3 h-3 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                      </svg>
+                    </div>
+                    <label className="text-xs font-semibold text-gray-900">
+                      Anticipación máxima
+                    </label>
+                  </div>
                   <select
                     value={formData.maxAdvanceBookingDays}
                     onChange={(e) => handleInputChange('maxAdvanceBookingDays', parseInt(e.target.value))}
-                    className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
+                    className="w-full px-3 py-2 text-xs border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-white shadow-sm"
                   >
                     <option value={7}>1 semana</option>
                     <option value={14}>2 semanas</option>
@@ -259,6 +323,9 @@ export const BusinessConfigurationStep: React.FC<BusinessConfigurationStepProps>
                     <option value={90}>3 meses</option>
                     <option value={180}>6 meses</option>
                   </select>
+                  <p className="text-xs text-gray-500 mt-1">
+                    Máximo tiempo de antelación para reservar
+                  </p>
                 </div>
               </div>
             </div>

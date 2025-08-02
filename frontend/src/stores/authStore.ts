@@ -37,7 +37,27 @@ interface User {
 interface Organization {
   id: string;
   name: string;
-  templateType: 'beauty_salon' | 'hyperbaric_center';
+  templateType: 'beauty_salon' | 'hyperbaric_center' | 'medical_clinic' | 'fitness_center' | 'consultant' | 'custom';
+  address?: string;
+  phone?: string;
+  email?: string;
+  currency?: string;
+  subscription: {
+    plan: 'free' | 'basic' | 'premium';
+    limits: {
+      maxResources: number;
+      maxAppointmentsPerMonth: number;
+      maxUsers: number;
+    };
+    trial?: {
+      isActive: boolean;
+      startDate: string;
+      endDate: string;
+      daysTotal: number;
+    };
+  };
+  createdAt: string;
+  updatedAt: string;
 }
 
 interface AuthState {

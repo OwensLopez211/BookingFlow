@@ -8,11 +8,17 @@ export interface Organization {
   currency?: string;
   settings: OrganizationSettings;
   subscription: {
-    plan: 'free' | 'premium';
+    plan: 'free' | 'basic' | 'premium';
     limits: {
       maxResources: number;
       maxAppointmentsPerMonth: number;
       maxUsers: number;
+    };
+    trial?: {
+      isActive: boolean;
+      startDate: string;
+      endDate: string;
+      daysTotal: number;
     };
   };
   createdAt: string;
@@ -35,6 +41,9 @@ export interface BusinessConfiguration {
   allowClientSelection: boolean;
   bufferBetweenAppointments: number;
   maxAdvanceBookingDays: number;
+  maxProfessionals?: number; // Para professional_based
+  maxResources?: number;     // Para resource_based
+  professionals?: Professional[]; // Lista de profesionales
 }
 
 export interface Service {
@@ -69,11 +78,21 @@ export interface NotificationSettings {
   reminderHours: number;
 }
 
+export interface Professional {
+  id: string;
+  name: string;
+  photo?: string; // Base64 o URL de la foto
+  isActive: boolean;
+}
+
 export interface AppointmentSystemSettings {
   appointmentModel: 'professional_based' | 'resource_based' | 'hybrid';
   allowClientSelection: boolean;
   bufferBetweenAppointments: number;
   maxAdvanceBookingDays: number;
+  maxProfessionals?: number; // Para professional_based
+  maxResources?: number;     // Para resource_based
+  professionals?: Professional[]; // Lista de profesionales
 }
 
 export interface BusinessInfo {
@@ -84,10 +103,17 @@ export interface BusinessInfo {
 }
 
 export interface UpdateOrganizationSettingsRequest {
+  // Datos básicos de la organización
+  name?: string;
+  address?: string;
+  phone?: string;
+  email?: string;
+  currency?: string;
+  // Settings específicos
   timezone?: string;
   businessHours?: Partial<BusinessHours>;
   notifications?: Partial<NotificationSettings>;
   appointmentSystem?: Partial<AppointmentSystemSettings>;
   businessInfo?: Partial<BusinessInfo>;
-  currency?: string;
+  services?: Service[];
 }

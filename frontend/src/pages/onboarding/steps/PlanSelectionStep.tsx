@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/Button';
+import { Plan, PlanSelection } from '../../../types/subscription';
+import { transbankService } from '../../../services/transbankService';
 
 interface PlanSelectionStepProps {
-  onComplete: (data: any) => void;
+  onComplete: (data: PlanSelection) => void;
   isLoading: boolean;
-  initialData?: any;
+  initialData?: PlanSelection;
   onPreviousStep?: () => void;
   canGoBack?: boolean;
   showBackInFooter?: boolean;
@@ -41,74 +43,72 @@ const IconX = ({ className = "w-4 h-4" }: { className?: string }) => (
   </svg>
 );
 
-const plans = [
+const plans: Plan[] = [
+  {
+    id: 'free',
+    name: 'Plan Gratuito',
+    price: 'Gratis',
+    period: 'siempre',
+    description: 'Perfecto para emprendedores que están empezando y quieren probar la plataforma',
+    icon: IconBasic,
+    color: 'gray',
+    available: false,
+    popular: false,
+    features: [
+      { name: 'Hasta 1 recurso/profesional', included: true },
+      { name: 'Máximo 100 citas por mes', included: true },
+      { name: 'Solo 1 usuario (propietario)', included: true },
+      { name: 'Panel de control básico', included: true },
+      { name: 'Soporte por email', included: true },
+    ]
+  },
   {
     id: 'basic',
     name: 'Plan Básico',
-    price: 'Gratis',
-    period: 'por siempre',
-    description: 'Perfect para pequeñas empresas que empiezan a probar nuestro sistema',
-    icon: IconBasic,
+    price: '$12.990',
+    period: 'por mes (+IVA)',
+    description: 'Perfecto para pequeñas empresas que necesitan agilizar su gestión de citas',
+    icon: IconProfessional,
     color: 'blue',
     available: true,
-    popular: false,
-    features: [
-      { name: 'Hasta 50 citas por mes', included: true },
-      { name: 'Gestión básica de calendario', included: true },
-      { name: 'Confirmaciones por correo electrónico', included: true },
-      { name: 'Panel de control básico', included: true },
-      { name: 'Soporte por email', included: true },
-      { name: 'Confirmaciones por SMS', included: false },
-      { name: 'Confirmaciones por WhatsApp', included: false },
-      { name: 'Cuentas de profesionales', included: false },
-      { name: 'Reportes avanzados', included: false },
-      { name: 'Integraciones avanzadas', included: false },
-    ]
-  },
-  {
-    id: 'professional',
-    name: 'Plan Profesional',
-    price: '$29',
-    period: 'por mes',
-    description: 'Para negocios en crecimiento con necesidades más avanzadas',
-    icon: IconProfessional,
-    color: 'green',
-    available: false,
     popular: true,
+    trialDays: 30, // 1 mes gratis
+    transbankAmount: 12990, // $12.990 CLP
     features: [
-      { name: 'Citas ilimitadas', included: true },
-      { name: 'Hasta 5 profesionales', included: true },
-      { name: 'Confirmaciones por SMS y WhatsApp', included: true },
-      { name: 'Reportes avanzados', included: true },
-      { name: 'Recordatorios automáticos', included: true },
-      { name: 'Gestión de inventario básica', included: true },
-      { name: 'Soporte prioritario', included: true },
-      { name: 'Personalización de marca', included: true },
-      { name: 'API básica', included: true },
-      { name: 'Backup automático', included: true },
+      { name: 'Hasta 5 recursos/profesionales', included: true },
+      { name: 'Máximo 1,000 citas por mes', included: true },
+      { name: 'Hasta 2 usuarios (propietario + recepcionista)', included: true },
+      { name: 'Confirmación automática de citas por email', included: true },
+      { name: 'Cuenta de recepcionista incluida', included: true },
+      { name: 'Soporte ágil vía correo electrónico', included: true },
+      { name: 'Panel de control completo', included: true },
+      { name: 'Agenda unificada con vista día/semana', included: true },
+      { name: 'Filtros por profesional o servicio', included: true },
+      { name: '1 mes completamente gratis', included: true },
     ]
   },
   {
-    id: 'enterprise',
-    name: 'Plan Empresarial',
-    price: '$89',
-    period: 'por mes',
-    description: 'Para grandes empresas con múltiples ubicaciones y equipos',
+    id: 'premium',
+    name: 'Plan Premium',
+    price: '$29.990',
+    period: 'por mes (+IVA)',
+    description: 'Para empresas grandes con múltiples profesionales y alto volumen de citas',
     icon: IconEnterprise,
     color: 'purple',
     available: false,
     popular: false,
+    transbankAmount: 29990, // $29.990 CLP
     features: [
-      { name: 'Todo del Plan Profesional', included: true },
-      { name: 'Profesionales ilimitados', included: true },
-      { name: 'Múltiples ubicaciones', included: true },
-      { name: 'Análisis avanzados y BI', included: true },
-      { name: 'Integraciones personalizadas', included: true },
+      { name: 'Hasta 10 recursos/profesionales', included: true },
+      { name: 'Máximo 2,500 citas por mes', included: true },
+      { name: 'Hasta 10 usuarios', included: true },
+      { name: 'Todo del Plan Básico', included: true },
+      { name: 'Reportes avanzados', included: true },
       { name: 'API completa', included: true },
-      { name: 'Soporte 24/7', included: true },
-      { name: 'Manager de cuenta dedicado', included: true },
-      { name: 'Entrenamiento personalizado', included: true },
-      { name: 'SLA garantizado', included: true },
+      { name: 'Soporte prioritario 24/7', included: true },
+      { name: 'Personalización de marca', included: true },
+      { name: 'Integraciones personalizadas', included: true },
+      { name: 'Backup automático', included: true },
     ]
   }
 ];
@@ -139,6 +139,10 @@ export const PlanSelectionStep: React.FC<PlanSelectionStepProps> = ({
       planId: selectedPlan,
       planName: selectedPlanData?.name,
       planPrice: selectedPlanData?.price,
+      planPeriod: selectedPlanData?.period,
+      transbankAmount: selectedPlanData?.transbankAmount,
+      trialDays: selectedPlanData?.trialDays,
+      requiresPayment: false, // Sin pagos por ahora, solo trial gratuito
     });
   };
 
@@ -172,9 +176,10 @@ export const PlanSelectionStep: React.FC<PlanSelectionStepProps> = ({
   return (
     <div className="h-full flex flex-col">
       <form onSubmit={handleSubmit} className="flex-1 flex flex-col">
-        {/* Plans Grid - Compact without scroll */}
+        {/* Plans Grid - Single plan centered */}
         <div className="flex-1 overflow-hidden">
-          <div className="grid gap-3 md:grid-cols-3 h-full">
+          <div className="flex justify-center items-start h-full">
+            <div className="w-full max-w-md">
             {plans.map((plan) => {
               const IconComponent = plan.icon;
               const isSelected = selectedPlan === plan.id;
@@ -245,6 +250,11 @@ export const PlanSelectionStep: React.FC<PlanSelectionStepProps> = ({
                           {plan.period}
                         </span>
                       )}
+                      {plan.trialDays && (
+                        <div className="text-xs text-green-600 font-medium mt-1">
+                          🎉 {plan.trialDays === 30 ? '1 mes completamente gratis' : `Prueba gratuita ${plan.trialDays} días`}
+                        </div>
+                      )}
                     </div>
 
                     <p className="text-xs text-gray-600 mb-3 leading-tight">
@@ -289,6 +299,7 @@ export const PlanSelectionStep: React.FC<PlanSelectionStepProps> = ({
                 </div>
               );
             })}
+            </div>
           </div>
         </div>
 
@@ -302,7 +313,7 @@ export const PlanSelectionStep: React.FC<PlanSelectionStepProps> = ({
             </div>
             <div className="ml-2">
               <p className="text-xs text-blue-700">
-                Puedes cambiar tu plan en cualquier momento desde la configuración. Los planes Profesional y Empresarial estarán disponibles próximamente.
+                <strong>Plan Básico:</strong> Disfruta de 1 mes completamente gratis. Los métodos de pago se habilitarán próximamente. Por ahora, solo necesitas registrarte para empezar a usar todas las funciones.
               </p>
             </div>
           </div>
@@ -333,10 +344,10 @@ export const PlanSelectionStep: React.FC<PlanSelectionStepProps> = ({
             {isLoading ? (
               <div className="flex items-center">
                 <div className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin mr-1.5"></div>
-                Guardando...
+                Iniciando trial...
               </div>
             ) : (
-              'Completar onboarding'
+              'Iniciar mes gratuito y completar registro'
             )}
           </Button>
         </div>

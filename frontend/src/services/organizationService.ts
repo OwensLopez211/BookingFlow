@@ -50,24 +50,36 @@ class OrganizationService {
     settings: UpdateOrganizationSettingsRequest
   ): Promise<any> {
     try {
-      const response = await fetch(`${API_BASE_URL}/v1/organizations/${orgId}/settings`, {
+      const url = `${API_BASE_URL}/v1/organizations/${orgId}/settings`;
+      console.log('🔄 OrganizationService: Enviando PUT a:', url);
+      console.log('📦 OrganizationService: Settings a enviar:', JSON.stringify(settings, null, 2));
+      console.log('🔑 OrganizationService: Headers:', this.getHeaders());
+
+      const response = await fetch(url, {
         method: 'PUT',
         headers: this.getHeaders(),
         body: JSON.stringify(settings),
       });
 
+      console.log('📡 OrganizationService: Response status:', response.status);
       const data = await response.json();
+      console.log('📥 OrganizationService: Response data:', JSON.stringify(data, null, 2));
       
       if (!response.ok) {
+        console.log('❌ OrganizationService: Response not OK');
         throw new Error(data.error || 'Error actualizando la configuración');
       }
 
+      console.log('✅ OrganizationService: Actualizacion exitosa, devolviendo data');
       return data;
     } catch (error: any) {
-      return {
+      console.error('❌ OrganizationService: Error capturado:', error);
+      const errorResponse = {
         success: false,
         error: error.message || 'Error de conexión',
       };
+      console.log('❌ OrganizationService: Devolviendo error:', errorResponse);
+      return errorResponse;
     }
   }
 
