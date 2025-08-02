@@ -1,6 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Calendar, AgendaView } from '@/components/calendar';
 import { showToast } from '@/components/ui';
+import { useOrganization } from '@/hooks/useOrganization';
+import { appointmentService, AppointmentData } from '@/services/appointmentService';
 import { 
   PresentationChartBarIcon, 
   UserGroupIcon, 
@@ -10,106 +12,159 @@ import {
   CalendarDaysIcon
 } from '@heroicons/react/24/outline';
 
-// Mock data
-const mockAppointments: Record<string, Array<{
-  id: string;
-  title: string;
-  client: string;
-  phone: string;
-  startTime: string;
-  endTime: string;
-  status: 'confirmed' | 'pending' | 'completed';
-  color: string;
-}>> = {
-  '2025-01-31': [
-    {
-      id: '1',
-      title: 'Corte y Peinado',
-      client: 'María González',
-      phone: '+34 666 123 456',
-      startTime: '09:00',
-      endTime: '10:30',
-      status: 'confirmed',
-      color: 'bg-green-50 border-green-200'
-    },
-    {
-      id: '2',
-      title: 'Coloración',
-      client: 'Ana Rodríguez',
-      phone: '+34 666 789 012',
-      startTime: '11:00',
-      endTime: '13:00',
-      status: 'confirmed',
-      color: 'bg-blue-50 border-blue-200'
-    },
-    {
-      id: '3',
-      title: 'Manicura',
-      client: 'Carmen López',
-      phone: '+34 666 345 678',
-      startTime: '16:00',
-      endTime: '17:00',
-      status: 'pending',
-      color: 'bg-yellow-50 border-yellow-200'
-    }
-  ],
-  '2025-02-01': [
-    {
-      id: '4',
-      title: 'Tratamiento Facial',
-      client: 'Laura Martín',
-      phone: '+34 666 901 234',
-      startTime: '10:00',
-      endTime: '11:30',
-      status: 'confirmed',
-      color: 'bg-purple-50 border-purple-200'
-    },
-    {
-      id: '5',
-      title: 'Pedicura',
-      client: 'Isabel García',
-      phone: '+34 666 567 890',
-      startTime: '15:30',
-      endTime: '16:30',
-      status: 'completed',
-      color: 'bg-gray-50 border-gray-200'
-    }
-  ],
-  '2025-02-03': [
-    {
-      id: '6',
-      title: 'Corte Infantil',
-      client: 'Pedro Sánchez',
-      phone: '+34 666 234 567',
-      startTime: '12:00',
-      endTime: '12:45',
-      status: 'confirmed',
-      color: 'bg-indigo-50 border-indigo-200'
-    }
-  ]
+// Helper function to create consistent date strings without timezone issues
+const formatDateForAPI = (date: Date): string => {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
 };
 
-const getAppointmentCounts = () => {
-  const counts: { [key: string]: number } = {};
-  Object.entries(mockAppointments).forEach(([date, appointments]) => {
-    counts[date] = appointments.length;
-  });
-  return counts;
+// Helper function to normalize date strings (handle both ISO and YYYY-MM-DD formats)
+const normalizeDateString = (dateStr: string): string => {
+  if (!dateStr) return '';
+  
+  // If it's an ISO string (contains T), extract just the date part
+  if (dateStr.includes('T')) {
+    return dateStr.split('T')[0];
+  }
+  
+  // If it's already in YYYY-MM-DD format, return as is
+  if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) {
+    return dateStr;
+  }
+  
+  // Try to parse and reformat other date formats
+  try {
+    const parsedDate = new Date(dateStr);
+    if (!isNaN(parsedDate.getTime())) {
+      return formatDateForAPI(parsedDate);
+    }
+  } catch (error) {
+    console.warn('Unable to parse date string:', dateStr);
+  }
+  
+  return dateStr;
 };
+
+// Mock data - removed, now using real data from backend
 
 export const AppointmentsPage: React.FC = () => {
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [activeTab, setActiveTab] = useState<'calendar' | 'agenda'>('agenda');
+  const [appointments, setAppointments] = useState<AppointmentData[]>([]);
+  const [appointmentCounts, setAppointmentCounts] = useState<Record<string, number>>({});
+  const [loading, setLoading] = useState(true);
+  const { organization } = useOrganization();
   
-  const selectedDateKey = selectedDate.toISOString().split('T')[0];
-  const todayAppointments = mockAppointments[selectedDateKey] || [];
-  const appointmentCounts = getAppointmentCounts();
+  // Determine filtering based on organization model
+  const appointmentModel = organization?.settings?.appointmentSystem?.appointmentModel;
+  const isProfessionalBased = appointmentModel === 'professional_based';
+  const isResourceBased = appointmentModel === 'resource_based';
+  
+  // Get the selected professional or resource if applicable
+  const selectedProfessional = isProfessionalBased 
+    ? organization?.settings?.appointmentSystem?.professionals?.find(p => p.isActive)?.id
+    : undefined;
+  const selectedResource = isResourceBased
+    ? organization?.settings?.appointmentSystem?.resources?.find(r => r.isActive)?.id
+    : undefined;
 
-  // Stats for the dashboard cards
-  const totalAppointments = Object.values(mockAppointments).flat().length;
+  // Load appointments for the current month and selected date
+  useEffect(() => {
+    const loadAppointments = async () => {
+      if (!organization) return;
+      
+      try {
+        setLoading(true);
+        
+        // Get appointments for current month for counts
+        const monthStart = new Date(selectedDate.getFullYear(), selectedDate.getMonth(), 1);
+        const monthEnd = new Date(selectedDate.getFullYear(), selectedDate.getMonth() + 1, 0);
+        
+        const monthStartStr = formatDateForAPI(monthStart);
+        const monthEndStr = formatDateForAPI(monthEnd);
+        
+        console.log('🔧 Loading appointments for month:', monthStartStr, 'to', monthEndStr);
+        
+        // Get appointment counts for calendar
+        const counts = await appointmentService.getAppointmentCounts(monthStartStr, monthEndStr);
+        setAppointmentCounts(counts);
+        
+        // Get appointments for selected date
+        const selectedDateStr = formatDateForAPI(selectedDate);
+        console.log('🔧 Loading appointments for selected date:', selectedDateStr);
+        
+        const dayAppointments = await appointmentService.getAppointmentsByDate(
+          selectedDateStr,
+          selectedProfessional,
+          selectedResource
+        );
+        
+        console.log('🔧 Loaded appointments for date:', selectedDateStr, dayAppointments.length, 'appointments');
+        console.log('🔧 Appointments data:', dayAppointments.map(apt => ({ 
+          id: apt.id, 
+          date: apt.date, 
+          normalizedDate: normalizeDateString(apt.date),
+          startTime: apt.startTime, 
+          client: apt.client 
+        })));
+        
+        // Additional validation: Filter appointments that match the selected date
+        const filteredAppointments = dayAppointments.filter(apt => {
+          const normalizedAppointmentDate = normalizeDateString(apt.date);
+          const matches = normalizedAppointmentDate === selectedDateStr;
+          
+          if (!matches) {
+            console.warn('🔧 Found appointment with mismatched date:', {
+              appointmentId: apt.id,
+              expectedDate: selectedDateStr,
+              appointmentRawDate: apt.date,
+              appointmentNormalizedDate: normalizedAppointmentDate
+            });
+          }
+          
+          return matches;
+        });
+        
+        console.log('🔧 Final filtered appointments:', filteredAppointments.length, 'of', dayAppointments.length, 'total');
+        setAppointments(filteredAppointments);
+      } catch (error) {
+        console.error('Error loading appointments:', error);
+        showToast.error('Error al cargar las citas', 'No se pudieron cargar las citas. Inténtalo de nuevo.');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadAppointments();
+  }, [selectedDate, organization, selectedProfessional, selectedResource]);
+
+  // Filter appointments to ensure they match the selected date (double-check for consistency)
+  const selectedDateStr = formatDateForAPI(selectedDate);
+  const todayAppointments = appointments.filter(apt => {
+    const normalizedAppointmentDate = normalizeDateString(apt.date);
+    return normalizedAppointmentDate === selectedDateStr;
+  });
+
+  // Debug logging to track what's happening with the appointments
+  console.log('🔧 AppointmentsPage - Date filtering summary:', {
+    selectedDate: selectedDate.toISOString().split('T')[0],
+    selectedDateStr,
+    totalAppointments: appointments.length,
+    filteredAppointments: todayAppointments.length,
+    appointmentDates: appointments.map(apt => ({
+      id: apt.id,
+      rawDate: apt.date,
+      normalizedDate: normalizeDateString(apt.date)
+    }))
+  });
+
+  // Stats for the dashboard cards - calculate from real data
+  const totalAppointments = Object.values(appointmentCounts).reduce((sum, count) => sum + count, 0);
   const todayCount = todayAppointments.length;
-  const confirmedCount = Object.values(mockAppointments).flat().filter(a => a.status === 'confirmed').length;
-  const completedCount = Object.values(mockAppointments).flat().filter(a => a.status === 'completed').length;
+  const confirmedCount = todayAppointments.filter(a => a.status === 'confirmed').length;
+  const completedCount = todayAppointments.filter(a => a.status === 'completed').length;
 
   const handleNewAppointment = () => {
     showToast.success(
@@ -279,6 +334,7 @@ export const AppointmentsPage: React.FC = () => {
             <AgendaView
               selectedDate={selectedDate}
               appointments={todayAppointments}
+              organization={organization}
             />
           </div>
         </div>
@@ -411,6 +467,7 @@ export const AppointmentsPage: React.FC = () => {
               <AgendaView
                 selectedDate={selectedDate}
                 appointments={todayAppointments}
+                organization={organization}
               />
             ) : (
               <Calendar
