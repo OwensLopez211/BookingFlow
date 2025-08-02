@@ -3,21 +3,40 @@ import Spline from '@splinetool/react-spline';
 
 export const Hero: React.FC = () => {
   const [loaded, setLoaded] = useState(false);
+  const [scale, setScale] = useState(1);
 
-  // Función para manejar cuando Spline termina de cargar
   const handleSplineLoad = () => {
     setLoaded(true);
   };
 
+  useEffect(() => {
+    const calculateScale = () => {
+      const viewportWidth = window.innerWidth;
+      const viewportHeight = window.innerHeight;
+      const originalWidth = 1694;
+      const originalHeight = 1142;
+      
+      const scaleX = viewportWidth / originalWidth;
+      const scaleY = viewportHeight / originalHeight;
+      
+      const newScale = Math.min(scaleX, scaleY);
+      setScale(newScale);
+    };
+
+    calculateScale();
+    window.addEventListener('resize', calculateScale);
+    
+    return () => window.removeEventListener('resize', calculateScale);
+  }, []);
+
   return (
     <div className="relative bg-black w-full h-screen overflow-hidden flex items-center justify-center">
-      {/* Contenedor principal con tamaño fijo para mejor calidad */}
       <div 
         className={`relative transition-opacity duration-500 ${loaded ? 'opacity-100' : 'opacity-0'}`}
         style={{ 
           width: '1694px', 
           height: '1142px',
-          transform: 'scale(1)',
+          transform: `scale(${scale})`,
           transformOrigin: 'center center'
         }}
       >
