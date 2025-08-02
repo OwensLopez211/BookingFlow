@@ -5,7 +5,7 @@ import { Navigation } from '@/components/navigation/Navigation';
 
 export const PublicLayout: React.FC = () => {
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white flex flex-col">
+    <div className=" bg-gradient-to-b from-gray-50 to-white flex flex-col">
       <Navigation />
       
       {/* Main Content */}
