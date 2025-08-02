@@ -1,0 +1,4809 @@
+
+> bookflow-backend@1.0.0 dev
+> tsx watch src/simple-dev-server.ts
+
+🚀 BookFlow Backend Local Server
+📡 Running on: http://localhost:3001
+📊 Test data initialized:
+  - Users: 1
+  - Organizations: 2
+🧪 Test credentials: test@example.com / password123
+✅ UPDATED VERSION - Settings update fix applied V2
+
+🔗 Available endpoints:
+  📋 GET  /health
+  🔐 POST /v1/auth/login
+  🔐 POST /v1/auth/register
+  🔐 GET  /v1/auth/me
+  🏢 GET  /v1/organizations/me
+  🏢 PUT  /v1/organizations/:orgId/settings
+  🎯 GET  /onboarding/status
+  🎯 POST /onboarding/update
+  🎯 POST /onboarding/reset
+  🌐 GET  /public/organization/:orgId
+  🌐 GET  /public/organization/:orgId/services
+  🌐 GET  /public/organization/:orgId/professionals
+  🌐 GET  /public/organization/:orgId/availability/daily-counts
+  🌐 GET  /public/organization/:orgId/availability
+  🌐 POST /public/organization/:orgId/appointments
+  🐛 GET  /debug/users
+  🐛 GET  /debug/organizations
+📋 Getting daily availability counts for org: 5a500506-0a7e-4ec0-b8f6-707bf4476feb, professional: undefined, dates: 2025-08-01, 2025-08-02, 2025-08-04, 2025-08-05, 2025-08-06, 2025-08-07
+📋 Getting daily availability counts for org: 5a500506-0a7e-4ec0-b8f6-707bf4476feb, professional: undefined, dates: 2025-08-01, 2025-08-02, 2025-08-04, 2025-08-05, 2025-08-06, 2025-08-07
+📋 Getting availability for org: 5a500506-0a7e-4ec0-b8f6-707bf4476feb, professional: undefined, date: 2025-08-02
+📋 Getting availability for org: 5a500506-0a7e-4ec0-b8f6-707bf4476feb, professional: undefined, date: 2025-08-05
+📋 Getting availability for org: 5a500506-0a7e-4ec0-b8f6-707bf4476feb, professional: undefined, date: 2025-08-01
+📋 Getting public organization data for: resource-org-demo-123
+✅ Public organization data retrieved successfully
+📋 Getting availability for org: resource-org-demo-123, professional: undefined, date: 2025-08-01
+✅ Generated 13 available slots
+📋 Getting availability for org: 5a500506-0a7e-4ec0-b8f6-707bf4476feb, professional: undefined, date: 2025-08-02
+📋 Getting availability for org: 5a500506-0a7e-4ec0-b8f6-707bf4476feb, professional: undefined, date: 2025-08-01
+📋 Getting availability for org: 5a500506-0a7e-4ec0-b8f6-707bf4476feb, professional: undefined, date: 2025-08-05
+📋 Getting daily availability counts for org: 5a500506-0a7e-4ec0-b8f6-707bf4476feb, professional: undefined, dates: 2025-08-01, 2025-08-02, 2025-08-04, 2025-08-05, 2025-08-06, 2025-08-07
+📋 Getting daily availability counts for org: 5a500506-0a7e-4ec0-b8f6-707bf4476feb, professional: undefined, dates: 2025-08-01, 2025-08-02, 2025-08-04, 2025-08-05, 2025-08-06, 2025-08-07
+📋 Getting availability for org: 5a500506-0a7e-4ec0-b8f6-707bf4476feb, professional: undefined, date: 2025-08-01
+📋 Getting public organization data for: 5a500506-0a7e-4ec0-b8f6-707bf4476feb
+📋 Getting public services for organization: 5a500506-0a7e-4ec0-b8f6-707bf4476feb
+📋 Getting public professionals for organization: 5a500506-0a7e-4ec0-b8f6-707bf4476feb
+📋 Getting public organization data for: 5a500506-0a7e-4ec0-b8f6-707bf4476feb
+📋 Getting public services for organization: 5a500506-0a7e-4ec0-b8f6-707bf4476feb
+📋 Getting public professionals for organization: 5a500506-0a7e-4ec0-b8f6-707bf4476feb
+
+=== ONBOARDING UPDATE REQUEST ===
+User: efa3cc77-9e2a-4427-9ec5-dd49ab5b3043
+Request body: {
+  "stepNumber": 1,
+  "stepData": {
+    "industryType": "hyperbaric_center"
+  }
+}
+🔍 Validating step 1 data...
+✅ Validation passed for step 1
+✅ Step 1 (industry_selection) completed and organization updated
+
+=== ONBOARDING UPDATE REQUEST ===
+User: efa3cc77-9e2a-4427-9ec5-dd49ab5b3043
+Request body: {
+  "stepNumber": 2,
+  "stepData": {
+    "businessName": "ejemplo",
+    "businessAddress": "djasdo",
+    "businessPhone": "+56983612026",
+    "businessEmail": "owenslopez211@gmail.com",
+    "timezone": "America/Santiago",
+    "currency": "CLP",
+    "businessHours": {
+      "monday": {
+        "isOpen": true,
+        "openTime": "09:00",
+        "closeTime": "18:00"
+      },
+      "tuesday": {
+        "isOpen": true,
+        "openTime": "09:00",
+        "closeTime": "18:00"
+      },
+      "wednesday": {
+        "isOpen": true,
+        "openTime": "09:00",
+        "closeTime": "18:00"
+      },
+      "thursday": {
+        "isOpen": true,
+        "openTime": "09:00",
+        "closeTime": "18:00"
+      },
+      "friday": {
+        "isOpen": true,
+        "openTime": "09:00",
+        "closeTime": "18:00"
+      },
+      "saturday": {
+        "isOpen": true,
+        "openTime": "09:00",
+        "closeTime": "14:00"
+      },
+      "sunday": {
+        "isOpen": false,
+        "openTime": "09:00",
+        "closeTime": "18:00"
+      }
+    }
+  }
+}
+🔍 Validating step 2 data...
+✅ Validation passed for step 2
+✅ Step 2 (organization_setup) completed and organization updated
+
+=== ONBOARDING UPDATE REQUEST ===
+User: efa3cc77-9e2a-4427-9ec5-dd49ab5b3043
+Request body: {
+  "stepNumber": 3,
+  "stepData": {
+    "appointmentModel": "resource_based",
+    "allowClientSelection": true,
+    "bufferBetweenAppointments": 15,
+    "maxAdvanceBookingDays": 30
+  }
+}
+🔍 Validating step 3 data...
+✅ Validation passed for step 3
+✅ Step 3 (business_configuration) completed and organization updated
+
+=== ONBOARDING UPDATE REQUEST ===
+User: efa3cc77-9e2a-4427-9ec5-dd49ab5b3043
+Request body: {
+  "stepNumber": 4,
+  "stepData": {
+    "services": [
+      {
+        "id": "hyperbaric_session",
+        "name": "Sesión Hiperbárica",
+        "duration": 90,
+        "price": 80000,
+        "description": "Sesión en cámara hiperbárica"
+      },
+      {
+        "id": "evaluation",
+        "name": "Evaluación Médica",
+        "duration": 45,
+        "price": 50000,
+        "description": "Evaluación previa al tratamiento"
+      },
+      {
+        "id": "wound_care",
+        "name": "Cuidado de Heridas",
+        "duration": 60,
+        "price": 35000,
+        "description": "Tratamiento especializado de heridas"
+      }
+    ],
+    "industryType": "hyperbaric_center"
+  }
+}
+🔍 Validating step 4 data...
+✅ Validation passed for step 4
+✅ Step 4 (services_setup) completed and organization updated
+
+=== ONBOARDING UPDATE REQUEST ===
+User: efa3cc77-9e2a-4427-9ec5-dd49ab5b3043
+Request body: {
+  "stepNumber": 5,
+  "stepData": {
+    "planId": "basic",
+    "planName": "Plan Básico",
+    "planPrice": "Gratis"
+  }
+}
+🔍 Validating step 5 data...
+✅ Validation passed for step 5
+✅ Step 5 (plan_selection) completed and organization updated
+🏢 Getting organization for user: efa3cc77-9e2a-4427-9ec5-dd49ab5b3043
+✅ Organization found: ejemplo
+🏢 Getting organization for user: efa3cc77-9e2a-4427-9ec5-dd49ab5b3043
+✅ Organization found: ejemplo
+🔧 Updating organization settings: e2c36daa-4a86-4853-aa48-6c29979998e7
+📦 Received updates: {
+  "name": "ejemplo",
+  "address": "djasdo",
+  "phone": "+56983612026",
+  "email": "owenslopez211@gmail.com",
+  "currency": "CLP",
+  "timezone": "America/Santiago",
+  "businessHours": {
+    "monday": {
+      "isOpen": true,
+      "openTime": "09:00",
+      "closeTime": "18:00"
+    },
+    "tuesday": {
+      "isOpen": true,
+      "openTime": "09:00",
+      "closeTime": "18:00"
+    },
+    "wednesday": {
+      "isOpen": true,
+      "openTime": "09:00",
+      "closeTime": "18:00"
+    },
+    "thursday": {
+      "isOpen": true,
+      "openTime": "09:00",
+      "closeTime": "18:00"
+    },
+    "friday": {
+      "isOpen": true,
+      "openTime": "09:00",
+      "closeTime": "18:00"
+    },
+    "saturday": {
+      "isOpen": true,
+      "openTime": "09:00",
+      "closeTime": "14:00"
+    },
+    "sunday": {
+      "isOpen": false,
+      "openTime": "09:00",
+      "closeTime": "18:00"
+    }
+  },
+  "notifications": {},
+  "appointmentSystem": {
+    "appointmentModel": "resource_based",
+    "allowClientSelection": true,
+    "bufferBetweenAppointments": 15,
+    "maxAdvanceBookingDays": 30
+  },
+  "businessInfo": {
+    "businessName": "ejemplo",
+    "businessAddress": "djasdo",
+    "businessPhone": "+56983612026",
+    "businessEmail": "owenslopez211@gmail.com"
+  },
+  "services": [
+    {
+      "id": "hyperbaric_session",
+      "name": "Sesión Hiperbárica",
+      "description": "Sesión en cámara hiperbárica",
+      "duration": 90,
+      "price": 80000,
+      "isActive": true
+    },
+    {
+      "id": "evaluation",
+      "name": "Evaluación Médica",
+      "description": "Evaluación previa al tratamiento",
+      "duration": 45,
+      "price": 50000,
+      "isActive": true
+    },
+    {
+      "id": "wound_care",
+      "name": "Cuidado de Heridas",
+      "description": "Tratamiento especializado de heridas",
+      "duration": 60,
+      "price": 35000,
+      "isActive": true
+    }
+  ]
+}
+📋 Current organization before update: {
+  "id": "e2c36daa-4a86-4853-aa48-6c29979998e7",
+  "name": "ejemplo",
+  "templateType": "hyperbaric_center",
+  "settings": {
+    "timezone": "America/Santiago",
+    "businessHours": {
+      "monday": {
+        "isOpen": true,
+        "openTime": "09:00",
+        "closeTime": "18:00"
+      },
+      "tuesday": {
+        "isOpen": true,
+        "openTime": "09:00",
+        "closeTime": "18:00"
+      },
+      "wednesday": {
+        "isOpen": true,
+        "openTime": "09:00",
+        "closeTime": "18:00"
+      },
+      "thursday": {
+        "isOpen": true,
+        "openTime": "09:00",
+        "closeTime": "18:00"
+      },
+      "friday": {
+        "isOpen": true,
+        "openTime": "09:00",
+        "closeTime": "18:00"
+      },
+      "saturday": {
+        "isOpen": true,
+        "openTime": "09:00",
+        "closeTime": "14:00"
+      },
+      "sunday": {
+        "isOpen": false,
+        "openTime": "09:00",
+        "closeTime": "18:00"
+      }
+    },
+    "notifications": {},
+    "businessConfiguration": {
+      "appointmentModel": "resource_based",
+      "allowClientSelection": true,
+      "bufferBetweenAppointments": 15,
+      "maxAdvanceBookingDays": 30
+    },
+    "services": [
+      {
+        "id": "hyperbaric_session",
+        "name": "Sesión Hiperbárica",
+        "description": "Sesión en cámara hiperbárica",
+        "duration": 90,
+        "price": 80000,
+        "isActive": true
+      },
+      {
+        "id": "evaluation",
+        "name": "Evaluación Médica",
+        "description": "Evaluación previa al tratamiento",
+        "duration": 45,
+        "price": 50000,
+        "isActive": true
+      },
+      {
+        "id": "wound_care",
+        "name": "Cuidado de Heridas",
+        "description": "Tratamiento especializado de heridas",
+        "duration": 60,
+        "price": 35000,
+        "isActive": true
+      }
+    ]
+  },
+  "subscription": {
+    "plan": "free",
+    "limits": {
+      "maxResources": 1,
+      "maxAppointmentsPerMonth": 100,
+      "maxUsers": 3
+    }
+  },
+  "createdAt": "2025-08-01T15:16:20.633Z",
+  "updatedAt": "2025-08-01T15:16:49.339Z",
+  "address": "djasdo",
+  "phone": "+56983612026",
+  "email": "owenslopez211@gmail.com",
+  "currency": "CLP"
+}
+💾 Organization after update: {
+  "id": "e2c36daa-4a86-4853-aa48-6c29979998e7",
+  "name": "ejemplo",
+  "templateType": "hyperbaric_center",
+  "settings": {
+    "timezone": "America/Santiago",
+    "businessHours": {
+      "monday": {
+        "isOpen": true,
+        "openTime": "09:00",
+        "closeTime": "18:00"
+      },
+      "tuesday": {
+        "isOpen": true,
+        "openTime": "09:00",
+        "closeTime": "18:00"
+      },
+      "wednesday": {
+        "isOpen": true,
+        "openTime": "09:00",
+        "closeTime": "18:00"
+      },
+      "thursday": {
+        "isOpen": true,
+        "openTime": "09:00",
+        "closeTime": "18:00"
+      },
+      "friday": {
+        "isOpen": true,
+        "openTime": "09:00",
+        "closeTime": "18:00"
+      },
+      "saturday": {
+        "isOpen": true,
+        "openTime": "09:00",
+        "closeTime": "14:00"
+      },
+      "sunday": {
+        "isOpen": false,
+        "openTime": "09:00",
+        "closeTime": "18:00"
+      }
+    },
+    "notifications": {},
+    "businessConfiguration": {
+      "appointmentModel": "resource_based",
+      "allowClientSelection": true,
+      "bufferBetweenAppointments": 15,
+      "maxAdvanceBookingDays": 30
+    },
+    "services": [
+      {
+        "id": "hyperbaric_session",
+        "name": "Sesión Hiperbárica",
+        "description": "Sesión en cámara hiperbárica",
+        "duration": 90,
+        "price": 80000,
+        "isActive": true
+      },
+      {
+        "id": "evaluation",
+        "name": "Evaluación Médica",
+        "description": "Evaluación previa al tratamiento",
+        "duration": 45,
+        "price": 50000,
+        "isActive": true
+      },
+      {
+        "id": "wound_care",
+        "name": "Cuidado de Heridas",
+        "description": "Tratamiento especializado de heridas",
+        "duration": 60,
+        "price": 35000,
+        "isActive": true
+      }
+    ],
+    "appointmentSystem": {
+      "appointmentModel": "resource_based",
+      "allowClientSelection": true,
+      "bufferBetweenAppointments": 15,
+      "maxAdvanceBookingDays": 30
+    },
+    "businessInfo": {
+      "businessName": "ejemplo",
+      "businessAddress": "djasdo",
+      "businessPhone": "+56983612026",
+      "businessEmail": "owenslopez211@gmail.com"
+    }
+  },
+  "subscription": {
+    "plan": "free",
+    "limits": {
+      "maxResources": 1,
+      "maxAppointmentsPerMonth": 100,
+      "maxUsers": 3
+    }
+  },
+  "createdAt": "2025-08-01T15:16:20.633Z",
+  "updatedAt": "2025-08-01T15:16:57.814Z",
+  "address": "djasdo",
+  "phone": "+56983612026",
+  "email": "owenslopez211@gmail.com",
+  "currency": "CLP"
+}
+✅ Organization updated successfully
+📋 Getting public organization data for: e2c36daa-4a86-4853-aa48-6c29979998e7
+✅ Public organization data retrieved successfully
+📋 Getting public services for organization: e2c36daa-4a86-4853-aa48-6c29979998e7
+✅ Found 3 active services
+📋 Getting public organization data for: e2c36daa-4a86-4853-aa48-6c29979998e7
+✅ Public organization data retrieved successfully
+📋 Getting public professionals for organization: e2c36daa-4a86-4853-aa48-6c29979998e7
+📋 Getting public professionals for organization: e2c36daa-4a86-4853-aa48-6c29979998e7
+📋 Getting public services for organization: e2c36daa-4a86-4853-aa48-6c29979998e7
+✅ Found 3 active services
+📋 Getting daily availability counts for org: e2c36daa-4a86-4853-aa48-6c29979998e7, professional: undefined, dates: 2025-08-01, 2025-08-02, 2025-08-04, 2025-08-05, 2025-08-06, 2025-08-07
+✅ Generated daily counts for 6 dates
+📋 Getting daily availability counts for org: e2c36daa-4a86-4853-aa48-6c29979998e7, professional: undefined, dates: 2025-08-01, 2025-08-02, 2025-08-04, 2025-08-05, 2025-08-06, 2025-08-07
+✅ Generated daily counts for 6 dates
+📋 Getting availability for org: e2c36daa-4a86-4853-aa48-6c29979998e7, professional: undefined, date: 2025-08-01
+✅ Generated 9 available slots
+🔧 Updating organization settings: e2c36daa-4a86-4853-aa48-6c29979998e7
+📦 Received updates: {
+  "name": "ejemplo",
+  "address": "djasdo",
+  "phone": "+56983612026",
+  "email": "owenslopez211@gmail.com",
+  "currency": "CLP",
+  "timezone": "America/Santiago",
+  "businessHours": {
+    "monday": {
+      "isOpen": true,
+      "openTime": "09:00",
+      "closeTime": "18:00"
+    },
+    "tuesday": {
+      "isOpen": true,
+      "openTime": "09:00",
+      "closeTime": "18:00"
+    },
+    "wednesday": {
+      "isOpen": true,
+      "openTime": "09:00",
+      "closeTime": "18:00"
+    },
+    "thursday": {
+      "isOpen": true,
+      "openTime": "09:00",
+      "closeTime": "18:00"
+    },
+    "friday": {
+      "isOpen": true,
+      "openTime": "09:00",
+      "closeTime": "18:00"
+    },
+    "saturday": {
+      "isOpen": true,
+      "openTime": "09:00",
+      "closeTime": "14:00"
+    },
+    "sunday": {
+      "isOpen": false,
+      "openTime": "09:00",
+      "closeTime": "18:00"
+    }
+  },
+  "notifications": {},
+  "appointmentSystem": {
+    "appointmentModel": "resource_based",
+    "allowClientSelection": true,
+    "bufferBetweenAppointments": 15,
+    "maxAdvanceBookingDays": 30,
+    "maxResources": 2
+  },
+  "businessInfo": {
+    "businessName": "ejemplo",
+    "businessAddress": "djasdo",
+    "businessPhone": "+56983612026",
+    "businessEmail": "owenslopez211@gmail.com"
+  },
+  "services": [
+    {
+      "id": "hyperbaric_session",
+      "name": "Sesión Hiperbárica",
+      "description": "Sesión en cámara hiperbárica",
+      "duration": 90,
+      "price": 80000,
+      "isActive": true
+    },
+    {
+      "id": "evaluation",
+      "name": "Evaluación Médica",
+      "description": "Evaluación previa al tratamiento",
+      "duration": 45,
+      "price": 50000,
+      "isActive": true
+    },
+    {
+      "id": "wound_care",
+      "name": "Cuidado de Heridas",
+      "description": "Tratamiento especializado de heridas",
+      "duration": 60,
+      "price": 35000,
+      "isActive": true
+    }
+  ]
+}
+📋 Current organization before update: {
+  "id": "e2c36daa-4a86-4853-aa48-6c29979998e7",
+  "name": "ejemplo",
+  "templateType": "hyperbaric_center",
+  "settings": {
+    "timezone": "America/Santiago",
+    "businessHours": {
+      "monday": {
+        "isOpen": true,
+        "openTime": "09:00",
+        "closeTime": "18:00"
+      },
+      "tuesday": {
+        "isOpen": true,
+        "openTime": "09:00",
+        "closeTime": "18:00"
+      },
+      "wednesday": {
+        "isOpen": true,
+        "openTime": "09:00",
+        "closeTime": "18:00"
+      },
+      "thursday": {
+        "isOpen": true,
+        "openTime": "09:00",
+        "closeTime": "18:00"
+      },
+      "friday": {
+        "isOpen": true,
+        "openTime": "09:00",
+        "closeTime": "18:00"
+      },
+      "saturday": {
+        "isOpen": true,
+        "openTime": "09:00",
+        "closeTime": "14:00"
+      },
+      "sunday": {
+        "isOpen": false,
+        "openTime": "09:00",
+        "closeTime": "18:00"
+      }
+    },
+    "notifications": {},
+    "businessConfiguration": {
+      "appointmentModel": "resource_based",
+      "allowClientSelection": true,
+      "bufferBetweenAppointments": 15,
+      "maxAdvanceBookingDays": 30
+    },
+    "services": [
+      {
+        "id": "hyperbaric_session",
+        "name": "Sesión Hiperbárica",
+        "description": "Sesión en cámara hiperbárica",
+        "duration": 90,
+        "price": 80000,
+        "isActive": true
+      },
+      {
+        "id": "evaluation",
+        "name": "Evaluación Médica",
+        "description": "Evaluación previa al tratamiento",
+        "duration": 45,
+        "price": 50000,
+        "isActive": true
+      },
+      {
+        "id": "wound_care",
+        "name": "Cuidado de Heridas",
+        "description": "Tratamiento especializado de heridas",
+        "duration": 60,
+        "price": 35000,
+        "isActive": true
+      }
+    ],
+    "appointmentSystem": {
+      "appointmentModel": "resource_based",
+      "allowClientSelection": true,
+      "bufferBetweenAppointments": 15,
+      "maxAdvanceBookingDays": 30
+    },
+    "businessInfo": {
+      "businessName": "ejemplo",
+      "businessAddress": "djasdo",
+      "businessPhone": "+56983612026",
+      "businessEmail": "owenslopez211@gmail.com"
+    }
+  },
+  "subscription": {
+    "plan": "free",
+    "limits": {
+      "maxResources": 1,
+      "maxAppointmentsPerMonth": 100,
+      "maxUsers": 3
+    }
+  },
+  "createdAt": "2025-08-01T15:16:20.633Z",
+  "updatedAt": "2025-08-01T15:16:57.814Z",
+  "address": "djasdo",
+  "phone": "+56983612026",
+  "email": "owenslopez211@gmail.com",
+  "currency": "CLP"
+}
+💾 Organization after update: {
+  "id": "e2c36daa-4a86-4853-aa48-6c29979998e7",
+  "name": "ejemplo",
+  "templateType": "hyperbaric_center",
+  "settings": {
+    "timezone": "America/Santiago",
+    "businessHours": {
+      "monday": {
+        "isOpen": true,
+        "openTime": "09:00",
+        "closeTime": "18:00"
+      },
+      "tuesday": {
+        "isOpen": true,
+        "openTime": "09:00",
+        "closeTime": "18:00"
+      },
+      "wednesday": {
+        "isOpen": true,
+        "openTime": "09:00",
+        "closeTime": "18:00"
+      },
+      "thursday": {
+        "isOpen": true,
+        "openTime": "09:00",
+        "closeTime": "18:00"
+      },
+      "friday": {
+        "isOpen": true,
+        "openTime": "09:00",
+        "closeTime": "18:00"
+      },
+      "saturday": {
+        "isOpen": true,
+        "openTime": "09:00",
+        "closeTime": "14:00"
+      },
+      "sunday": {
+        "isOpen": false,
+        "openTime": "09:00",
+        "closeTime": "18:00"
+      }
+    },
+    "notifications": {},
+    "businessConfiguration": {
+      "appointmentModel": "resource_based",
+      "allowClientSelection": true,
+      "bufferBetweenAppointments": 15,
+      "maxAdvanceBookingDays": 30,
+      "maxResources": 2
+    },
+    "services": [
+      {
+        "id": "hyperbaric_session",
+        "name": "Sesión Hiperbárica",
+        "description": "Sesión en cámara hiperbárica",
+        "duration": 90,
+        "price": 80000,
+        "isActive": true
+      },
+      {
+        "id": "evaluation",
+        "name": "Evaluación Médica",
+        "description": "Evaluación previa al tratamiento",
+        "duration": 45,
+        "price": 50000,
+        "isActive": true
+      },
+      {
+        "id": "wound_care",
+        "name": "Cuidado de Heridas",
+        "description": "Tratamiento especializado de heridas",
+        "duration": 60,
+        "price": 35000,
+        "isActive": true
+      }
+    ],
+    "appointmentSystem": {
+      "appointmentModel": "resource_based",
+      "allowClientSelection": true,
+      "bufferBetweenAppointments": 15,
+      "maxAdvanceBookingDays": 30,
+      "maxResources": 2
+    },
+    "businessInfo": {
+      "businessName": "ejemplo",
+      "businessAddress": "djasdo",
+      "businessPhone": "+56983612026",
+      "businessEmail": "owenslopez211@gmail.com"
+    }
+  },
+  "subscription": {
+    "plan": "free",
+    "limits": {
+      "maxResources": 1,
+      "maxAppointmentsPerMonth": 100,
+      "maxUsers": 3
+    }
+  },
+  "createdAt": "2025-08-01T15:16:20.633Z",
+  "updatedAt": "2025-08-01T15:17:10.999Z",
+  "address": "djasdo",
+  "phone": "+56983612026",
+  "email": "owenslopez211@gmail.com",
+  "currency": "CLP"
+}
+✅ Organization updated successfully
+📋 Getting public organization data for: e2c36daa-4a86-4853-aa48-6c29979998e7
+✅ Public organization data retrieved successfully
+📋 Getting public professionals for organization: e2c36daa-4a86-4853-aa48-6c29979998e7
+📋 Getting public services for organization: e2c36daa-4a86-4853-aa48-6c29979998e7
+✅ Found 3 active services
+📋 Getting public professionals for organization: e2c36daa-4a86-4853-aa48-6c29979998e7
+📋 Getting public organization data for: e2c36daa-4a86-4853-aa48-6c29979998e7
+✅ Public organization data retrieved successfully
+📋 Getting public services for organization: e2c36daa-4a86-4853-aa48-6c29979998e7
+✅ Found 3 active services
+📋 Getting daily availability counts for org: e2c36daa-4a86-4853-aa48-6c29979998e7, professional: undefined, dates: 2025-08-01, 2025-08-02, 2025-08-04, 2025-08-05, 2025-08-06, 2025-08-07
+✅ Generated daily counts for 6 dates
+📋 Getting daily availability counts for org: e2c36daa-4a86-4853-aa48-6c29979998e7, professional: undefined, dates: 2025-08-01, 2025-08-02, 2025-08-04, 2025-08-05, 2025-08-06, 2025-08-07
+✅ Generated daily counts for 6 dates
+📋 Getting availability for org: e2c36daa-4a86-4853-aa48-6c29979998e7, professional: undefined, date: 2025-08-01
+✅ Generated 9 available slots
+📋 Getting availability for org: e2c36daa-4a86-4853-aa48-6c29979998e7, professional: undefined, date: 2025-08-05
+✅ Generated 9 available slots
+📋 Getting availability for org: e2c36daa-4a86-4853-aa48-6c29979998e7, professional: undefined, date: 2025-08-06
+✅ Generated 9 available slots
+📋 Getting availability for org: e2c36daa-4a86-4853-aa48-6c29979998e7, professional: undefined, date: 2025-08-02
+✅ Generated 9 available slots
+🔧 Updating organization settings: e2c36daa-4a86-4853-aa48-6c29979998e7
+📦 Received updates: {
+  "name": "ejemplo",
+  "address": "djasdo",
+  "phone": "+56983612026",
+  "email": "owenslopez211@gmail.com",
+  "currency": "CLP",
+  "timezone": "America/Santiago",
+  "businessHours": {
+    "monday": {
+      "isOpen": true,
+      "openTime": "09:00",
+      "closeTime": "18:00"
+    },
+    "tuesday": {
+      "isOpen": true,
+      "openTime": "09:00",
+      "closeTime": "18:00"
+    },
+    "wednesday": {
+      "isOpen": true,
+      "openTime": "09:00",
+      "closeTime": "18:00"
+    },
+    "thursday": {
+      "isOpen": true,
+      "openTime": "09:00",
+      "closeTime": "18:00"
+    },
+    "friday": {
+      "isOpen": true,
+      "openTime": "09:00",
+      "closeTime": "18:00"
+    },
+    "saturday": {
+      "isOpen": true,
+      "openTime": "09:00",
+      "closeTime": "14:00"
+    },
+    "sunday": {
+      "isOpen": false,
+      "openTime": "09:00",
+      "closeTime": "18:00"
+    }
+  },
+  "notifications": {},
+  "appointmentSystem": {
+    "appointmentModel": "resource_based",
+    "allowClientSelection": true,
+    "bufferBetweenAppointments": 15,
+    "maxAdvanceBookingDays": 30,
+    "maxResources": 3
+  },
+  "businessInfo": {
+    "businessName": "ejemplo",
+    "businessAddress": "djasdo",
+    "businessPhone": "+56983612026",
+    "businessEmail": "owenslopez211@gmail.com"
+  },
+  "services": [
+    {
+      "id": "hyperbaric_session",
+      "name": "Sesión Hiperbárica",
+      "description": "Sesión en cámara hiperbárica",
+      "duration": 90,
+      "price": 80000,
+      "isActive": true
+    },
+    {
+      "id": "evaluation",
+      "name": "Evaluación Médica",
+      "description": "Evaluación previa al tratamiento",
+      "duration": 45,
+      "price": 50000,
+      "isActive": true
+    },
+    {
+      "id": "wound_care",
+      "name": "Cuidado de Heridas",
+      "description": "Tratamiento especializado de heridas",
+      "duration": 60,
+      "price": 35000,
+      "isActive": true
+    }
+  ]
+}
+📋 Current organization before update: {
+  "id": "e2c36daa-4a86-4853-aa48-6c29979998e7",
+  "name": "ejemplo",
+  "templateType": "hyperbaric_center",
+  "settings": {
+    "timezone": "America/Santiago",
+    "businessHours": {
+      "monday": {
+        "isOpen": true,
+        "openTime": "09:00",
+        "closeTime": "18:00"
+      },
+      "tuesday": {
+        "isOpen": true,
+        "openTime": "09:00",
+        "closeTime": "18:00"
+      },
+      "wednesday": {
+        "isOpen": true,
+        "openTime": "09:00",
+        "closeTime": "18:00"
+      },
+      "thursday": {
+        "isOpen": true,
+        "openTime": "09:00",
+        "closeTime": "18:00"
+      },
+      "friday": {
+        "isOpen": true,
+        "openTime": "09:00",
+        "closeTime": "18:00"
+      },
+      "saturday": {
+        "isOpen": true,
+        "openTime": "09:00",
+        "closeTime": "14:00"
+      },
+      "sunday": {
+        "isOpen": false,
+        "openTime": "09:00",
+        "closeTime": "18:00"
+      }
+    },
+    "notifications": {},
+    "businessConfiguration": {
+      "appointmentModel": "resource_based",
+      "allowClientSelection": true,
+      "bufferBetweenAppointments": 15,
+      "maxAdvanceBookingDays": 30,
+      "maxResources": 2
+    },
+    "services": [
+      {
+        "id": "hyperbaric_session",
+        "name": "Sesión Hiperbárica",
+        "description": "Sesión en cámara hiperbárica",
+        "duration": 90,
+        "price": 80000,
+        "isActive": true
+      },
+      {
+        "id": "evaluation",
+        "name": "Evaluación Médica",
+        "description": "Evaluación previa al tratamiento",
+        "duration": 45,
+        "price": 50000,
+        "isActive": true
+      },
+      {
+        "id": "wound_care",
+        "name": "Cuidado de Heridas",
+        "description": "Tratamiento especializado de heridas",
+        "duration": 60,
+        "price": 35000,
+        "isActive": true
+      }
+    ],
+    "appointmentSystem": {
+      "appointmentModel": "resource_based",
+      "allowClientSelection": true,
+      "bufferBetweenAppointments": 15,
+      "maxAdvanceBookingDays": 30,
+      "maxResources": 2
+    },
+    "businessInfo": {
+      "businessName": "ejemplo",
+      "businessAddress": "djasdo",
+      "businessPhone": "+56983612026",
+      "businessEmail": "owenslopez211@gmail.com"
+    }
+  },
+  "subscription": {
+    "plan": "free",
+    "limits": {
+      "maxResources": 1,
+      "maxAppointmentsPerMonth": 100,
+      "maxUsers": 3
+    }
+  },
+  "createdAt": "2025-08-01T15:16:20.633Z",
+  "updatedAt": "2025-08-01T15:17:10.999Z",
+  "address": "djasdo",
+  "phone": "+56983612026",
+  "email": "owenslopez211@gmail.com",
+  "currency": "CLP"
+}
+💾 Organization after update: {
+  "id": "e2c36daa-4a86-4853-aa48-6c29979998e7",
+  "name": "ejemplo",
+  "templateType": "hyperbaric_center",
+  "settings": {
+    "timezone": "America/Santiago",
+    "businessHours": {
+      "monday": {
+        "isOpen": true,
+        "openTime": "09:00",
+        "closeTime": "18:00"
+      },
+      "tuesday": {
+        "isOpen": true,
+        "openTime": "09:00",
+        "closeTime": "18:00"
+      },
+      "wednesday": {
+        "isOpen": true,
+        "openTime": "09:00",
+        "closeTime": "18:00"
+      },
+      "thursday": {
+        "isOpen": true,
+        "openTime": "09:00",
+        "closeTime": "18:00"
+      },
+      "friday": {
+        "isOpen": true,
+        "openTime": "09:00",
+        "closeTime": "18:00"
+      },
+      "saturday": {
+        "isOpen": true,
+        "openTime": "09:00",
+        "closeTime": "14:00"
+      },
+      "sunday": {
+        "isOpen": false,
+        "openTime": "09:00",
+        "closeTime": "18:00"
+      }
+    },
+    "notifications": {},
+    "businessConfiguration": {
+      "appointmentModel": "resource_based",
+      "allowClientSelection": true,
+      "bufferBetweenAppointments": 15,
+      "maxAdvanceBookingDays": 30,
+      "maxResources": 3
+    },
+    "services": [
+      {
+        "id": "hyperbaric_session",
+        "name": "Sesión Hiperbárica",
+        "description": "Sesión en cámara hiperbárica",
+        "duration": 90,
+        "price": 80000,
+        "isActive": true
+      },
+      {
+        "id": "evaluation",
+        "name": "Evaluación Médica",
+        "description": "Evaluación previa al tratamiento",
+        "duration": 45,
+        "price": 50000,
+        "isActive": true
+      },
+      {
+        "id": "wound_care",
+        "name": "Cuidado de Heridas",
+        "description": "Tratamiento especializado de heridas",
+        "duration": 60,
+        "price": 35000,
+        "isActive": true
+      }
+    ],
+    "appointmentSystem": {
+      "appointmentModel": "resource_based",
+      "allowClientSelection": true,
+      "bufferBetweenAppointments": 15,
+      "maxAdvanceBookingDays": 30,
+      "maxResources": 3
+    },
+    "businessInfo": {
+      "businessName": "ejemplo",
+      "businessAddress": "djasdo",
+      "businessPhone": "+56983612026",
+      "businessEmail": "owenslopez211@gmail.com"
+    }
+  },
+  "subscription": {
+    "plan": "free",
+    "limits": {
+      "maxResources": 1,
+      "maxAppointmentsPerMonth": 100,
+      "maxUsers": 3
+    }
+  },
+  "createdAt": "2025-08-01T15:16:20.633Z",
+  "updatedAt": "2025-08-01T15:17:30.286Z",
+  "address": "djasdo",
+  "phone": "+56983612026",
+  "email": "owenslopez211@gmail.com",
+  "currency": "CLP"
+}
+✅ Organization updated successfully
+📋 Getting public organization data for: e2c36daa-4a86-4853-aa48-6c29979998e7
+✅ Public organization data retrieved successfully
+📋 Getting public services for organization: e2c36daa-4a86-4853-aa48-6c29979998e7
+✅ Found 3 active services
+📋 Getting public professionals for organization: e2c36daa-4a86-4853-aa48-6c29979998e7
+📋 Getting public professionals for organization: e2c36daa-4a86-4853-aa48-6c29979998e7
+📋 Getting public organization data for: e2c36daa-4a86-4853-aa48-6c29979998e7
+✅ Public organization data retrieved successfully
+📋 Getting public services for organization: e2c36daa-4a86-4853-aa48-6c29979998e7
+✅ Found 3 active services
+📋 Getting daily availability counts for org: e2c36daa-4a86-4853-aa48-6c29979998e7, professional: undefined, dates: 2025-08-01, 2025-08-02, 2025-08-04, 2025-08-05, 2025-08-06, 2025-08-07
+✅ Generated daily counts for 6 dates
+📋 Getting daily availability counts for org: e2c36daa-4a86-4853-aa48-6c29979998e7, professional: undefined, dates: 2025-08-01, 2025-08-02, 2025-08-04, 2025-08-05, 2025-08-06, 2025-08-07
+✅ Generated daily counts for 6 dates
+📋 Getting availability for org: e2c36daa-4a86-4853-aa48-6c29979998e7, professional: undefined, date: 2025-08-01
+✅ Generated 9 available slots
+📋 Getting public organization data for: e2c36daa-4a86-4853-aa48-6c29979998e7
+✅ Public organization data retrieved successfully
+📋 Getting public services for organization: e2c36daa-4a86-4853-aa48-6c29979998e7
+✅ Found 3 active services
+📋 Getting public professionals for organization: e2c36daa-4a86-4853-aa48-6c29979998e7
+📋 Getting public organization data for: e2c36daa-4a86-4853-aa48-6c29979998e7
+✅ Public organization data retrieved successfully
+📋 Getting public professionals for organization: e2c36daa-4a86-4853-aa48-6c29979998e7
+📋 Getting public services for organization: e2c36daa-4a86-4853-aa48-6c29979998e7
+✅ Found 3 active services
+📋 Getting daily availability counts for org: e2c36daa-4a86-4853-aa48-6c29979998e7, professional: undefined, dates: 2025-08-01, 2025-08-02, 2025-08-04, 2025-08-05, 2025-08-06, 2025-08-07
+✅ Generated daily counts for 6 dates
+📋 Getting daily availability counts for org: e2c36daa-4a86-4853-aa48-6c29979998e7, professional: undefined, dates: 2025-08-01, 2025-08-02, 2025-08-04, 2025-08-05, 2025-08-06, 2025-08-07
+✅ Generated daily counts for 6 dates
+📋 Getting availability for org: e2c36daa-4a86-4853-aa48-6c29979998e7, professional: undefined, date: 2025-08-01
+✅ Generated 5 available slots
+📋 Getting availability for org: e2c36daa-4a86-4853-aa48-6c29979998e7, professional: undefined, date: 2025-08-02
+✅ Generated 5 available slots
+📋 Getting availability for org: e2c36daa-4a86-4853-aa48-6c29979998e7, professional: undefined, date: 2025-08-01
+✅ Generated 5 available slots
+📋 Getting availability for org: e2c36daa-4a86-4853-aa48-6c29979998e7, professional: undefined, date: 2025-08-05
+✅ Generated 5 available slots
+📋 Getting availability for org: e2c36daa-4a86-4853-aa48-6c29979998e7, professional: undefined, date: 2025-08-06
+✅ Generated 5 available slots
+📋 Getting availability for org: e2c36daa-4a86-4853-aa48-6c29979998e7, professional: undefined, date: 2025-08-01
+✅ Generated 5 available slots
+📋 Getting public organization data for: e2c36daa-4a86-4853-aa48-6c29979998e7
+✅ Public organization data retrieved successfully
+📋 Getting public services for organization: e2c36daa-4a86-4853-aa48-6c29979998e7
+✅ Found 3 active services
+📋 Getting public services for organization: e2c36daa-4a86-4853-aa48-6c29979998e7
+✅ Found 3 active services
+📋 Getting public organization data for: e2c36daa-4a86-4853-aa48-6c29979998e7
+✅ Public organization data retrieved successfully
+📋 Getting public professionals for organization: e2c36daa-4a86-4853-aa48-6c29979998e7
+📋 Getting public professionals for organization: e2c36daa-4a86-4853-aa48-6c29979998e7
+📋 Getting daily availability counts for org: e2c36daa-4a86-4853-aa48-6c29979998e7, professional: undefined, dates: 2025-08-01, 2025-08-02, 2025-08-04, 2025-08-05, 2025-08-06, 2025-08-07
+✅ Generated daily counts for 6 dates
+📋 Getting daily availability counts for org: e2c36daa-4a86-4853-aa48-6c29979998e7, professional: undefined, dates: 2025-08-01, 2025-08-02, 2025-08-04, 2025-08-05, 2025-08-06, 2025-08-07
+✅ Generated daily counts for 6 dates
+📋 Getting availability for org: e2c36daa-4a86-4853-aa48-6c29979998e7, professional: undefined, date: 2025-08-01
+✅ Generated 5 available slots
+📋 Getting availability for org: e2c36daa-4a86-4853-aa48-6c29979998e7, professional: undefined, date: 2025-08-05
+✅ Generated 5 available slots
+📋 Getting availability for org: e2c36daa-4a86-4853-aa48-6c29979998e7, professional: undefined, date: 2025-08-06
+✅ Generated 5 available slots
+📋 Getting daily availability counts for org: e2c36daa-4a86-4853-aa48-6c29979998e7, professional: undefined, dates: 2025-08-01, 2025-08-02, 2025-08-04, 2025-08-05, 2025-08-06, 2025-08-07
+✅ Generated daily counts for 6 dates
+📋 Getting daily availability counts for org: e2c36daa-4a86-4853-aa48-6c29979998e7, professional: undefined, dates: 2025-08-01, 2025-08-02, 2025-08-04, 2025-08-05, 2025-08-06, 2025-08-07
+✅ Generated daily counts for 6 dates
+📋 Getting availability for org: e2c36daa-4a86-4853-aa48-6c29979998e7, professional: undefined, date: 2025-08-01
+✅ Generated 7 available slots
+📋 Getting daily availability counts for org: e2c36daa-4a86-4853-aa48-6c29979998e7, professional: undefined, dates: 2025-08-01, 2025-08-02, 2025-08-04, 2025-08-05, 2025-08-06, 2025-08-07
+✅ Generated daily counts for 6 dates
+📋 Getting daily availability counts for org: e2c36daa-4a86-4853-aa48-6c29979998e7, professional: undefined, dates: 2025-08-01, 2025-08-02, 2025-08-04, 2025-08-05, 2025-08-06, 2025-08-07
+✅ Generated daily counts for 6 dates
+📋 Getting availability for org: e2c36daa-4a86-4853-aa48-6c29979998e7, professional: undefined, date: 2025-08-01
+✅ Generated 5 available slots
+📋 Getting daily availability counts for org: e2c36daa-4a86-4853-aa48-6c29979998e7, professional: undefined, dates: 2025-08-01, 2025-08-02, 2025-08-04, 2025-08-05, 2025-08-06, 2025-08-07
+✅ Generated daily counts for 6 dates
+📋 Getting daily availability counts for org: e2c36daa-4a86-4853-aa48-6c29979998e7, professional: undefined, dates: 2025-08-01, 2025-08-02, 2025-08-04, 2025-08-05, 2025-08-06, 2025-08-07
+✅ Generated daily counts for 6 dates
+📋 Getting availability for org: e2c36daa-4a86-4853-aa48-6c29979998e7, professional: undefined, date: 2025-08-01
+✅ Generated 9 available slots
+📋 Getting daily availability counts for org: e2c36daa-4a86-4853-aa48-6c29979998e7, professional: undefined, dates: 2025-08-01, 2025-08-02, 2025-08-04, 2025-08-05, 2025-08-06, 2025-08-07
+✅ Generated daily counts for 6 dates
+📋 Getting daily availability counts for org: e2c36daa-4a86-4853-aa48-6c29979998e7, professional: undefined, dates: 2025-08-01, 2025-08-02, 2025-08-04, 2025-08-05, 2025-08-06, 2025-08-07
+✅ Generated daily counts for 6 dates
+📋 Getting availability for org: e2c36daa-4a86-4853-aa48-6c29979998e7, professional: undefined, date: 2025-08-01
+✅ Generated 9 available slots
+📋 Getting daily availability counts for org: e2c36daa-4a86-4853-aa48-6c29979998e7, professional: undefined, dates: 2025-08-01, 2025-08-02, 2025-08-04, 2025-08-05, 2025-08-06, 2025-08-07
+✅ Generated daily counts for 6 dates
+📋 Getting daily availability counts for org: e2c36daa-4a86-4853-aa48-6c29979998e7, professional: undefined, dates: 2025-08-01, 2025-08-02, 2025-08-04, 2025-08-05, 2025-08-06, 2025-08-07
+✅ Generated daily counts for 6 dates
+📋 Getting availability for org: e2c36daa-4a86-4853-aa48-6c29979998e7, professional: undefined, date: 2025-08-02
+✅ Generated 9 available slots
+📋 Getting daily availability counts for org: e2c36daa-4a86-4853-aa48-6c29979998e7, professional: undefined, dates: 2025-08-01, 2025-08-02, 2025-08-04, 2025-08-05, 2025-08-06, 2025-08-07
+✅ Generated daily counts for 6 dates
+📋 Getting daily availability counts for org: e2c36daa-4a86-4853-aa48-6c29979998e7, professional: undefined, dates: 2025-08-01, 2025-08-02, 2025-08-04, 2025-08-05, 2025-08-06, 2025-08-07
+✅ Generated daily counts for 6 dates
+📋 Getting availability for org: e2c36daa-4a86-4853-aa48-6c29979998e7, professional: undefined, date: 2025-08-02
+✅ Generated 7 available slots
+📋 Getting daily availability counts for org: e2c36daa-4a86-4853-aa48-6c29979998e7, professional: undefined, dates: 2025-08-01, 2025-08-02, 2025-08-04, 2025-08-05, 2025-08-06, 2025-08-07
+✅ Generated daily counts for 6 dates
+📋 Getting daily availability counts for org: e2c36daa-4a86-4853-aa48-6c29979998e7, professional: undefined, dates: 2025-08-01, 2025-08-02, 2025-08-04, 2025-08-05, 2025-08-06, 2025-08-07
+✅ Generated daily counts for 6 dates
+📋 Getting availability for org: e2c36daa-4a86-4853-aa48-6c29979998e7, professional: undefined, date: 2025-08-05
+✅ Generated 5 available slots
+📋 Getting daily availability counts for org: e2c36daa-4a86-4853-aa48-6c29979998e7, professional: undefined, dates: 2025-08-01, 2025-08-02, 2025-08-04, 2025-08-05, 2025-08-06, 2025-08-07
+✅ Generated daily counts for 6 dates
+📋 Getting daily availability counts for org: e2c36daa-4a86-4853-aa48-6c29979998e7, professional: undefined, dates: 2025-08-01, 2025-08-02, 2025-08-04, 2025-08-05, 2025-08-06, 2025-08-07
+✅ Generated daily counts for 6 dates
+📋 Getting availability for org: e2c36daa-4a86-4853-aa48-6c29979998e7, professional: undefined, date: 2025-08-06
+✅ Generated 5 available slots
+📋 Getting availability for org: e2c36daa-4a86-4853-aa48-6c29979998e7, professional: undefined, date: 2025-08-01
+✅ Generated 5 available slots
+PayloadTooLargeError: request entity too large
+    at readStream (/mnt/c/Users/Owens/Desktop/Codigo/Proyectos Personales/bookflow/backend/node_modules/raw-body/index.js:163:17)
+    at getRawBody (/mnt/c/Users/Owens/Desktop/Codigo/Proyectos Personales/bookflow/backend/node_modules/raw-body/index.js:116:12)
+    at read (/mnt/c/Users/Owens/Desktop/Codigo/Proyectos Personales/bookflow/backend/node_modules/body-parser/lib/read.js:74:3)
+    at jsonParser (/mnt/c/Users/Owens/Desktop/Codigo/Proyectos Personales/bookflow/backend/node_modules/body-parser/lib/types/json.js:125:5)
+    at Layer.handleRequest (/mnt/c/Users/Owens/Desktop/Codigo/Proyectos Personales/bookflow/backend/node_modules/router/lib/layer.js:152:17)
+    at trimPrefix (/mnt/c/Users/Owens/Desktop/Codigo/Proyectos Personales/bookflow/backend/node_modules/router/index.js:342:13)
+    at /mnt/c/Users/Owens/Desktop/Codigo/Proyectos Personales/bookflow/backend/node_modules/router/index.js:297:9
+    at processParams (/mnt/c/Users/Owens/Desktop/Codigo/Proyectos Personales/bookflow/backend/node_modules/router/index.js:582:12)
+    at next (/mnt/c/Users/Owens/Desktop/Codigo/Proyectos Personales/bookflow/backend/node_modules/router/index.js:291:5)
+    at cors (/mnt/c/Users/Owens/Desktop/Codigo/Proyectos Personales/bookflow/backend/node_modules/cors/lib/index.js:188:7)
+🏢 Getting organization for user: efa3cc77-9e2a-4427-9ec5-dd49ab5b3043
+✅ Organization found: ejemplo
+🏢 Getting organization for user: efa3cc77-9e2a-4427-9ec5-dd49ab5b3043
+✅ Organization found: ejemplo
+🏢 Getting organization for user: efa3cc77-9e2a-4427-9ec5-dd49ab5b3043
+✅ Organization found: ejemplo
+🏢 Getting organization for user: efa3cc77-9e2a-4427-9ec5-dd49ab5b3043
+✅ Organization found: ejemplo
+🔧 Updating organization settings: e2c36daa-4a86-4853-aa48-6c29979998e7
+📦 Received updates: {
+  "name": "ejemplo",
+  "address": "djasdo",
+  "phone": "+56983612026",
+  "email": "owenslopez211@gmail.com",
+  "currency": "CLP",
+  "timezone": "America/Santiago",
+  "businessHours": {
+    "monday": {
+      "isOpen": true,
+      "openTime": "09:00",
+      "closeTime": "18:00"
+    },
+    "tuesday": {
+      "isOpen": true,
+      "openTime": "09:00",
+      "closeTime": "18:00"
+    },
+    "wednesday": {
+      "isOpen": true,
+      "openTime": "09:00",
+      "closeTime": "18:00"
+    },
+    "thursday": {
+      "isOpen": true,
+      "openTime": "09:00",
+      "closeTime": "18:00"
+    },
+    "friday": {
+      "isOpen": true,
+      "openTime": "09:00",
+      "closeTime": "18:00"
+    },
+    "saturday": {
+      "isOpen": true,
+      "openTime": "09:00",
+      "closeTime": "14:00"
+    },
+    "sunday": {
+      "isOpen": false,
+      "openTime": "09:00",
+      "closeTime": "18:00"
+    }
+  },
+  "notifications": {},
+  "appointmentSystem": {
+    "appointmentModel": "professional_based",
+    "allowClientSelection": true,
+    "bufferBetweenAppointments": 15,
+    "maxAdvanceBookingDays": 30,
+    "maxResources": 3,
+    "professionals": [
+      {
+        "id": "professional_1754061789181_gtcpnqkrs",
+        "name": "Jose",
+        "photo": "",
+        "isActive": true,
+        "schedule": {
+          "monday": {
+            "isOpen": true,
+            "openTime": "09:00",
+            "closeTime": "18:00"
+          },
+          "tuesday": {
+            "isOpen": true,
+            "openTime": "09:00",
+            "closeTime": "18:00"
+          },
+          "wednesday": {
+            "isOpen": true,
+            "openTime": "09:00",
+            "closeTime": "18:00"
+          },
+          "thursday": {
+            "isOpen": true,
+            "openTime": "09:00",
+            "closeTime": "18:00"
+          },
+          "friday": {
+            "isOpen": true,
+            "openTime": "09:00",
+            "closeTime": "18:00"
+          },
+          "saturday": {
+            "isOpen": false,
+            "openTime": "09:00",
+            "closeTime": "14:00"
+          },
+          "sunday": {
+            "isOpen": false,
+            "openTime": "09:00",
+            "closeTime": "18:00"
+          }
+        }
+      }
+    ]
+  },
+  "businessInfo": {
+    "businessName": "ejemplo",
+    "businessAddress": "djasdo",
+    "businessPhone": "+56983612026",
+    "businessEmail": "owenslopez211@gmail.com"
+  },
+  "services": [
+    {
+      "id": "hyperbaric_session",
+      "name": "Sesión Hiperbárica",
+      "description": "Sesión en cámara hiperbárica",
+      "duration": 90,
+      "price": 80000,
+      "isActive": true
+    },
+    {
+      "id": "evaluation",
+      "name": "Evaluación Médica",
+      "description": "Evaluación previa al tratamiento",
+      "duration": 45,
+      "price": 50000,
+      "isActive": true
+    },
+    {
+      "id": "wound_care",
+      "name": "Cuidado de Heridas",
+      "description": "Tratamiento especializado de heridas",
+      "duration": 60,
+      "price": 35000,
+      "isActive": true
+    }
+  ]
+}
+📋 Current organization before update: {
+  "id": "e2c36daa-4a86-4853-aa48-6c29979998e7",
+  "name": "ejemplo",
+  "templateType": "hyperbaric_center",
+  "settings": {
+    "timezone": "America/Santiago",
+    "businessHours": {
+      "monday": {
+        "isOpen": true,
+        "openTime": "09:00",
+        "closeTime": "18:00"
+      },
+      "tuesday": {
+        "isOpen": true,
+        "openTime": "09:00",
+        "closeTime": "18:00"
+      },
+      "wednesday": {
+        "isOpen": true,
+        "openTime": "09:00",
+        "closeTime": "18:00"
+      },
+      "thursday": {
+        "isOpen": true,
+        "openTime": "09:00",
+        "closeTime": "18:00"
+      },
+      "friday": {
+        "isOpen": true,
+        "openTime": "09:00",
+        "closeTime": "18:00"
+      },
+      "saturday": {
+        "isOpen": true,
+        "openTime": "09:00",
+        "closeTime": "14:00"
+      },
+      "sunday": {
+        "isOpen": false,
+        "openTime": "09:00",
+        "closeTime": "18:00"
+      }
+    },
+    "notifications": {},
+    "businessConfiguration": {
+      "appointmentModel": "resource_based",
+      "allowClientSelection": true,
+      "bufferBetweenAppointments": 15,
+      "maxAdvanceBookingDays": 30,
+      "maxResources": 3
+    },
+    "services": [
+      {
+        "id": "hyperbaric_session",
+        "name": "Sesión Hiperbárica",
+        "description": "Sesión en cámara hiperbárica",
+        "duration": 90,
+        "price": 80000,
+        "isActive": true
+      },
+      {
+        "id": "evaluation",
+        "name": "Evaluación Médica",
+        "description": "Evaluación previa al tratamiento",
+        "duration": 45,
+        "price": 50000,
+        "isActive": true
+      },
+      {
+        "id": "wound_care",
+        "name": "Cuidado de Heridas",
+        "description": "Tratamiento especializado de heridas",
+        "duration": 60,
+        "price": 35000,
+        "isActive": true
+      }
+    ],
+    "appointmentSystem": {
+      "appointmentModel": "resource_based",
+      "allowClientSelection": true,
+      "bufferBetweenAppointments": 15,
+      "maxAdvanceBookingDays": 30,
+      "maxResources": 3
+    },
+    "businessInfo": {
+      "businessName": "ejemplo",
+      "businessAddress": "djasdo",
+      "businessPhone": "+56983612026",
+      "businessEmail": "owenslopez211@gmail.com"
+    }
+  },
+  "subscription": {
+    "plan": "free",
+    "limits": {
+      "maxResources": 1,
+      "maxAppointmentsPerMonth": 100,
+      "maxUsers": 3
+    }
+  },
+  "createdAt": "2025-08-01T15:16:20.633Z",
+  "updatedAt": "2025-08-01T15:17:30.286Z",
+  "address": "djasdo",
+  "phone": "+56983612026",
+  "email": "owenslopez211@gmail.com",
+  "currency": "CLP"
+}
+💾 Organization after update: {
+  "id": "e2c36daa-4a86-4853-aa48-6c29979998e7",
+  "name": "ejemplo",
+  "templateType": "hyperbaric_center",
+  "settings": {
+    "timezone": "America/Santiago",
+    "businessHours": {
+      "monday": {
+        "isOpen": true,
+        "openTime": "09:00",
+        "closeTime": "18:00"
+      },
+      "tuesday": {
+        "isOpen": true,
+        "openTime": "09:00",
+        "closeTime": "18:00"
+      },
+      "wednesday": {
+        "isOpen": true,
+        "openTime": "09:00",
+        "closeTime": "18:00"
+      },
+      "thursday": {
+        "isOpen": true,
+        "openTime": "09:00",
+        "closeTime": "18:00"
+      },
+      "friday": {
+        "isOpen": true,
+        "openTime": "09:00",
+        "closeTime": "18:00"
+      },
+      "saturday": {
+        "isOpen": true,
+        "openTime": "09:00",
+        "closeTime": "14:00"
+      },
+      "sunday": {
+        "isOpen": false,
+        "openTime": "09:00",
+        "closeTime": "18:00"
+      }
+    },
+    "notifications": {},
+    "businessConfiguration": {
+      "appointmentModel": "professional_based",
+      "allowClientSelection": true,
+      "bufferBetweenAppointments": 15,
+      "maxAdvanceBookingDays": 30,
+      "maxResources": 3,
+      "professionals": [
+        {
+          "id": "professional_1754061789181_gtcpnqkrs",
+          "name": "Jose",
+          "photo": "",
+          "isActive": true,
+          "schedule": {
+            "monday": {
+              "isOpen": true,
+              "openTime": "09:00",
+              "closeTime": "18:00"
+            },
+            "tuesday": {
+              "isOpen": true,
+              "openTime": "09:00",
+              "closeTime": "18:00"
+            },
+            "wednesday": {
+              "isOpen": true,
+              "openTime": "09:00",
+              "closeTime": "18:00"
+            },
+            "thursday": {
+              "isOpen": true,
+              "openTime": "09:00",
+              "closeTime": "18:00"
+            },
+            "friday": {
+              "isOpen": true,
+              "openTime": "09:00",
+              "closeTime": "18:00"
+            },
+            "saturday": {
+              "isOpen": false,
+              "openTime": "09:00",
+              "closeTime": "14:00"
+            },
+            "sunday": {
+              "isOpen": false,
+              "openTime": "09:00",
+              "closeTime": "18:00"
+            }
+          }
+        }
+      ]
+    },
+    "services": [
+      {
+        "id": "hyperbaric_session",
+        "name": "Sesión Hiperbárica",
+        "description": "Sesión en cámara hiperbárica",
+        "duration": 90,
+        "price": 80000,
+        "isActive": true
+      },
+      {
+        "id": "evaluation",
+        "name": "Evaluación Médica",
+        "description": "Evaluación previa al tratamiento",
+        "duration": 45,
+        "price": 50000,
+        "isActive": true
+      },
+      {
+        "id": "wound_care",
+        "name": "Cuidado de Heridas",
+        "description": "Tratamiento especializado de heridas",
+        "duration": 60,
+        "price": 35000,
+        "isActive": true
+      }
+    ],
+    "appointmentSystem": {
+      "appointmentModel": "professional_based",
+      "allowClientSelection": true,
+      "bufferBetweenAppointments": 15,
+      "maxAdvanceBookingDays": 30,
+      "maxResources": 3,
+      "professionals": [
+        {
+          "id": "professional_1754061789181_gtcpnqkrs",
+          "name": "Jose",
+          "photo": "",
+          "isActive": true,
+          "schedule": {
+            "monday": {
+              "isOpen": true,
+              "openTime": "09:00",
+              "closeTime": "18:00"
+            },
+            "tuesday": {
+              "isOpen": true,
+              "openTime": "09:00",
+              "closeTime": "18:00"
+            },
+            "wednesday": {
+              "isOpen": true,
+              "openTime": "09:00",
+              "closeTime": "18:00"
+            },
+            "thursday": {
+              "isOpen": true,
+              "openTime": "09:00",
+              "closeTime": "18:00"
+            },
+            "friday": {
+              "isOpen": true,
+              "openTime": "09:00",
+              "closeTime": "18:00"
+            },
+            "saturday": {
+              "isOpen": false,
+              "openTime": "09:00",
+              "closeTime": "14:00"
+            },
+            "sunday": {
+              "isOpen": false,
+              "openTime": "09:00",
+              "closeTime": "18:00"
+            }
+          }
+        }
+      ]
+    },
+    "businessInfo": {
+      "businessName": "ejemplo",
+      "businessAddress": "djasdo",
+      "businessPhone": "+56983612026",
+      "businessEmail": "owenslopez211@gmail.com"
+    }
+  },
+  "subscription": {
+    "plan": "free",
+    "limits": {
+      "maxResources": 1,
+      "maxAppointmentsPerMonth": 100,
+      "maxUsers": 3
+    }
+  },
+  "createdAt": "2025-08-01T15:16:20.633Z",
+  "updatedAt": "2025-08-01T15:23:19.782Z",
+  "address": "djasdo",
+  "phone": "+56983612026",
+  "email": "owenslopez211@gmail.com",
+  "currency": "CLP"
+}
+✅ Organization updated successfully
+📋 Getting public organization data for: e2c36daa-4a86-4853-aa48-6c29979998e7
+✅ Public organization data retrieved successfully
+📋 Getting public organization data for: e2c36daa-4a86-4853-aa48-6c29979998e7
+✅ Public organization data retrieved successfully
+📋 Getting public professionals for organization: e2c36daa-4a86-4853-aa48-6c29979998e7
+✅ Found 1 active professionals
+📋 Getting public professionals for organization: e2c36daa-4a86-4853-aa48-6c29979998e7
+✅ Found 1 active professionals
+📋 Getting public services for organization: e2c36daa-4a86-4853-aa48-6c29979998e7
+✅ Found 3 active services
+📋 Getting public services for organization: e2c36daa-4a86-4853-aa48-6c29979998e7
+✅ Found 3 active services
+📋 Getting daily availability counts for org: e2c36daa-4a86-4853-aa48-6c29979998e7, professional: professional_1754061789181_gtcpnqkrs, dates: 2025-08-01, 2025-08-02, 2025-08-04, 2025-08-05, 2025-08-06, 2025-08-07
+✅ Generated daily counts for 6 dates
+📋 Getting daily availability counts for org: e2c36daa-4a86-4853-aa48-6c29979998e7, professional: professional_1754061789181_gtcpnqkrs, dates: 2025-08-01, 2025-08-02, 2025-08-04, 2025-08-05, 2025-08-06, 2025-08-07
+✅ Generated daily counts for 6 dates
+📋 Getting availability for org: e2c36daa-4a86-4853-aa48-6c29979998e7, professional: professional_1754061789181_gtcpnqkrs, date: 2025-08-01
+✅ Generated 9 available slots
+📋 Getting daily availability counts for org: e2c36daa-4a86-4853-aa48-6c29979998e7, professional: professional_1754061789181_gtcpnqkrs, dates: 2025-08-01, 2025-08-02, 2025-08-04, 2025-08-05, 2025-08-06, 2025-08-07
+✅ Generated daily counts for 6 dates
+📋 Getting daily availability counts for org: e2c36daa-4a86-4853-aa48-6c29979998e7, professional: professional_1754061789181_gtcpnqkrs, dates: 2025-08-01, 2025-08-02, 2025-08-04, 2025-08-05, 2025-08-06, 2025-08-07
+✅ Generated daily counts for 6 dates
+📋 Getting availability for org: e2c36daa-4a86-4853-aa48-6c29979998e7, professional: professional_1754061789181_gtcpnqkrs, date: 2025-08-01
+✅ Generated 7 available slots
+📋 Getting daily availability counts for org: e2c36daa-4a86-4853-aa48-6c29979998e7, professional: professional_1754061789181_gtcpnqkrs, dates: 2025-08-01, 2025-08-02, 2025-08-04, 2025-08-05, 2025-08-06, 2025-08-07
+✅ Generated daily counts for 6 dates
+📋 Getting daily availability counts for org: e2c36daa-4a86-4853-aa48-6c29979998e7, professional: professional_1754061789181_gtcpnqkrs, dates: 2025-08-01, 2025-08-02, 2025-08-04, 2025-08-05, 2025-08-06, 2025-08-07
+✅ Generated daily counts for 6 dates
+🏢 Getting organization for user: efa3cc77-9e2a-4427-9ec5-dd49ab5b3043
+✅ Organization found: ejemplo
+🏢 Getting organization for user: efa3cc77-9e2a-4427-9ec5-dd49ab5b3043
+✅ Organization found: ejemplo
+📋 Getting public services for organization: e2c36daa-4a86-4853-aa48-6c29979998e7
+✅ Found 3 active services
+📋 Getting public organization data for: e2c36daa-4a86-4853-aa48-6c29979998e7
+✅ Public organization data retrieved successfully
+📋 Getting public services for organization: e2c36daa-4a86-4853-aa48-6c29979998e7
+✅ Found 3 active services
+📋 Getting public professionals for organization: e2c36daa-4a86-4853-aa48-6c29979998e7
+✅ Found 1 active professionals
+📋 Getting public professionals for organization: e2c36daa-4a86-4853-aa48-6c29979998e7
+✅ Found 1 active professionals
+📋 Getting public organization data for: e2c36daa-4a86-4853-aa48-6c29979998e7
+✅ Public organization data retrieved successfully
+🏢 Getting organization for user: efa3cc77-9e2a-4427-9ec5-dd49ab5b3043
+✅ Organization found: ejemplo
+🏢 Getting organization for user: efa3cc77-9e2a-4427-9ec5-dd49ab5b3043
+✅ Organization found: ejemplo
+🔧 Updating organization settings: e2c36daa-4a86-4853-aa48-6c29979998e7
+📦 Received updates: {
+  "name": "ejemplo",
+  "address": "djasdo",
+  "phone": "+56983612026",
+  "email": "owenslopez211@gmail.com",
+  "currency": "EUR",
+  "timezone": "America/Santiago",
+  "businessHours": {
+    "monday": {
+      "isOpen": true,
+      "openTime": "09:00",
+      "closeTime": "18:00"
+    },
+    "tuesday": {
+      "isOpen": true,
+      "openTime": "09:00",
+      "closeTime": "18:00"
+    },
+    "wednesday": {
+      "isOpen": true,
+      "openTime": "09:00",
+      "closeTime": "18:00"
+    },
+    "thursday": {
+      "isOpen": true,
+      "openTime": "09:00",
+      "closeTime": "18:00"
+    },
+    "friday": {
+      "isOpen": true,
+      "openTime": "09:00",
+      "closeTime": "18:00"
+    },
+    "saturday": {
+      "isOpen": true,
+      "openTime": "09:00",
+      "closeTime": "14:00"
+    },
+    "sunday": {
+      "isOpen": false,
+      "openTime": "09:00",
+      "closeTime": "18:00"
+    }
+  },
+  "notifications": {},
+  "appointmentSystem": {
+    "appointmentModel": "professional_based",
+    "allowClientSelection": true,
+    "bufferBetweenAppointments": 15,
+    "maxAdvanceBookingDays": 30,
+    "maxResources": 3,
+    "professionals": [
+      {
+        "id": "professional_1754061789181_gtcpnqkrs",
+        "name": "Jose",
+        "photo": "",
+        "isActive": true,
+        "schedule": {
+          "monday": {
+            "isOpen": true,
+            "openTime": "09:00",
+            "closeTime": "18:00"
+          },
+          "tuesday": {
+            "isOpen": true,
+            "openTime": "09:00",
+            "closeTime": "18:00"
+          },
+          "wednesday": {
+            "isOpen": true,
+            "openTime": "09:00",
+            "closeTime": "18:00"
+          },
+          "thursday": {
+            "isOpen": true,
+            "openTime": "09:00",
+            "closeTime": "18:00"
+          },
+          "friday": {
+            "isOpen": true,
+            "openTime": "09:00",
+            "closeTime": "18:00"
+          },
+          "saturday": {
+            "isOpen": false,
+            "openTime": "09:00",
+            "closeTime": "14:00"
+          },
+          "sunday": {
+            "isOpen": false,
+            "openTime": "09:00",
+            "closeTime": "18:00"
+          }
+        }
+      }
+    ]
+  },
+  "businessInfo": {
+    "businessName": "ejemplo",
+    "businessAddress": "djasdo",
+    "businessPhone": "+56983612026",
+    "businessEmail": "owenslopez211@gmail.com"
+  },
+  "services": [
+    {
+      "id": "hyperbaric_session",
+      "name": "Sesión Hiperbárica",
+      "description": "Sesión en cámara hiperbárica",
+      "duration": 90,
+      "price": 80000,
+      "isActive": true
+    },
+    {
+      "id": "evaluation",
+      "name": "Evaluación Médica",
+      "description": "Evaluación previa al tratamiento",
+      "duration": 45,
+      "price": 50000,
+      "isActive": true
+    },
+    {
+      "id": "wound_care",
+      "name": "Cuidado de Heridas",
+      "description": "Tratamiento especializado de heridas",
+      "duration": 60,
+      "price": 35000,
+      "isActive": true
+    }
+  ]
+}
+📋 Current organization before update: {
+  "id": "e2c36daa-4a86-4853-aa48-6c29979998e7",
+  "name": "ejemplo",
+  "templateType": "hyperbaric_center",
+  "settings": {
+    "timezone": "America/Santiago",
+    "businessHours": {
+      "monday": {
+        "isOpen": true,
+        "openTime": "09:00",
+        "closeTime": "18:00"
+      },
+      "tuesday": {
+        "isOpen": true,
+        "openTime": "09:00",
+        "closeTime": "18:00"
+      },
+      "wednesday": {
+        "isOpen": true,
+        "openTime": "09:00",
+        "closeTime": "18:00"
+      },
+      "thursday": {
+        "isOpen": true,
+        "openTime": "09:00",
+        "closeTime": "18:00"
+      },
+      "friday": {
+        "isOpen": true,
+        "openTime": "09:00",
+        "closeTime": "18:00"
+      },
+      "saturday": {
+        "isOpen": true,
+        "openTime": "09:00",
+        "closeTime": "14:00"
+      },
+      "sunday": {
+        "isOpen": false,
+        "openTime": "09:00",
+        "closeTime": "18:00"
+      }
+    },
+    "notifications": {},
+    "businessConfiguration": {
+      "appointmentModel": "professional_based",
+      "allowClientSelection": true,
+      "bufferBetweenAppointments": 15,
+      "maxAdvanceBookingDays": 30,
+      "maxResources": 3,
+      "professionals": [
+        {
+          "id": "professional_1754061789181_gtcpnqkrs",
+          "name": "Jose",
+          "photo": "",
+          "isActive": true,
+          "schedule": {
+            "monday": {
+              "isOpen": true,
+              "openTime": "09:00",
+              "closeTime": "18:00"
+            },
+            "tuesday": {
+              "isOpen": true,
+              "openTime": "09:00",
+              "closeTime": "18:00"
+            },
+            "wednesday": {
+              "isOpen": true,
+              "openTime": "09:00",
+              "closeTime": "18:00"
+            },
+            "thursday": {
+              "isOpen": true,
+              "openTime": "09:00",
+              "closeTime": "18:00"
+            },
+            "friday": {
+              "isOpen": true,
+              "openTime": "09:00",
+              "closeTime": "18:00"
+            },
+            "saturday": {
+              "isOpen": false,
+              "openTime": "09:00",
+              "closeTime": "14:00"
+            },
+            "sunday": {
+              "isOpen": false,
+              "openTime": "09:00",
+              "closeTime": "18:00"
+            }
+          }
+        }
+      ]
+    },
+    "services": [
+      {
+        "id": "hyperbaric_session",
+        "name": "Sesión Hiperbárica",
+        "description": "Sesión en cámara hiperbárica",
+        "duration": 90,
+        "price": 80000,
+        "isActive": true
+      },
+      {
+        "id": "evaluation",
+        "name": "Evaluación Médica",
+        "description": "Evaluación previa al tratamiento",
+        "duration": 45,
+        "price": 50000,
+        "isActive": true
+      },
+      {
+        "id": "wound_care",
+        "name": "Cuidado de Heridas",
+        "description": "Tratamiento especializado de heridas",
+        "duration": 60,
+        "price": 35000,
+        "isActive": true
+      }
+    ],
+    "appointmentSystem": {
+      "appointmentModel": "professional_based",
+      "allowClientSelection": true,
+      "bufferBetweenAppointments": 15,
+      "maxAdvanceBookingDays": 30,
+      "maxResources": 3,
+      "professionals": [
+        {
+          "id": "professional_1754061789181_gtcpnqkrs",
+          "name": "Jose",
+          "photo": "",
+          "isActive": true,
+          "schedule": {
+            "monday": {
+              "isOpen": true,
+              "openTime": "09:00",
+              "closeTime": "18:00"
+            },
+            "tuesday": {
+              "isOpen": true,
+              "openTime": "09:00",
+              "closeTime": "18:00"
+            },
+            "wednesday": {
+              "isOpen": true,
+              "openTime": "09:00",
+              "closeTime": "18:00"
+            },
+            "thursday": {
+              "isOpen": true,
+              "openTime": "09:00",
+              "closeTime": "18:00"
+            },
+            "friday": {
+              "isOpen": true,
+              "openTime": "09:00",
+              "closeTime": "18:00"
+            },
+            "saturday": {
+              "isOpen": false,
+              "openTime": "09:00",
+              "closeTime": "14:00"
+            },
+            "sunday": {
+              "isOpen": false,
+              "openTime": "09:00",
+              "closeTime": "18:00"
+            }
+          }
+        }
+      ]
+    },
+    "businessInfo": {
+      "businessName": "ejemplo",
+      "businessAddress": "djasdo",
+      "businessPhone": "+56983612026",
+      "businessEmail": "owenslopez211@gmail.com"
+    }
+  },
+  "subscription": {
+    "plan": "free",
+    "limits": {
+      "maxResources": 1,
+      "maxAppointmentsPerMonth": 100,
+      "maxUsers": 3
+    }
+  },
+  "createdAt": "2025-08-01T15:16:20.633Z",
+  "updatedAt": "2025-08-01T15:23:19.782Z",
+  "address": "djasdo",
+  "phone": "+56983612026",
+  "email": "owenslopez211@gmail.com",
+  "currency": "CLP"
+}
+💾 Organization after update: {
+  "id": "e2c36daa-4a86-4853-aa48-6c29979998e7",
+  "name": "ejemplo",
+  "templateType": "hyperbaric_center",
+  "settings": {
+    "timezone": "America/Santiago",
+    "businessHours": {
+      "monday": {
+        "isOpen": true,
+        "openTime": "09:00",
+        "closeTime": "18:00"
+      },
+      "tuesday": {
+        "isOpen": true,
+        "openTime": "09:00",
+        "closeTime": "18:00"
+      },
+      "wednesday": {
+        "isOpen": true,
+        "openTime": "09:00",
+        "closeTime": "18:00"
+      },
+      "thursday": {
+        "isOpen": true,
+        "openTime": "09:00",
+        "closeTime": "18:00"
+      },
+      "friday": {
+        "isOpen": true,
+        "openTime": "09:00",
+        "closeTime": "18:00"
+      },
+      "saturday": {
+        "isOpen": true,
+        "openTime": "09:00",
+        "closeTime": "14:00"
+      },
+      "sunday": {
+        "isOpen": false,
+        "openTime": "09:00",
+        "closeTime": "18:00"
+      }
+    },
+    "notifications": {},
+    "businessConfiguration": {
+      "appointmentModel": "professional_based",
+      "allowClientSelection": true,
+      "bufferBetweenAppointments": 15,
+      "maxAdvanceBookingDays": 30,
+      "maxResources": 3,
+      "professionals": [
+        {
+          "id": "professional_1754061789181_gtcpnqkrs",
+          "name": "Jose",
+          "photo": "",
+          "isActive": true,
+          "schedule": {
+            "monday": {
+              "isOpen": true,
+              "openTime": "09:00",
+              "closeTime": "18:00"
+            },
+            "tuesday": {
+              "isOpen": true,
+              "openTime": "09:00",
+              "closeTime": "18:00"
+            },
+            "wednesday": {
+              "isOpen": true,
+              "openTime": "09:00",
+              "closeTime": "18:00"
+            },
+            "thursday": {
+              "isOpen": true,
+              "openTime": "09:00",
+              "closeTime": "18:00"
+            },
+            "friday": {
+              "isOpen": true,
+              "openTime": "09:00",
+              "closeTime": "18:00"
+            },
+            "saturday": {
+              "isOpen": false,
+              "openTime": "09:00",
+              "closeTime": "14:00"
+            },
+            "sunday": {
+              "isOpen": false,
+              "openTime": "09:00",
+              "closeTime": "18:00"
+            }
+          }
+        }
+      ]
+    },
+    "services": [
+      {
+        "id": "hyperbaric_session",
+        "name": "Sesión Hiperbárica",
+        "description": "Sesión en cámara hiperbárica",
+        "duration": 90,
+        "price": 80000,
+        "isActive": true
+      },
+      {
+        "id": "evaluation",
+        "name": "Evaluación Médica",
+        "description": "Evaluación previa al tratamiento",
+        "duration": 45,
+        "price": 50000,
+        "isActive": true
+      },
+      {
+        "id": "wound_care",
+        "name": "Cuidado de Heridas",
+        "description": "Tratamiento especializado de heridas",
+        "duration": 60,
+        "price": 35000,
+        "isActive": true
+      }
+    ],
+    "appointmentSystem": {
+      "appointmentModel": "professional_based",
+      "allowClientSelection": true,
+      "bufferBetweenAppointments": 15,
+      "maxAdvanceBookingDays": 30,
+      "maxResources": 3,
+      "professionals": [
+        {
+          "id": "professional_1754061789181_gtcpnqkrs",
+          "name": "Jose",
+          "photo": "",
+          "isActive": true,
+          "schedule": {
+            "monday": {
+              "isOpen": true,
+              "openTime": "09:00",
+              "closeTime": "18:00"
+            },
+            "tuesday": {
+              "isOpen": true,
+              "openTime": "09:00",
+              "closeTime": "18:00"
+            },
+            "wednesday": {
+              "isOpen": true,
+              "openTime": "09:00",
+              "closeTime": "18:00"
+            },
+            "thursday": {
+              "isOpen": true,
+              "openTime": "09:00",
+              "closeTime": "18:00"
+            },
+            "friday": {
+              "isOpen": true,
+              "openTime": "09:00",
+              "closeTime": "18:00"
+            },
+            "saturday": {
+              "isOpen": false,
+              "openTime": "09:00",
+              "closeTime": "14:00"
+            },
+            "sunday": {
+              "isOpen": false,
+              "openTime": "09:00",
+              "closeTime": "18:00"
+            }
+          }
+        }
+      ]
+    },
+    "businessInfo": {
+      "businessName": "ejemplo",
+      "businessAddress": "djasdo",
+      "businessPhone": "+56983612026",
+      "businessEmail": "owenslopez211@gmail.com"
+    }
+  },
+  "subscription": {
+    "plan": "free",
+    "limits": {
+      "maxResources": 1,
+      "maxAppointmentsPerMonth": 100,
+      "maxUsers": 3
+    }
+  },
+  "createdAt": "2025-08-01T15:16:20.633Z",
+  "updatedAt": "2025-08-01T15:27:51.240Z",
+  "address": "djasdo",
+  "phone": "+56983612026",
+  "email": "owenslopez211@gmail.com",
+  "currency": "EUR"
+}
+✅ Organization updated successfully
+📋 Getting public organization data for: e2c36daa-4a86-4853-aa48-6c29979998e7
+✅ Public organization data retrieved successfully
+📋 Getting public professionals for organization: e2c36daa-4a86-4853-aa48-6c29979998e7
+✅ Found 1 active professionals
+📋 Getting public professionals for organization: e2c36daa-4a86-4853-aa48-6c29979998e7
+✅ Found 1 active professionals
+📋 Getting public services for organization: e2c36daa-4a86-4853-aa48-6c29979998e7
+✅ Found 3 active services
+📋 Getting public organization data for: e2c36daa-4a86-4853-aa48-6c29979998e7
+✅ Public organization data retrieved successfully
+📋 Getting public services for organization: e2c36daa-4a86-4853-aa48-6c29979998e7
+✅ Found 3 active services
+🔧 Updating organization settings: e2c36daa-4a86-4853-aa48-6c29979998e7
+📦 Received updates: {
+  "name": "ejemplo",
+  "address": "djasdo",
+  "phone": "+56983612026",
+  "email": "owenslopez211@gmail.com",
+  "currency": "CLP",
+  "timezone": "America/Santiago",
+  "businessHours": {
+    "monday": {
+      "isOpen": true,
+      "openTime": "09:00",
+      "closeTime": "18:00"
+    },
+    "tuesday": {
+      "isOpen": true,
+      "openTime": "09:00",
+      "closeTime": "18:00"
+    },
+    "wednesday": {
+      "isOpen": true,
+      "openTime": "09:00",
+      "closeTime": "18:00"
+    },
+    "thursday": {
+      "isOpen": true,
+      "openTime": "09:00",
+      "closeTime": "18:00"
+    },
+    "friday": {
+      "isOpen": true,
+      "openTime": "09:00",
+      "closeTime": "18:00"
+    },
+    "saturday": {
+      "isOpen": true,
+      "openTime": "09:00",
+      "closeTime": "14:00"
+    },
+    "sunday": {
+      "isOpen": false,
+      "openTime": "09:00",
+      "closeTime": "18:00"
+    }
+  },
+  "notifications": {},
+  "appointmentSystem": {
+    "appointmentModel": "professional_based",
+    "allowClientSelection": true,
+    "bufferBetweenAppointments": 15,
+    "maxAdvanceBookingDays": 30,
+    "maxResources": 3,
+    "professionals": [
+      {
+        "id": "professional_1754061789181_gtcpnqkrs",
+        "name": "Jose",
+        "photo": "",
+        "isActive": true,
+        "schedule": {
+          "monday": {
+            "isOpen": true,
+            "openTime": "09:00",
+            "closeTime": "18:00"
+          },
+          "tuesday": {
+            "isOpen": true,
+            "openTime": "09:00",
+            "closeTime": "18:00"
+          },
+          "wednesday": {
+            "isOpen": true,
+            "openTime": "09:00",
+            "closeTime": "18:00"
+          },
+          "thursday": {
+            "isOpen": true,
+            "openTime": "09:00",
+            "closeTime": "18:00"
+          },
+          "friday": {
+            "isOpen": true,
+            "openTime": "09:00",
+            "closeTime": "18:00"
+          },
+          "saturday": {
+            "isOpen": false,
+            "openTime": "09:00",
+            "closeTime": "14:00"
+          },
+          "sunday": {
+            "isOpen": false,
+            "openTime": "09:00",
+            "closeTime": "18:00"
+          }
+        }
+      }
+    ]
+  },
+  "businessInfo": {
+    "businessName": "ejemplo",
+    "businessAddress": "djasdo",
+    "businessPhone": "+56983612026",
+    "businessEmail": "owenslopez211@gmail.com"
+  },
+  "services": [
+    {
+      "id": "hyperbaric_session",
+      "name": "Sesión Hiperbárica",
+      "description": "Sesión en cámara hiperbárica",
+      "duration": 90,
+      "price": 80000,
+      "isActive": true
+    },
+    {
+      "id": "evaluation",
+      "name": "Evaluación Médica",
+      "description": "Evaluación previa al tratamiento",
+      "duration": 45,
+      "price": 50000,
+      "isActive": true
+    },
+    {
+      "id": "wound_care",
+      "name": "Cuidado de Heridas",
+      "description": "Tratamiento especializado de heridas",
+      "duration": 60,
+      "price": 35000,
+      "isActive": true
+    }
+  ]
+}
+📋 Current organization before update: {
+  "id": "e2c36daa-4a86-4853-aa48-6c29979998e7",
+  "name": "ejemplo",
+  "templateType": "hyperbaric_center",
+  "settings": {
+    "timezone": "America/Santiago",
+    "businessHours": {
+      "monday": {
+        "isOpen": true,
+        "openTime": "09:00",
+        "closeTime": "18:00"
+      },
+      "tuesday": {
+        "isOpen": true,
+        "openTime": "09:00",
+        "closeTime": "18:00"
+      },
+      "wednesday": {
+        "isOpen": true,
+        "openTime": "09:00",
+        "closeTime": "18:00"
+      },
+      "thursday": {
+        "isOpen": true,
+        "openTime": "09:00",
+        "closeTime": "18:00"
+      },
+      "friday": {
+        "isOpen": true,
+        "openTime": "09:00",
+        "closeTime": "18:00"
+      },
+      "saturday": {
+        "isOpen": true,
+        "openTime": "09:00",
+        "closeTime": "14:00"
+      },
+      "sunday": {
+        "isOpen": false,
+        "openTime": "09:00",
+        "closeTime": "18:00"
+      }
+    },
+    "notifications": {},
+    "businessConfiguration": {
+      "appointmentModel": "professional_based",
+      "allowClientSelection": true,
+      "bufferBetweenAppointments": 15,
+      "maxAdvanceBookingDays": 30,
+      "maxResources": 3,
+      "professionals": [
+        {
+          "id": "professional_1754061789181_gtcpnqkrs",
+          "name": "Jose",
+          "photo": "",
+          "isActive": true,
+          "schedule": {
+            "monday": {
+              "isOpen": true,
+              "openTime": "09:00",
+              "closeTime": "18:00"
+            },
+            "tuesday": {
+              "isOpen": true,
+              "openTime": "09:00",
+              "closeTime": "18:00"
+            },
+            "wednesday": {
+              "isOpen": true,
+              "openTime": "09:00",
+              "closeTime": "18:00"
+            },
+            "thursday": {
+              "isOpen": true,
+              "openTime": "09:00",
+              "closeTime": "18:00"
+            },
+            "friday": {
+              "isOpen": true,
+              "openTime": "09:00",
+              "closeTime": "18:00"
+            },
+            "saturday": {
+              "isOpen": false,
+              "openTime": "09:00",
+              "closeTime": "14:00"
+            },
+            "sunday": {
+              "isOpen": false,
+              "openTime": "09:00",
+              "closeTime": "18:00"
+            }
+          }
+        }
+      ]
+    },
+    "services": [
+      {
+        "id": "hyperbaric_session",
+        "name": "Sesión Hiperbárica",
+        "description": "Sesión en cámara hiperbárica",
+        "duration": 90,
+        "price": 80000,
+        "isActive": true
+      },
+      {
+        "id": "evaluation",
+        "name": "Evaluación Médica",
+        "description": "Evaluación previa al tratamiento",
+        "duration": 45,
+        "price": 50000,
+        "isActive": true
+      },
+      {
+        "id": "wound_care",
+        "name": "Cuidado de Heridas",
+        "description": "Tratamiento especializado de heridas",
+        "duration": 60,
+        "price": 35000,
+        "isActive": true
+      }
+    ],
+    "appointmentSystem": {
+      "appointmentModel": "professional_based",
+      "allowClientSelection": true,
+      "bufferBetweenAppointments": 15,
+      "maxAdvanceBookingDays": 30,
+      "maxResources": 3,
+      "professionals": [
+        {
+          "id": "professional_1754061789181_gtcpnqkrs",
+          "name": "Jose",
+          "photo": "",
+          "isActive": true,
+          "schedule": {
+            "monday": {
+              "isOpen": true,
+              "openTime": "09:00",
+              "closeTime": "18:00"
+            },
+            "tuesday": {
+              "isOpen": true,
+              "openTime": "09:00",
+              "closeTime": "18:00"
+            },
+            "wednesday": {
+              "isOpen": true,
+              "openTime": "09:00",
+              "closeTime": "18:00"
+            },
+            "thursday": {
+              "isOpen": true,
+              "openTime": "09:00",
+              "closeTime": "18:00"
+            },
+            "friday": {
+              "isOpen": true,
+              "openTime": "09:00",
+              "closeTime": "18:00"
+            },
+            "saturday": {
+              "isOpen": false,
+              "openTime": "09:00",
+              "closeTime": "14:00"
+            },
+            "sunday": {
+              "isOpen": false,
+              "openTime": "09:00",
+              "closeTime": "18:00"
+            }
+          }
+        }
+      ]
+    },
+    "businessInfo": {
+      "businessName": "ejemplo",
+      "businessAddress": "djasdo",
+      "businessPhone": "+56983612026",
+      "businessEmail": "owenslopez211@gmail.com"
+    }
+  },
+  "subscription": {
+    "plan": "free",
+    "limits": {
+      "maxResources": 1,
+      "maxAppointmentsPerMonth": 100,
+      "maxUsers": 3
+    }
+  },
+  "createdAt": "2025-08-01T15:16:20.633Z",
+  "updatedAt": "2025-08-01T15:27:51.240Z",
+  "address": "djasdo",
+  "phone": "+56983612026",
+  "email": "owenslopez211@gmail.com",
+  "currency": "EUR"
+}
+💾 Organization after update: {
+  "id": "e2c36daa-4a86-4853-aa48-6c29979998e7",
+  "name": "ejemplo",
+  "templateType": "hyperbaric_center",
+  "settings": {
+    "timezone": "America/Santiago",
+    "businessHours": {
+      "monday": {
+        "isOpen": true,
+        "openTime": "09:00",
+        "closeTime": "18:00"
+      },
+      "tuesday": {
+        "isOpen": true,
+        "openTime": "09:00",
+        "closeTime": "18:00"
+      },
+      "wednesday": {
+        "isOpen": true,
+        "openTime": "09:00",
+        "closeTime": "18:00"
+      },
+      "thursday": {
+        "isOpen": true,
+        "openTime": "09:00",
+        "closeTime": "18:00"
+      },
+      "friday": {
+        "isOpen": true,
+        "openTime": "09:00",
+        "closeTime": "18:00"
+      },
+      "saturday": {
+        "isOpen": true,
+        "openTime": "09:00",
+        "closeTime": "14:00"
+      },
+      "sunday": {
+        "isOpen": false,
+        "openTime": "09:00",
+        "closeTime": "18:00"
+      }
+    },
+    "notifications": {},
+    "businessConfiguration": {
+      "appointmentModel": "professional_based",
+      "allowClientSelection": true,
+      "bufferBetweenAppointments": 15,
+      "maxAdvanceBookingDays": 30,
+      "maxResources": 3,
+      "professionals": [
+        {
+          "id": "professional_1754061789181_gtcpnqkrs",
+          "name": "Jose",
+          "photo": "",
+          "isActive": true,
+          "schedule": {
+            "monday": {
+              "isOpen": true,
+              "openTime": "09:00",
+              "closeTime": "18:00"
+            },
+            "tuesday": {
+              "isOpen": true,
+              "openTime": "09:00",
+              "closeTime": "18:00"
+            },
+            "wednesday": {
+              "isOpen": true,
+              "openTime": "09:00",
+              "closeTime": "18:00"
+            },
+            "thursday": {
+              "isOpen": true,
+              "openTime": "09:00",
+              "closeTime": "18:00"
+            },
+            "friday": {
+              "isOpen": true,
+              "openTime": "09:00",
+              "closeTime": "18:00"
+            },
+            "saturday": {
+              "isOpen": false,
+              "openTime": "09:00",
+              "closeTime": "14:00"
+            },
+            "sunday": {
+              "isOpen": false,
+              "openTime": "09:00",
+              "closeTime": "18:00"
+            }
+          }
+        }
+      ]
+    },
+    "services": [
+      {
+        "id": "hyperbaric_session",
+        "name": "Sesión Hiperbárica",
+        "description": "Sesión en cámara hiperbárica",
+        "duration": 90,
+        "price": 80000,
+        "isActive": true
+      },
+      {
+        "id": "evaluation",
+        "name": "Evaluación Médica",
+        "description": "Evaluación previa al tratamiento",
+        "duration": 45,
+        "price": 50000,
+        "isActive": true
+      },
+      {
+        "id": "wound_care",
+        "name": "Cuidado de Heridas",
+        "description": "Tratamiento especializado de heridas",
+        "duration": 60,
+        "price": 35000,
+        "isActive": true
+      }
+    ],
+    "appointmentSystem": {
+      "appointmentModel": "professional_based",
+      "allowClientSelection": true,
+      "bufferBetweenAppointments": 15,
+      "maxAdvanceBookingDays": 30,
+      "maxResources": 3,
+      "professionals": [
+        {
+          "id": "professional_1754061789181_gtcpnqkrs",
+          "name": "Jose",
+          "photo": "",
+          "isActive": true,
+          "schedule": {
+            "monday": {
+              "isOpen": true,
+              "openTime": "09:00",
+              "closeTime": "18:00"
+            },
+            "tuesday": {
+              "isOpen": true,
+              "openTime": "09:00",
+              "closeTime": "18:00"
+            },
+            "wednesday": {
+              "isOpen": true,
+              "openTime": "09:00",
+              "closeTime": "18:00"
+            },
+            "thursday": {
+              "isOpen": true,
+              "openTime": "09:00",
+              "closeTime": "18:00"
+            },
+            "friday": {
+              "isOpen": true,
+              "openTime": "09:00",
+              "closeTime": "18:00"
+            },
+            "saturday": {
+              "isOpen": false,
+              "openTime": "09:00",
+              "closeTime": "14:00"
+            },
+            "sunday": {
+              "isOpen": false,
+              "openTime": "09:00",
+              "closeTime": "18:00"
+            }
+          }
+        }
+      ]
+    },
+    "businessInfo": {
+      "businessName": "ejemplo",
+      "businessAddress": "djasdo",
+      "businessPhone": "+56983612026",
+      "businessEmail": "owenslopez211@gmail.com"
+    }
+  },
+  "subscription": {
+    "plan": "free",
+    "limits": {
+      "maxResources": 1,
+      "maxAppointmentsPerMonth": 100,
+      "maxUsers": 3
+    }
+  },
+  "createdAt": "2025-08-01T15:16:20.633Z",
+  "updatedAt": "2025-08-01T15:27:59.841Z",
+  "address": "djasdo",
+  "phone": "+56983612026",
+  "email": "owenslopez211@gmail.com",
+  "currency": "CLP"
+}
+✅ Organization updated successfully
+📋 Getting public organization data for: e2c36daa-4a86-4853-aa48-6c29979998e7
+✅ Public organization data retrieved successfully
+📋 Getting public professionals for organization: e2c36daa-4a86-4853-aa48-6c29979998e7
+✅ Found 1 active professionals
+📋 Getting public services for organization: e2c36daa-4a86-4853-aa48-6c29979998e7
+✅ Found 3 active services
+📋 Getting public professionals for organization: e2c36daa-4a86-4853-aa48-6c29979998e7
+✅ Found 1 active professionals
+📋 Getting public services for organization: e2c36daa-4a86-4853-aa48-6c29979998e7
+✅ Found 3 active services
+📋 Getting public organization data for: e2c36daa-4a86-4853-aa48-6c29979998e7
+✅ Public organization data retrieved successfully
+📋 Getting daily availability counts for org: e2c36daa-4a86-4853-aa48-6c29979998e7, professional: professional_1754061789181_gtcpnqkrs, dates: 2025-08-01, 2025-08-02, 2025-08-04, 2025-08-05, 2025-08-06, 2025-08-07
+✅ Generated daily counts for 6 dates
+📋 Getting daily availability counts for org: e2c36daa-4a86-4853-aa48-6c29979998e7, professional: professional_1754061789181_gtcpnqkrs, dates: 2025-08-01, 2025-08-02, 2025-08-04, 2025-08-05, 2025-08-06, 2025-08-07
+✅ Generated daily counts for 6 dates
+📋 Getting availability for org: e2c36daa-4a86-4853-aa48-6c29979998e7, professional: professional_1754061789181_gtcpnqkrs, date: 2025-08-01
+✅ Generated 5 available slots
+🏢 Getting organization for user: efa3cc77-9e2a-4427-9ec5-dd49ab5b3043
+✅ Organization found: ejemplo
+🏢 Getting organization for user: efa3cc77-9e2a-4427-9ec5-dd49ab5b3043
+✅ Organization found: ejemplo
+📋 Getting availability for org: e2c36daa-4a86-4853-aa48-6c29979998e7, professional: professional_1754061789181_gtcpnqkrs, date: 2025-08-02
+✅ Generated 5 available slots
+📋 Creating public appointment for organization: e2c36daa-4a86-4853-aa48-6c29979998e7
+Appointment data: {
+  "serviceId": "hyperbaric_session",
+  "professionalId": "professional_1754061789181_gtcpnqkrs",
+  "date": "2025-08-02",
+  "time": "09:00",
+  "clientName": "Joseasd",
+  "clientPhone": "231313123",
+  "clientEmail": "owenslopez211@gmail.com",
+  "notes": ""
+}
+✅ Public appointment created successfully: apt_1754062112818_1051mlwgs
+🏢 Getting organization for user: efa3cc77-9e2a-4427-9ec5-dd49ab5b3043
+✅ Organization found: ejemplo
+🏢 Getting organization for user: efa3cc77-9e2a-4427-9ec5-dd49ab5b3043
+✅ Organization found: ejemplo
+🏢 Getting organization for user: efa3cc77-9e2a-4427-9ec5-dd49ab5b3043
+✅ Organization found: ejemplo
+🏢 Getting organization for user: efa3cc77-9e2a-4427-9ec5-dd49ab5b3043
+✅ Organization found: ejemplo
+🏢 Getting organization for user: efa3cc77-9e2a-4427-9ec5-dd49ab5b3043
+✅ Organization found: ejemplo
+🏢 Getting organization for user: efa3cc77-9e2a-4427-9ec5-dd49ab5b3043
+✅ Organization found: ejemplo
+🔧 Updating organization settings: e2c36daa-4a86-4853-aa48-6c29979998e7
+📦 Received updates: {
+  "name": "ejemplo",
+  "address": "djasdo",
+  "phone": "+56983612026",
+  "email": "owenslopez211@gmail.com",
+  "currency": "CLP",
+  "timezone": "America/Santiago",
+  "businessHours": {
+    "monday": {
+      "isOpen": true,
+      "openTime": "09:00",
+      "closeTime": "18:00"
+    },
+    "tuesday": {
+      "isOpen": true,
+      "openTime": "09:00",
+      "closeTime": "18:00"
+    },
+    "wednesday": {
+      "isOpen": true,
+      "openTime": "09:00",
+      "closeTime": "18:00"
+    },
+    "thursday": {
+      "isOpen": true,
+      "openTime": "09:00",
+      "closeTime": "18:00"
+    },
+    "friday": {
+      "isOpen": true,
+      "openTime": "09:00",
+      "closeTime": "18:00"
+    },
+    "saturday": {
+      "isOpen": true,
+      "openTime": "09:00",
+      "closeTime": "14:00"
+    },
+    "sunday": {
+      "isOpen": false,
+      "openTime": "09:00",
+      "closeTime": "18:00"
+    }
+  },
+  "notifications": {},
+  "appointmentSystem": {
+    "appointmentModel": "professional_based",
+    "allowClientSelection": true,
+    "bufferBetweenAppointments": 15,
+    "maxAdvanceBookingDays": 30,
+    "maxResources": 3,
+    "professionals": [
+      {
+        "id": "professional_1754061789181_gtcpnqkrs",
+        "name": "Jose",
+        "photo": "",
+        "isActive": true,
+        "schedule": {
+          "monday": {
+            "isOpen": true,
+            "openTime": "09:00",
+            "closeTime": "18:00"
+          },
+          "tuesday": {
+            "isOpen": true,
+            "openTime": "09:00",
+            "closeTime": "18:00"
+          },
+          "wednesday": {
+            "isOpen": true,
+            "openTime": "09:00",
+            "closeTime": "18:00"
+          },
+          "thursday": {
+            "isOpen": true,
+            "openTime": "09:00",
+            "closeTime": "18:00"
+          },
+          "friday": {
+            "isOpen": true,
+            "openTime": "09:00",
+            "closeTime": "18:00"
+          },
+          "saturday": {
+            "isOpen": false,
+            "openTime": "09:00",
+            "closeTime": "14:00"
+          },
+          "sunday": {
+            "isOpen": false,
+            "openTime": "09:00",
+            "closeTime": "18:00"
+          }
+        }
+      }
+    ]
+  },
+  "businessInfo": {
+    "businessName": "ejemplo",
+    "businessAddress": "djasdo",
+    "businessPhone": "+56983612026",
+    "businessEmail": "owenslopez211@gmail.com"
+  },
+  "services": [
+    {
+      "id": "hyperbaric_session",
+      "name": "Sesión Hiperbárica",
+      "description": "Sesión en cámara hiperbárica",
+      "duration": 90,
+      "price": 80000,
+      "isActive": true
+    },
+    {
+      "id": "evaluation",
+      "name": "Evaluación Médica",
+      "description": "Evaluación previa al tratamiento",
+      "duration": 45,
+      "price": 50000,
+      "isActive": true
+    },
+    {
+      "id": "wound_care",
+      "name": "Cuidado de Heridas",
+      "description": "Tratamiento especializado de heridas",
+      "duration": 60,
+      "price": 35000,
+      "isActive": true
+    }
+  ]
+}
+📋 Current organization before update: {
+  "id": "e2c36daa-4a86-4853-aa48-6c29979998e7",
+  "name": "ejemplo",
+  "templateType": "hyperbaric_center",
+  "settings": {
+    "timezone": "America/Santiago",
+    "businessHours": {
+      "monday": {
+        "isOpen": true,
+        "openTime": "09:00",
+        "closeTime": "18:00"
+      },
+      "tuesday": {
+        "isOpen": true,
+        "openTime": "09:00",
+        "closeTime": "18:00"
+      },
+      "wednesday": {
+        "isOpen": true,
+        "openTime": "09:00",
+        "closeTime": "18:00"
+      },
+      "thursday": {
+        "isOpen": true,
+        "openTime": "09:00",
+        "closeTime": "18:00"
+      },
+      "friday": {
+        "isOpen": true,
+        "openTime": "09:00",
+        "closeTime": "18:00"
+      },
+      "saturday": {
+        "isOpen": true,
+        "openTime": "09:00",
+        "closeTime": "14:00"
+      },
+      "sunday": {
+        "isOpen": false,
+        "openTime": "09:00",
+        "closeTime": "18:00"
+      }
+    },
+    "notifications": {},
+    "businessConfiguration": {
+      "appointmentModel": "professional_based",
+      "allowClientSelection": true,
+      "bufferBetweenAppointments": 15,
+      "maxAdvanceBookingDays": 30,
+      "maxResources": 3,
+      "professionals": [
+        {
+          "id": "professional_1754061789181_gtcpnqkrs",
+          "name": "Jose",
+          "photo": "",
+          "isActive": true,
+          "schedule": {
+            "monday": {
+              "isOpen": true,
+              "openTime": "09:00",
+              "closeTime": "18:00"
+            },
+            "tuesday": {
+              "isOpen": true,
+              "openTime": "09:00",
+              "closeTime": "18:00"
+            },
+            "wednesday": {
+              "isOpen": true,
+              "openTime": "09:00",
+              "closeTime": "18:00"
+            },
+            "thursday": {
+              "isOpen": true,
+              "openTime": "09:00",
+              "closeTime": "18:00"
+            },
+            "friday": {
+              "isOpen": true,
+              "openTime": "09:00",
+              "closeTime": "18:00"
+            },
+            "saturday": {
+              "isOpen": false,
+              "openTime": "09:00",
+              "closeTime": "14:00"
+            },
+            "sunday": {
+              "isOpen": false,
+              "openTime": "09:00",
+              "closeTime": "18:00"
+            }
+          }
+        }
+      ]
+    },
+    "services": [
+      {
+        "id": "hyperbaric_session",
+        "name": "Sesión Hiperbárica",
+        "description": "Sesión en cámara hiperbárica",
+        "duration": 90,
+        "price": 80000,
+        "isActive": true
+      },
+      {
+        "id": "evaluation",
+        "name": "Evaluación Médica",
+        "description": "Evaluación previa al tratamiento",
+        "duration": 45,
+        "price": 50000,
+        "isActive": true
+      },
+      {
+        "id": "wound_care",
+        "name": "Cuidado de Heridas",
+        "description": "Tratamiento especializado de heridas",
+        "duration": 60,
+        "price": 35000,
+        "isActive": true
+      }
+    ],
+    "appointmentSystem": {
+      "appointmentModel": "professional_based",
+      "allowClientSelection": true,
+      "bufferBetweenAppointments": 15,
+      "maxAdvanceBookingDays": 30,
+      "maxResources": 3,
+      "professionals": [
+        {
+          "id": "professional_1754061789181_gtcpnqkrs",
+          "name": "Jose",
+          "photo": "",
+          "isActive": true,
+          "schedule": {
+            "monday": {
+              "isOpen": true,
+              "openTime": "09:00",
+              "closeTime": "18:00"
+            },
+            "tuesday": {
+              "isOpen": true,
+              "openTime": "09:00",
+              "closeTime": "18:00"
+            },
+            "wednesday": {
+              "isOpen": true,
+              "openTime": "09:00",
+              "closeTime": "18:00"
+            },
+            "thursday": {
+              "isOpen": true,
+              "openTime": "09:00",
+              "closeTime": "18:00"
+            },
+            "friday": {
+              "isOpen": true,
+              "openTime": "09:00",
+              "closeTime": "18:00"
+            },
+            "saturday": {
+              "isOpen": false,
+              "openTime": "09:00",
+              "closeTime": "14:00"
+            },
+            "sunday": {
+              "isOpen": false,
+              "openTime": "09:00",
+              "closeTime": "18:00"
+            }
+          }
+        }
+      ]
+    },
+    "businessInfo": {
+      "businessName": "ejemplo",
+      "businessAddress": "djasdo",
+      "businessPhone": "+56983612026",
+      "businessEmail": "owenslopez211@gmail.com"
+    }
+  },
+  "subscription": {
+    "plan": "free",
+    "limits": {
+      "maxResources": 1,
+      "maxAppointmentsPerMonth": 100,
+      "maxUsers": 3
+    }
+  },
+  "createdAt": "2025-08-01T15:16:20.633Z",
+  "updatedAt": "2025-08-01T15:27:59.841Z",
+  "address": "djasdo",
+  "phone": "+56983612026",
+  "email": "owenslopez211@gmail.com",
+  "currency": "CLP"
+}
+💾 Organization after update: {
+  "id": "e2c36daa-4a86-4853-aa48-6c29979998e7",
+  "name": "ejemplo",
+  "templateType": "hyperbaric_center",
+  "settings": {
+    "timezone": "America/Santiago",
+    "businessHours": {
+      "monday": {
+        "isOpen": true,
+        "openTime": "09:00",
+        "closeTime": "18:00"
+      },
+      "tuesday": {
+        "isOpen": true,
+        "openTime": "09:00",
+        "closeTime": "18:00"
+      },
+      "wednesday": {
+        "isOpen": true,
+        "openTime": "09:00",
+        "closeTime": "18:00"
+      },
+      "thursday": {
+        "isOpen": true,
+        "openTime": "09:00",
+        "closeTime": "18:00"
+      },
+      "friday": {
+        "isOpen": true,
+        "openTime": "09:00",
+        "closeTime": "18:00"
+      },
+      "saturday": {
+        "isOpen": true,
+        "openTime": "09:00",
+        "closeTime": "14:00"
+      },
+      "sunday": {
+        "isOpen": false,
+        "openTime": "09:00",
+        "closeTime": "18:00"
+      }
+    },
+    "notifications": {},
+    "businessConfiguration": {
+      "appointmentModel": "professional_based",
+      "allowClientSelection": true,
+      "bufferBetweenAppointments": 15,
+      "maxAdvanceBookingDays": 30,
+      "maxResources": 3,
+      "professionals": [
+        {
+          "id": "professional_1754061789181_gtcpnqkrs",
+          "name": "Jose",
+          "photo": "",
+          "isActive": true,
+          "schedule": {
+            "monday": {
+              "isOpen": true,
+              "openTime": "09:00",
+              "closeTime": "18:00"
+            },
+            "tuesday": {
+              "isOpen": true,
+              "openTime": "09:00",
+              "closeTime": "18:00"
+            },
+            "wednesday": {
+              "isOpen": true,
+              "openTime": "09:00",
+              "closeTime": "18:00"
+            },
+            "thursday": {
+              "isOpen": true,
+              "openTime": "09:00",
+              "closeTime": "18:00"
+            },
+            "friday": {
+              "isOpen": true,
+              "openTime": "09:00",
+              "closeTime": "18:00"
+            },
+            "saturday": {
+              "isOpen": false,
+              "openTime": "09:00",
+              "closeTime": "14:00"
+            },
+            "sunday": {
+              "isOpen": false,
+              "openTime": "09:00",
+              "closeTime": "18:00"
+            }
+          }
+        }
+      ]
+    },
+    "services": [
+      {
+        "id": "hyperbaric_session",
+        "name": "Sesión Hiperbárica",
+        "description": "Sesión en cámara hiperbárica",
+        "duration": 90,
+        "price": 80000,
+        "isActive": true
+      },
+      {
+        "id": "evaluation",
+        "name": "Evaluación Médica",
+        "description": "Evaluación previa al tratamiento",
+        "duration": 45,
+        "price": 50000,
+        "isActive": true
+      },
+      {
+        "id": "wound_care",
+        "name": "Cuidado de Heridas",
+        "description": "Tratamiento especializado de heridas",
+        "duration": 60,
+        "price": 35000,
+        "isActive": true
+      }
+    ],
+    "appointmentSystem": {
+      "appointmentModel": "professional_based",
+      "allowClientSelection": true,
+      "bufferBetweenAppointments": 15,
+      "maxAdvanceBookingDays": 30,
+      "maxResources": 3,
+      "professionals": [
+        {
+          "id": "professional_1754061789181_gtcpnqkrs",
+          "name": "Jose",
+          "photo": "",
+          "isActive": true,
+          "schedule": {
+            "monday": {
+              "isOpen": true,
+              "openTime": "09:00",
+              "closeTime": "18:00"
+            },
+            "tuesday": {
+              "isOpen": true,
+              "openTime": "09:00",
+              "closeTime": "18:00"
+            },
+            "wednesday": {
+              "isOpen": true,
+              "openTime": "09:00",
+              "closeTime": "18:00"
+            },
+            "thursday": {
+              "isOpen": true,
+              "openTime": "09:00",
+              "closeTime": "18:00"
+            },
+            "friday": {
+              "isOpen": true,
+              "openTime": "09:00",
+              "closeTime": "18:00"
+            },
+            "saturday": {
+              "isOpen": false,
+              "openTime": "09:00",
+              "closeTime": "14:00"
+            },
+            "sunday": {
+              "isOpen": false,
+              "openTime": "09:00",
+              "closeTime": "18:00"
+            }
+          }
+        }
+      ]
+    },
+    "businessInfo": {
+      "businessName": "ejemplo",
+      "businessAddress": "djasdo",
+      "businessPhone": "+56983612026",
+      "businessEmail": "owenslopez211@gmail.com"
+    }
+  },
+  "subscription": {
+    "plan": "free",
+    "limits": {
+      "maxResources": 1,
+      "maxAppointmentsPerMonth": 100,
+      "maxUsers": 3
+    }
+  },
+  "createdAt": "2025-08-01T15:16:20.633Z",
+  "updatedAt": "2025-08-01T15:31:51.071Z",
+  "address": "djasdo",
+  "phone": "+56983612026",
+  "email": "owenslopez211@gmail.com",
+  "currency": "CLP"
+}
+✅ Organization updated successfully
+📋 Getting daily availability counts for org: e2c36daa-4a86-4853-aa48-6c29979998e7, professional: professional_1754061789181_gtcpnqkrs, dates: 2025-08-01, 2025-08-02, 2025-08-04, 2025-08-05, 2025-08-06, 2025-08-07
+✅ Generated daily counts for 6 dates
+📋 Getting daily availability counts for org: e2c36daa-4a86-4853-aa48-6c29979998e7, professional: professional_1754061789181_gtcpnqkrs, dates: 2025-08-01, 2025-08-02, 2025-08-04, 2025-08-05, 2025-08-06, 2025-08-07
+✅ Generated daily counts for 6 dates
+📋 Getting availability for org: e2c36daa-4a86-4853-aa48-6c29979998e7, professional: professional_1754061789181_gtcpnqkrs, date: 2025-08-01
+✅ Generated 5 available slots
+🔧 Updating organization settings: e2c36daa-4a86-4853-aa48-6c29979998e7
+📦 Received updates: {
+  "name": "ejemplo",
+  "address": "djasdo",
+  "phone": "+56983612026",
+  "email": "owenslopez211@gmail.com",
+  "currency": "CLP",
+  "timezone": "America/Santiago",
+  "businessHours": {
+    "monday": {
+      "isOpen": true,
+      "openTime": "09:00",
+      "closeTime": "18:00"
+    },
+    "tuesday": {
+      "isOpen": true,
+      "openTime": "09:00",
+      "closeTime": "18:00"
+    },
+    "wednesday": {
+      "isOpen": true,
+      "openTime": "09:00",
+      "closeTime": "18:00"
+    },
+    "thursday": {
+      "isOpen": true,
+      "openTime": "09:00",
+      "closeTime": "18:00"
+    },
+    "friday": {
+      "isOpen": true,
+      "openTime": "09:00",
+      "closeTime": "18:00"
+    },
+    "saturday": {
+      "isOpen": true,
+      "openTime": "09:00",
+      "closeTime": "14:00"
+    },
+    "sunday": {
+      "isOpen": false,
+      "openTime": "09:00",
+      "closeTime": "18:00"
+    }
+  },
+  "notifications": {},
+  "appointmentSystem": {
+    "appointmentModel": "resource_based",
+    "allowClientSelection": true,
+    "bufferBetweenAppointments": 15,
+    "maxAdvanceBookingDays": 30,
+    "maxResources": 3,
+    "professionals": [
+      {
+        "id": "professional_1754061789181_gtcpnqkrs",
+        "name": "Jose",
+        "photo": "",
+        "isActive": true,
+        "schedule": {
+          "monday": {
+            "isOpen": true,
+            "openTime": "09:00",
+            "closeTime": "18:00"
+          },
+          "tuesday": {
+            "isOpen": true,
+            "openTime": "09:00",
+            "closeTime": "18:00"
+          },
+          "wednesday": {
+            "isOpen": true,
+            "openTime": "09:00",
+            "closeTime": "18:00"
+          },
+          "thursday": {
+            "isOpen": true,
+            "openTime": "09:00",
+            "closeTime": "18:00"
+          },
+          "friday": {
+            "isOpen": true,
+            "openTime": "09:00",
+            "closeTime": "18:00"
+          },
+          "saturday": {
+            "isOpen": false,
+            "openTime": "09:00",
+            "closeTime": "14:00"
+          },
+          "sunday": {
+            "isOpen": false,
+            "openTime": "09:00",
+            "closeTime": "18:00"
+          }
+        }
+      }
+    ]
+  },
+  "businessInfo": {
+    "businessName": "ejemplo",
+    "businessAddress": "djasdo",
+    "businessPhone": "+56983612026",
+    "businessEmail": "owenslopez211@gmail.com"
+  },
+  "services": [
+    {
+      "id": "hyperbaric_session",
+      "name": "Sesión Hiperbárica",
+      "description": "Sesión en cámara hiperbárica",
+      "duration": 90,
+      "price": 80000,
+      "isActive": true
+    },
+    {
+      "id": "evaluation",
+      "name": "Evaluación Médica",
+      "description": "Evaluación previa al tratamiento",
+      "duration": 45,
+      "price": 50000,
+      "isActive": true
+    },
+    {
+      "id": "wound_care",
+      "name": "Cuidado de Heridas",
+      "description": "Tratamiento especializado de heridas",
+      "duration": 60,
+      "price": 35000,
+      "isActive": true
+    }
+  ]
+}
+📋 Current organization before update: {
+  "id": "e2c36daa-4a86-4853-aa48-6c29979998e7",
+  "name": "ejemplo",
+  "templateType": "hyperbaric_center",
+  "settings": {
+    "timezone": "America/Santiago",
+    "businessHours": {
+      "monday": {
+        "isOpen": true,
+        "openTime": "09:00",
+        "closeTime": "18:00"
+      },
+      "tuesday": {
+        "isOpen": true,
+        "openTime": "09:00",
+        "closeTime": "18:00"
+      },
+      "wednesday": {
+        "isOpen": true,
+        "openTime": "09:00",
+        "closeTime": "18:00"
+      },
+      "thursday": {
+        "isOpen": true,
+        "openTime": "09:00",
+        "closeTime": "18:00"
+      },
+      "friday": {
+        "isOpen": true,
+        "openTime": "09:00",
+        "closeTime": "18:00"
+      },
+      "saturday": {
+        "isOpen": true,
+        "openTime": "09:00",
+        "closeTime": "14:00"
+      },
+      "sunday": {
+        "isOpen": false,
+        "openTime": "09:00",
+        "closeTime": "18:00"
+      }
+    },
+    "notifications": {},
+    "businessConfiguration": {
+      "appointmentModel": "professional_based",
+      "allowClientSelection": true,
+      "bufferBetweenAppointments": 15,
+      "maxAdvanceBookingDays": 30,
+      "maxResources": 3,
+      "professionals": [
+        {
+          "id": "professional_1754061789181_gtcpnqkrs",
+          "name": "Jose",
+          "photo": "",
+          "isActive": true,
+          "schedule": {
+            "monday": {
+              "isOpen": true,
+              "openTime": "09:00",
+              "closeTime": "18:00"
+            },
+            "tuesday": {
+              "isOpen": true,
+              "openTime": "09:00",
+              "closeTime": "18:00"
+            },
+            "wednesday": {
+              "isOpen": true,
+              "openTime": "09:00",
+              "closeTime": "18:00"
+            },
+            "thursday": {
+              "isOpen": true,
+              "openTime": "09:00",
+              "closeTime": "18:00"
+            },
+            "friday": {
+              "isOpen": true,
+              "openTime": "09:00",
+              "closeTime": "18:00"
+            },
+            "saturday": {
+              "isOpen": false,
+              "openTime": "09:00",
+              "closeTime": "14:00"
+            },
+            "sunday": {
+              "isOpen": false,
+              "openTime": "09:00",
+              "closeTime": "18:00"
+            }
+          }
+        }
+      ]
+    },
+    "services": [
+      {
+        "id": "hyperbaric_session",
+        "name": "Sesión Hiperbárica",
+        "description": "Sesión en cámara hiperbárica",
+        "duration": 90,
+        "price": 80000,
+        "isActive": true
+      },
+      {
+        "id": "evaluation",
+        "name": "Evaluación Médica",
+        "description": "Evaluación previa al tratamiento",
+        "duration": 45,
+        "price": 50000,
+        "isActive": true
+      },
+      {
+        "id": "wound_care",
+        "name": "Cuidado de Heridas",
+        "description": "Tratamiento especializado de heridas",
+        "duration": 60,
+        "price": 35000,
+        "isActive": true
+      }
+    ],
+    "appointmentSystem": {
+      "appointmentModel": "professional_based",
+      "allowClientSelection": true,
+      "bufferBetweenAppointments": 15,
+      "maxAdvanceBookingDays": 30,
+      "maxResources": 3,
+      "professionals": [
+        {
+          "id": "professional_1754061789181_gtcpnqkrs",
+          "name": "Jose",
+          "photo": "",
+          "isActive": true,
+          "schedule": {
+            "monday": {
+              "isOpen": true,
+              "openTime": "09:00",
+              "closeTime": "18:00"
+            },
+            "tuesday": {
+              "isOpen": true,
+              "openTime": "09:00",
+              "closeTime": "18:00"
+            },
+            "wednesday": {
+              "isOpen": true,
+              "openTime": "09:00",
+              "closeTime": "18:00"
+            },
+            "thursday": {
+              "isOpen": true,
+              "openTime": "09:00",
+              "closeTime": "18:00"
+            },
+            "friday": {
+              "isOpen": true,
+              "openTime": "09:00",
+              "closeTime": "18:00"
+            },
+            "saturday": {
+              "isOpen": false,
+              "openTime": "09:00",
+              "closeTime": "14:00"
+            },
+            "sunday": {
+              "isOpen": false,
+              "openTime": "09:00",
+              "closeTime": "18:00"
+            }
+          }
+        }
+      ]
+    },
+    "businessInfo": {
+      "businessName": "ejemplo",
+      "businessAddress": "djasdo",
+      "businessPhone": "+56983612026",
+      "businessEmail": "owenslopez211@gmail.com"
+    }
+  },
+  "subscription": {
+    "plan": "free",
+    "limits": {
+      "maxResources": 1,
+      "maxAppointmentsPerMonth": 100,
+      "maxUsers": 3
+    }
+  },
+  "createdAt": "2025-08-01T15:16:20.633Z",
+  "updatedAt": "2025-08-01T15:31:51.071Z",
+  "address": "djasdo",
+  "phone": "+56983612026",
+  "email": "owenslopez211@gmail.com",
+  "currency": "CLP"
+}
+💾 Organization after update: {
+  "id": "e2c36daa-4a86-4853-aa48-6c29979998e7",
+  "name": "ejemplo",
+  "templateType": "hyperbaric_center",
+  "settings": {
+    "timezone": "America/Santiago",
+    "businessHours": {
+      "monday": {
+        "isOpen": true,
+        "openTime": "09:00",
+        "closeTime": "18:00"
+      },
+      "tuesday": {
+        "isOpen": true,
+        "openTime": "09:00",
+        "closeTime": "18:00"
+      },
+      "wednesday": {
+        "isOpen": true,
+        "openTime": "09:00",
+        "closeTime": "18:00"
+      },
+      "thursday": {
+        "isOpen": true,
+        "openTime": "09:00",
+        "closeTime": "18:00"
+      },
+      "friday": {
+        "isOpen": true,
+        "openTime": "09:00",
+        "closeTime": "18:00"
+      },
+      "saturday": {
+        "isOpen": true,
+        "openTime": "09:00",
+        "closeTime": "14:00"
+      },
+      "sunday": {
+        "isOpen": false,
+        "openTime": "09:00",
+        "closeTime": "18:00"
+      }
+    },
+    "notifications": {},
+    "businessConfiguration": {
+      "appointmentModel": "resource_based",
+      "allowClientSelection": true,
+      "bufferBetweenAppointments": 15,
+      "maxAdvanceBookingDays": 30,
+      "maxResources": 3,
+      "professionals": [
+        {
+          "id": "professional_1754061789181_gtcpnqkrs",
+          "name": "Jose",
+          "photo": "",
+          "isActive": true,
+          "schedule": {
+            "monday": {
+              "isOpen": true,
+              "openTime": "09:00",
+              "closeTime": "18:00"
+            },
+            "tuesday": {
+              "isOpen": true,
+              "openTime": "09:00",
+              "closeTime": "18:00"
+            },
+            "wednesday": {
+              "isOpen": true,
+              "openTime": "09:00",
+              "closeTime": "18:00"
+            },
+            "thursday": {
+              "isOpen": true,
+              "openTime": "09:00",
+              "closeTime": "18:00"
+            },
+            "friday": {
+              "isOpen": true,
+              "openTime": "09:00",
+              "closeTime": "18:00"
+            },
+            "saturday": {
+              "isOpen": false,
+              "openTime": "09:00",
+              "closeTime": "14:00"
+            },
+            "sunday": {
+              "isOpen": false,
+              "openTime": "09:00",
+              "closeTime": "18:00"
+            }
+          }
+        }
+      ]
+    },
+    "services": [
+      {
+        "id": "hyperbaric_session",
+        "name": "Sesión Hiperbárica",
+        "description": "Sesión en cámara hiperbárica",
+        "duration": 90,
+        "price": 80000,
+        "isActive": true
+      },
+      {
+        "id": "evaluation",
+        "name": "Evaluación Médica",
+        "description": "Evaluación previa al tratamiento",
+        "duration": 45,
+        "price": 50000,
+        "isActive": true
+      },
+      {
+        "id": "wound_care",
+        "name": "Cuidado de Heridas",
+        "description": "Tratamiento especializado de heridas",
+        "duration": 60,
+        "price": 35000,
+        "isActive": true
+      }
+    ],
+    "appointmentSystem": {
+      "appointmentModel": "resource_based",
+      "allowClientSelection": true,
+      "bufferBetweenAppointments": 15,
+      "maxAdvanceBookingDays": 30,
+      "maxResources": 3,
+      "professionals": [
+        {
+          "id": "professional_1754061789181_gtcpnqkrs",
+          "name": "Jose",
+          "photo": "",
+          "isActive": true,
+          "schedule": {
+            "monday": {
+              "isOpen": true,
+              "openTime": "09:00",
+              "closeTime": "18:00"
+            },
+            "tuesday": {
+              "isOpen": true,
+              "openTime": "09:00",
+              "closeTime": "18:00"
+            },
+            "wednesday": {
+              "isOpen": true,
+              "openTime": "09:00",
+              "closeTime": "18:00"
+            },
+            "thursday": {
+              "isOpen": true,
+              "openTime": "09:00",
+              "closeTime": "18:00"
+            },
+            "friday": {
+              "isOpen": true,
+              "openTime": "09:00",
+              "closeTime": "18:00"
+            },
+            "saturday": {
+              "isOpen": false,
+              "openTime": "09:00",
+              "closeTime": "14:00"
+            },
+            "sunday": {
+              "isOpen": false,
+              "openTime": "09:00",
+              "closeTime": "18:00"
+            }
+          }
+        }
+      ]
+    },
+    "businessInfo": {
+      "businessName": "ejemplo",
+      "businessAddress": "djasdo",
+      "businessPhone": "+56983612026",
+      "businessEmail": "owenslopez211@gmail.com"
+    }
+  },
+  "subscription": {
+    "plan": "free",
+    "limits": {
+      "maxResources": 1,
+      "maxAppointmentsPerMonth": 100,
+      "maxUsers": 3
+    }
+  },
+  "createdAt": "2025-08-01T15:16:20.633Z",
+  "updatedAt": "2025-08-01T15:32:11.126Z",
+  "address": "djasdo",
+  "phone": "+56983612026",
+  "email": "owenslopez211@gmail.com",
+  "currency": "CLP"
+}
+✅ Organization updated successfully
+📋 Getting public professionals for organization: e2c36daa-4a86-4853-aa48-6c29979998e7
+📋 Getting public services for organization: e2c36daa-4a86-4853-aa48-6c29979998e7
+✅ Found 3 active services
+📋 Getting public services for organization: e2c36daa-4a86-4853-aa48-6c29979998e7
+✅ Found 3 active services
+📋 Getting public professionals for organization: e2c36daa-4a86-4853-aa48-6c29979998e7
+📋 Getting public organization data for: e2c36daa-4a86-4853-aa48-6c29979998e7
+✅ Public organization data retrieved successfully
+📋 Getting public organization data for: e2c36daa-4a86-4853-aa48-6c29979998e7
+✅ Public organization data retrieved successfully
+📋 Getting daily availability counts for org: e2c36daa-4a86-4853-aa48-6c29979998e7, professional: undefined, dates: 2025-08-01, 2025-08-02, 2025-08-04, 2025-08-05, 2025-08-06, 2025-08-07
+✅ Generated daily counts for 6 dates
+📋 Getting daily availability counts for org: e2c36daa-4a86-4853-aa48-6c29979998e7, professional: undefined, dates: 2025-08-01, 2025-08-02, 2025-08-04, 2025-08-05, 2025-08-06, 2025-08-07
+✅ Generated daily counts for 6 dates
+📋 Getting availability for org: e2c36daa-4a86-4853-aa48-6c29979998e7, professional: undefined, date: 2025-08-01
+✅ Generated 5 available slots
+📋 Getting public services for organization: e2c36daa-4a86-4853-aa48-6c29979998e7
+✅ Found 3 active services
+📋 Getting public professionals for organization: e2c36daa-4a86-4853-aa48-6c29979998e7
+📋 Getting public organization data for: e2c36daa-4a86-4853-aa48-6c29979998e7
+✅ Public organization data retrieved successfully
+📋 Getting public organization data for: e2c36daa-4a86-4853-aa48-6c29979998e7
+✅ Public organization data retrieved successfully
+📋 Getting public professionals for organization: e2c36daa-4a86-4853-aa48-6c29979998e7
+📋 Getting public services for organization: e2c36daa-4a86-4853-aa48-6c29979998e7
+✅ Found 3 active services
+📋 Getting public services for organization: e2c36daa-4a86-4853-aa48-6c29979998e7
+✅ Found 3 active services
+📋 Getting public professionals for organization: e2c36daa-4a86-4853-aa48-6c29979998e7
+📋 Getting public professionals for organization: e2c36daa-4a86-4853-aa48-6c29979998e7
+📋 Getting public organization data for: e2c36daa-4a86-4853-aa48-6c29979998e7
+✅ Public organization data retrieved successfully
+📋 Getting public organization data for: e2c36daa-4a86-4853-aa48-6c29979998e7
+✅ Public organization data retrieved successfully
+📋 Getting public services for organization: e2c36daa-4a86-4853-aa48-6c29979998e7
+✅ Found 3 active services
+📋 Getting daily availability counts for org: e2c36daa-4a86-4853-aa48-6c29979998e7, professional: undefined, dates: 2025-08-01, 2025-08-02, 2025-08-04, 2025-08-05, 2025-08-06, 2025-08-07
+✅ Generated daily counts for 6 dates
+📋 Getting daily availability counts for org: e2c36daa-4a86-4853-aa48-6c29979998e7, professional: undefined, dates: 2025-08-01, 2025-08-02, 2025-08-04, 2025-08-05, 2025-08-06, 2025-08-07
+✅ Generated daily counts for 6 dates
+📋 Getting availability for org: e2c36daa-4a86-4853-aa48-6c29979998e7, professional: undefined, date: 2025-08-02
+✅ Generated 5 available slots
+🏢 Getting organization for user: efa3cc77-9e2a-4427-9ec5-dd49ab5b3043
+✅ Organization found: ejemplo
+🏢 Getting organization for user: efa3cc77-9e2a-4427-9ec5-dd49ab5b3043
+✅ Organization found: ejemplo
+🏢 Getting organization for user: efa3cc77-9e2a-4427-9ec5-dd49ab5b3043
+✅ Organization found: ejemplo
+🏢 Getting organization for user: efa3cc77-9e2a-4427-9ec5-dd49ab5b3043
+✅ Organization found: ejemplo
+🏢 Getting organization for user: efa3cc77-9e2a-4427-9ec5-dd49ab5b3043
+✅ Organization found: ejemplo
+🏢 Getting organization for user: efa3cc77-9e2a-4427-9ec5-dd49ab5b3043
+✅ Organization found: ejemplo
+🏢 Getting organization for user: efa3cc77-9e2a-4427-9ec5-dd49ab5b3043
+✅ Organization found: ejemplo
+🏢 Getting organization for user: efa3cc77-9e2a-4427-9ec5-dd49ab5b3043
+✅ Organization found: ejemplo
+🔧 Updating organization settings: e2c36daa-4a86-4853-aa48-6c29979998e7
+📦 Received updates: {
+  "name": "ejemplo",
+  "address": "djasdo",
+  "phone": "+56983612026",
+  "email": "owenslopez211@gmail.com",
+  "currency": "CLP",
+  "timezone": "America/Santiago",
+  "businessHours": {
+    "monday": {
+      "isOpen": true,
+      "openTime": "09:00",
+      "closeTime": "18:00"
+    },
+    "tuesday": {
+      "isOpen": true,
+      "openTime": "09:00",
+      "closeTime": "18:00"
+    },
+    "wednesday": {
+      "isOpen": true,
+      "openTime": "09:00",
+      "closeTime": "18:00"
+    },
+    "thursday": {
+      "isOpen": true,
+      "openTime": "09:00",
+      "closeTime": "18:00"
+    },
+    "friday": {
+      "isOpen": true,
+      "openTime": "09:00",
+      "closeTime": "18:00"
+    },
+    "saturday": {
+      "isOpen": true,
+      "openTime": "09:00",
+      "closeTime": "14:00"
+    },
+    "sunday": {
+      "isOpen": false,
+      "openTime": "09:00",
+      "closeTime": "18:00"
+    }
+  },
+  "notifications": {},
+  "appointmentSystem": {
+    "appointmentModel": "professional_based",
+    "allowClientSelection": true,
+    "bufferBetweenAppointments": 15,
+    "maxAdvanceBookingDays": 30,
+    "maxResources": 3,
+    "professionals": [
+      {
+        "id": "professional_1754061789181_gtcpnqkrs",
+        "name": "Jose",
+        "photo": "",
+        "isActive": true,
+        "schedule": {
+          "monday": {
+            "isOpen": true,
+            "openTime": "09:00",
+            "closeTime": "18:00"
+          },
+          "tuesday": {
+            "isOpen": true,
+            "openTime": "09:00",
+            "closeTime": "18:00"
+          },
+          "wednesday": {
+            "isOpen": true,
+            "openTime": "09:00",
+            "closeTime": "18:00"
+          },
+          "thursday": {
+            "isOpen": true,
+            "openTime": "09:00",
+            "closeTime": "18:00"
+          },
+          "friday": {
+            "isOpen": true,
+            "openTime": "09:00",
+            "closeTime": "18:00"
+          },
+          "saturday": {
+            "isOpen": false,
+            "openTime": "09:00",
+            "closeTime": "14:00"
+          },
+          "sunday": {
+            "isOpen": false,
+            "openTime": "09:00",
+            "closeTime": "18:00"
+          }
+        }
+      }
+    ]
+  },
+  "businessInfo": {
+    "businessName": "ejemplo",
+    "businessAddress": "djasdo",
+    "businessPhone": "+56983612026",
+    "businessEmail": "owenslopez211@gmail.com"
+  },
+  "services": [
+    {
+      "id": "hyperbaric_session",
+      "name": "Sesión Hiperbárica",
+      "description": "Sesión en cámara hiperbárica",
+      "duration": 90,
+      "price": 80000,
+      "isActive": true
+    },
+    {
+      "id": "evaluation",
+      "name": "Evaluación Médica",
+      "description": "Evaluación previa al tratamiento",
+      "duration": 45,
+      "price": 50000,
+      "isActive": true
+    },
+    {
+      "id": "wound_care",
+      "name": "Cuidado de Heridas",
+      "description": "Tratamiento especializado de heridas",
+      "duration": 60,
+      "price": 35000,
+      "isActive": true
+    }
+  ]
+}
+📋 Current organization before update: {
+  "id": "e2c36daa-4a86-4853-aa48-6c29979998e7",
+  "name": "ejemplo",
+  "templateType": "hyperbaric_center",
+  "settings": {
+    "timezone": "America/Santiago",
+    "businessHours": {
+      "monday": {
+        "isOpen": true,
+        "openTime": "09:00",
+        "closeTime": "18:00"
+      },
+      "tuesday": {
+        "isOpen": true,
+        "openTime": "09:00",
+        "closeTime": "18:00"
+      },
+      "wednesday": {
+        "isOpen": true,
+        "openTime": "09:00",
+        "closeTime": "18:00"
+      },
+      "thursday": {
+        "isOpen": true,
+        "openTime": "09:00",
+        "closeTime": "18:00"
+      },
+      "friday": {
+        "isOpen": true,
+        "openTime": "09:00",
+        "closeTime": "18:00"
+      },
+      "saturday": {
+        "isOpen": true,
+        "openTime": "09:00",
+        "closeTime": "14:00"
+      },
+      "sunday": {
+        "isOpen": false,
+        "openTime": "09:00",
+        "closeTime": "18:00"
+      }
+    },
+    "notifications": {},
+    "businessConfiguration": {
+      "appointmentModel": "resource_based",
+      "allowClientSelection": true,
+      "bufferBetweenAppointments": 15,
+      "maxAdvanceBookingDays": 30,
+      "maxResources": 3,
+      "professionals": [
+        {
+          "id": "professional_1754061789181_gtcpnqkrs",
+          "name": "Jose",
+          "photo": "",
+          "isActive": true,
+          "schedule": {
+            "monday": {
+              "isOpen": true,
+              "openTime": "09:00",
+              "closeTime": "18:00"
+            },
+            "tuesday": {
+              "isOpen": true,
+              "openTime": "09:00",
+              "closeTime": "18:00"
+            },
+            "wednesday": {
+              "isOpen": true,
+              "openTime": "09:00",
+              "closeTime": "18:00"
+            },
+            "thursday": {
+              "isOpen": true,
+              "openTime": "09:00",
+              "closeTime": "18:00"
+            },
+            "friday": {
+              "isOpen": true,
+              "openTime": "09:00",
+              "closeTime": "18:00"
+            },
+            "saturday": {
+              "isOpen": false,
+              "openTime": "09:00",
+              "closeTime": "14:00"
+            },
+            "sunday": {
+              "isOpen": false,
+              "openTime": "09:00",
+              "closeTime": "18:00"
+            }
+          }
+        }
+      ]
+    },
+    "services": [
+      {
+        "id": "hyperbaric_session",
+        "name": "Sesión Hiperbárica",
+        "description": "Sesión en cámara hiperbárica",
+        "duration": 90,
+        "price": 80000,
+        "isActive": true
+      },
+      {
+        "id": "evaluation",
+        "name": "Evaluación Médica",
+        "description": "Evaluación previa al tratamiento",
+        "duration": 45,
+        "price": 50000,
+        "isActive": true
+      },
+      {
+        "id": "wound_care",
+        "name": "Cuidado de Heridas",
+        "description": "Tratamiento especializado de heridas",
+        "duration": 60,
+        "price": 35000,
+        "isActive": true
+      }
+    ],
+    "appointmentSystem": {
+      "appointmentModel": "resource_based",
+      "allowClientSelection": true,
+      "bufferBetweenAppointments": 15,
+      "maxAdvanceBookingDays": 30,
+      "maxResources": 3,
+      "professionals": [
+        {
+          "id": "professional_1754061789181_gtcpnqkrs",
+          "name": "Jose",
+          "photo": "",
+          "isActive": true,
+          "schedule": {
+            "monday": {
+              "isOpen": true,
+              "openTime": "09:00",
+              "closeTime": "18:00"
+            },
+            "tuesday": {
+              "isOpen": true,
+              "openTime": "09:00",
+              "closeTime": "18:00"
+            },
+            "wednesday": {
+              "isOpen": true,
+              "openTime": "09:00",
+              "closeTime": "18:00"
+            },
+            "thursday": {
+              "isOpen": true,
+              "openTime": "09:00",
+              "closeTime": "18:00"
+            },
+            "friday": {
+              "isOpen": true,
+              "openTime": "09:00",
+              "closeTime": "18:00"
+            },
+            "saturday": {
+              "isOpen": false,
+              "openTime": "09:00",
+              "closeTime": "14:00"
+            },
+            "sunday": {
+              "isOpen": false,
+              "openTime": "09:00",
+              "closeTime": "18:00"
+            }
+          }
+        }
+      ]
+    },
+    "businessInfo": {
+      "businessName": "ejemplo",
+      "businessAddress": "djasdo",
+      "businessPhone": "+56983612026",
+      "businessEmail": "owenslopez211@gmail.com"
+    }
+  },
+  "subscription": {
+    "plan": "free",
+    "limits": {
+      "maxResources": 1,
+      "maxAppointmentsPerMonth": 100,
+      "maxUsers": 3
+    }
+  },
+  "createdAt": "2025-08-01T15:16:20.633Z",
+  "updatedAt": "2025-08-01T15:32:11.126Z",
+  "address": "djasdo",
+  "phone": "+56983612026",
+  "email": "owenslopez211@gmail.com",
+  "currency": "CLP"
+}
+💾 Organization after update: {
+  "id": "e2c36daa-4a86-4853-aa48-6c29979998e7",
+  "name": "ejemplo",
+  "templateType": "hyperbaric_center",
+  "settings": {
+    "timezone": "America/Santiago",
+    "businessHours": {
+      "monday": {
+        "isOpen": true,
+        "openTime": "09:00",
+        "closeTime": "18:00"
+      },
+      "tuesday": {
+        "isOpen": true,
+        "openTime": "09:00",
+        "closeTime": "18:00"
+      },
+      "wednesday": {
+        "isOpen": true,
+        "openTime": "09:00",
+        "closeTime": "18:00"
+      },
+      "thursday": {
+        "isOpen": true,
+        "openTime": "09:00",
+        "closeTime": "18:00"
+      },
+      "friday": {
+        "isOpen": true,
+        "openTime": "09:00",
+        "closeTime": "18:00"
+      },
+      "saturday": {
+        "isOpen": true,
+        "openTime": "09:00",
+        "closeTime": "14:00"
+      },
+      "sunday": {
+        "isOpen": false,
+        "openTime": "09:00",
+        "closeTime": "18:00"
+      }
+    },
+    "notifications": {},
+    "businessConfiguration": {
+      "appointmentModel": "professional_based",
+      "allowClientSelection": true,
+      "bufferBetweenAppointments": 15,
+      "maxAdvanceBookingDays": 30,
+      "maxResources": 3,
+      "professionals": [
+        {
+          "id": "professional_1754061789181_gtcpnqkrs",
+          "name": "Jose",
+          "photo": "",
+          "isActive": true,
+          "schedule": {
+            "monday": {
+              "isOpen": true,
+              "openTime": "09:00",
+              "closeTime": "18:00"
+            },
+            "tuesday": {
+              "isOpen": true,
+              "openTime": "09:00",
+              "closeTime": "18:00"
+            },
+            "wednesday": {
+              "isOpen": true,
+              "openTime": "09:00",
+              "closeTime": "18:00"
+            },
+            "thursday": {
+              "isOpen": true,
+              "openTime": "09:00",
+              "closeTime": "18:00"
+            },
+            "friday": {
+              "isOpen": true,
+              "openTime": "09:00",
+              "closeTime": "18:00"
+            },
+            "saturday": {
+              "isOpen": false,
+              "openTime": "09:00",
+              "closeTime": "14:00"
+            },
+            "sunday": {
+              "isOpen": false,
+              "openTime": "09:00",
+              "closeTime": "18:00"
+            }
+          }
+        }
+      ]
+    },
+    "services": [
+      {
+        "id": "hyperbaric_session",
+        "name": "Sesión Hiperbárica",
+        "description": "Sesión en cámara hiperbárica",
+        "duration": 90,
+        "price": 80000,
+        "isActive": true
+      },
+      {
+        "id": "evaluation",
+        "name": "Evaluación Médica",
+        "description": "Evaluación previa al tratamiento",
+        "duration": 45,
+        "price": 50000,
+        "isActive": true
+      },
+      {
+        "id": "wound_care",
+        "name": "Cuidado de Heridas",
+        "description": "Tratamiento especializado de heridas",
+        "duration": 60,
+        "price": 35000,
+        "isActive": true
+      }
+    ],
+    "appointmentSystem": {
+      "appointmentModel": "professional_based",
+      "allowClientSelection": true,
+      "bufferBetweenAppointments": 15,
+      "maxAdvanceBookingDays": 30,
+      "maxResources": 3,
+      "professionals": [
+        {
+          "id": "professional_1754061789181_gtcpnqkrs",
+          "name": "Jose",
+          "photo": "",
+          "isActive": true,
+          "schedule": {
+            "monday": {
+              "isOpen": true,
+              "openTime": "09:00",
+              "closeTime": "18:00"
+            },
+            "tuesday": {
+              "isOpen": true,
+              "openTime": "09:00",
+              "closeTime": "18:00"
+            },
+            "wednesday": {
+              "isOpen": true,
+              "openTime": "09:00",
+              "closeTime": "18:00"
+            },
+            "thursday": {
+              "isOpen": true,
+              "openTime": "09:00",
+              "closeTime": "18:00"
+            },
+            "friday": {
+              "isOpen": true,
+              "openTime": "09:00",
+              "closeTime": "18:00"
+            },
+            "saturday": {
+              "isOpen": false,
+              "openTime": "09:00",
+              "closeTime": "14:00"
+            },
+            "sunday": {
+              "isOpen": false,
+              "openTime": "09:00",
+              "closeTime": "18:00"
+            }
+          }
+        }
+      ]
+    },
+    "businessInfo": {
+      "businessName": "ejemplo",
+      "businessAddress": "djasdo",
+      "businessPhone": "+56983612026",
+      "businessEmail": "owenslopez211@gmail.com"
+    }
+  },
+  "subscription": {
+    "plan": "free",
+    "limits": {
+      "maxResources": 1,
+      "maxAppointmentsPerMonth": 100,
+      "maxUsers": 3
+    }
+  },
+  "createdAt": "2025-08-01T15:16:20.633Z",
+  "updatedAt": "2025-08-01T15:36:07.546Z",
+  "address": "djasdo",
+  "phone": "+56983612026",
+  "email": "owenslopez211@gmail.com",
+  "currency": "CLP"
+}
+✅ Organization updated successfully
+🏢 Getting organization for user: efa3cc77-9e2a-4427-9ec5-dd49ab5b3043
+✅ Organization found: ejemplo
+🏢 Getting organization for user: efa3cc77-9e2a-4427-9ec5-dd49ab5b3043
+✅ Organization found: ejemplo
+📋 Getting daily availability counts for org: e2c36daa-4a86-4853-aa48-6c29979998e7, professional: undefined, dates: 2025-08-01, 2025-08-02, 2025-08-04, 2025-08-05, 2025-08-06, 2025-08-07
+✅ Generated daily counts for 6 dates
+📋 Getting daily availability counts for org: e2c36daa-4a86-4853-aa48-6c29979998e7, professional: undefined, dates: 2025-08-01, 2025-08-02, 2025-08-04, 2025-08-05, 2025-08-06, 2025-08-07
+✅ Generated daily counts for 6 dates
+📋 Getting public organization data for: e2c36daa-4a86-4853-aa48-6c29979998e7
+✅ Public organization data retrieved successfully
+📋 Getting public services for organization: e2c36daa-4a86-4853-aa48-6c29979998e7
+✅ Found 3 active services
+📋 Getting public professionals for organization: e2c36daa-4a86-4853-aa48-6c29979998e7
+✅ Found 1 active professionals
+📋 Getting public services for organization: e2c36daa-4a86-4853-aa48-6c29979998e7
+✅ Found 3 active services
+📋 Getting public professionals for organization: e2c36daa-4a86-4853-aa48-6c29979998e7
+✅ Found 1 active professionals
+📋 Getting public organization data for: e2c36daa-4a86-4853-aa48-6c29979998e7
+✅ Public organization data retrieved successfully
+📋 Getting daily availability counts for org: e2c36daa-4a86-4853-aa48-6c29979998e7, professional: professional_1754061789181_gtcpnqkrs, dates: 2025-08-01, 2025-08-02, 2025-08-04, 2025-08-05, 2025-08-06, 2025-08-07
+✅ Generated daily counts for 6 dates
+📋 Getting daily availability counts for org: e2c36daa-4a86-4853-aa48-6c29979998e7, professional: professional_1754061789181_gtcpnqkrs, dates: 2025-08-01, 2025-08-02, 2025-08-04, 2025-08-05, 2025-08-06, 2025-08-07
+✅ Generated daily counts for 6 dates
+📋 Getting availability for org: e2c36daa-4a86-4853-aa48-6c29979998e7, professional: professional_1754061789181_gtcpnqkrs, date: 2025-08-05
+✅ Generated 7 available slots
+📋 Creating public appointment for organization: e2c36daa-4a86-4853-aa48-6c29979998e7
+Appointment data: {
+  "serviceId": "wound_care",
+  "professionalId": "professional_1754061789181_gtcpnqkrs",
+  "date": "2025-08-05",
+  "time": "09:00",
+  "clientName": "jose ignacio",
+  "clientPhone": "914124131231",
+  "clientEmail": "owenslopez211@gmail.com",
+  "notes": ""
+}
+✅ Public appointment created successfully: apt_1754062599348_01tx0tcj4
+🏢 Getting organization for user: efa3cc77-9e2a-4427-9ec5-dd49ab5b3043
+✅ Organization found: ejemplo
+🏢 Getting organization for user: efa3cc77-9e2a-4427-9ec5-dd49ab5b3043
+✅ Organization found: ejemplo
+🏢 Getting organization for user: efa3cc77-9e2a-4427-9ec5-dd49ab5b3043
+✅ Organization found: ejemplo
+🏢 Getting organization for user: efa3cc77-9e2a-4427-9ec5-dd49ab5b3043
+✅ Organization found: ejemplo
+
+=== ONBOARDING UPDATE REQUEST ===
+User: 45502c32-f33d-4af3-9e05-a00f7003c191
+Request body: {
+  "stepNumber": 1,
+  "stepData": {
+    "industryType": "consultant"
+  }
+}
+🔍 Validating step 1 data...
+✅ Validation passed for step 1
+✅ Step 1 (industry_selection) completed and organization updated
+
+=== ONBOARDING UPDATE REQUEST ===
+User: 45502c32-f33d-4af3-9e05-a00f7003c191
+Request body: {
+  "stepNumber": 2,
+  "stepData": {
+    "businessName": "qewe",
+    "businessAddress": "Napoleón 3378",
+    "businessPhone": "+56983612026",
+    "businessEmail": "owenslopez211@gmail.com",
+    "timezone": "America/Santiago",
+    "currency": "CLP",
+    "businessHours": {
+      "monday": {
+        "isOpen": true,
+        "openTime": "09:00",
+        "closeTime": "18:00"
+      },
+      "tuesday": {
+        "isOpen": true,
+        "openTime": "09:00",
+        "closeTime": "18:00"
+      },
+      "wednesday": {
+        "isOpen": true,
+        "openTime": "09:00",
+        "closeTime": "18:00"
+      },
+      "thursday": {
+        "isOpen": true,
+        "openTime": "09:00",
+        "closeTime": "18:00"
+      },
+      "friday": {
+        "isOpen": true,
+        "openTime": "09:00",
+        "closeTime": "18:00"
+      },
+      "saturday": {
+        "isOpen": true,
+        "openTime": "09:00",
+        "closeTime": "14:00"
+      },
+      "sunday": {
+        "isOpen": false,
+        "openTime": "09:00",
+        "closeTime": "18:00"
+      }
+    }
+  }
+}
+🔍 Validating step 2 data...
+✅ Validation passed for step 2
+✅ Step 2 (organization_setup) completed and organization updated
+
+=== ONBOARDING UPDATE REQUEST ===
+User: 45502c32-f33d-4af3-9e05-a00f7003c191
+Request body: {
+  "stepNumber": 3,
+  "stepData": {
+    "appointmentModel": "resource_based",
+    "allowClientSelection": true,
+    "bufferBetweenAppointments": 15,
+    "maxAdvanceBookingDays": 30
+  }
+}
+🔍 Validating step 3 data...
+✅ Validation passed for step 3
+✅ Step 3 (business_configuration) completed and organization updated
+
+=== ONBOARDING UPDATE REQUEST ===
+User: 45502c32-f33d-4af3-9e05-a00f7003c191
+Request body: {
+  "stepNumber": 4,
+  "stepData": {
+    "services": [
+      {
+        "id": "consultation",
+        "name": "Consulta Inicial",
+        "duration": 60,
+        "price": 50000,
+        "description": "Primera consulta y diagnóstico"
+      },
+      {
+        "id": "coaching_session",
+        "name": "Sesión de Coaching",
+        "duration": 90,
+        "price": 75000,
+        "description": "Sesión de coaching personalizado"
+      },
+      {
+        "id": "workshop",
+        "name": "Taller Grupal",
+        "duration": 120,
+        "price": 45000,
+        "description": "Taller educativo grupal"
+      }
+    ],
+    "industryType": "consultant"
+  }
+}
+🔍 Validating step 4 data...
+✅ Validation passed for step 4
+✅ Step 4 (services_setup) completed and organization updated
+
+=== ONBOARDING UPDATE REQUEST ===
+User: 45502c32-f33d-4af3-9e05-a00f7003c191
+Request body: {
+  "stepNumber": 4,
+  "stepData": {
+    "services": [
+      {
+        "id": "consultation",
+        "name": "Consulta Inicial",
+        "duration": 60,
+        "price": 50000,
+        "description": "Primera consulta y diagnóstico"
+      },
+      {
+        "id": "coaching_session",
+        "name": "Sesión de Coaching",
+        "duration": 90,
+        "price": 75000,
+        "description": "Sesión de coaching personalizado"
+      }
+    ],
+    "industryType": "consultant"
+  }
+}
+🔍 Validating step 4 data...
+✅ Validation passed for step 4
+✅ Step 4 (services_setup) completed and organization updated
+
+=== ONBOARDING UPDATE REQUEST ===
+User: 45502c32-f33d-4af3-9e05-a00f7003c191
+Request body: {
+  "stepNumber": 5,
+  "stepData": {
+    "planId": "basic",
+    "planName": "Plan Básico",
+    "planPrice": "Gratis"
+  }
+}
+🔍 Validating step 5 data...
+✅ Validation passed for step 5
+✅ Step 5 (plan_selection) completed and organization updated
+🏢 Getting organization for user: 45502c32-f33d-4af3-9e05-a00f7003c191
+✅ Organization found: qewe
+🏢 Getting organization for user: 45502c32-f33d-4af3-9e05-a00f7003c191
+✅ Organization found: qewe
+🏢 Getting organization for user: 45502c32-f33d-4af3-9e05-a00f7003c191
+✅ Organization found: qewe
+🏢 Getting organization for user: 45502c32-f33d-4af3-9e05-a00f7003c191
+✅ Organization found: qewe
+🔐 Login attempt: owenslopez211@gmail.com
+🔑 Password match: true
+✅ Login successful for: owenslopez211@gmail.com
+🏢 Getting organization for user: efa3cc77-9e2a-4427-9ec5-dd49ab5b3043
+✅ Organization found: ejemplo
+🏢 Getting organization for user: efa3cc77-9e2a-4427-9ec5-dd49ab5b3043
+✅ Organization found: ejemplo
+🏢 Getting organization for user: efa3cc77-9e2a-4427-9ec5-dd49ab5b3043
+✅ Organization found: ejemplo
+🏢 Getting organization for user: efa3cc77-9e2a-4427-9ec5-dd49ab5b3043
+✅ Organization found: ejemplo
+🏢 Getting organization for user: efa3cc77-9e2a-4427-9ec5-dd49ab5b3043
+✅ Organization found: ejemplo
+🏢 Getting organization for user: efa3cc77-9e2a-4427-9ec5-dd49ab5b3043
+✅ Organization found: ejemplo
+🏢 Getting organization for user: efa3cc77-9e2a-4427-9ec5-dd49ab5b3043
+✅ Organization found: ejemplo
+🏢 Getting organization for user: efa3cc77-9e2a-4427-9ec5-dd49ab5b3043
+✅ Organization found: ejemplo
+📋 Getting public organization data for: e2c36daa-4a86-4853-aa48-6c29979998e7
+✅ Public organization data retrieved successfully
+📋 Getting public professionals for organization: e2c36daa-4a86-4853-aa48-6c29979998e7
+✅ Found 1 active professionals
+📋 Getting public services for organization: e2c36daa-4a86-4853-aa48-6c29979998e7
+✅ Found 3 active services
+📋 Getting public professionals for organization: e2c36daa-4a86-4853-aa48-6c29979998e7
+✅ Found 1 active professionals
+📋 Getting public organization data for: e2c36daa-4a86-4853-aa48-6c29979998e7
+✅ Public organization data retrieved successfully
+📋 Getting public services for organization: e2c36daa-4a86-4853-aa48-6c29979998e7
+✅ Found 3 active services
+📋 Getting daily availability counts for org: e2c36daa-4a86-4853-aa48-6c29979998e7, professional: professional_1754061789181_gtcpnqkrs, dates: 2025-08-01, 2025-08-02, 2025-08-04, 2025-08-05, 2025-08-06, 2025-08-07
+✅ Generated daily counts for 6 dates
+📋 Getting daily availability counts for org: e2c36daa-4a86-4853-aa48-6c29979998e7, professional: professional_1754061789181_gtcpnqkrs, dates: 2025-08-01, 2025-08-02, 2025-08-04, 2025-08-05, 2025-08-06, 2025-08-07
+✅ Generated daily counts for 6 dates
+📋 Getting availability for org: e2c36daa-4a86-4853-aa48-6c29979998e7, professional: professional_1754061789181_gtcpnqkrs, date: 2025-08-02
+✅ Generated 9 available slots
+📋 Getting daily availability counts for org: e2c36daa-4a86-4853-aa48-6c29979998e7, professional: professional_1754061789181_gtcpnqkrs, dates: 2025-08-01, 2025-08-02, 2025-08-04, 2025-08-05, 2025-08-06, 2025-08-07
+✅ Generated daily counts for 6 dates
+📋 Getting daily availability counts for org: e2c36daa-4a86-4853-aa48-6c29979998e7, professional: professional_1754061789181_gtcpnqkrs, dates: 2025-08-01, 2025-08-02, 2025-08-04, 2025-08-05, 2025-08-06, 2025-08-07
+✅ Generated daily counts for 6 dates
+📋 Getting availability for org: e2c36daa-4a86-4853-aa48-6c29979998e7, professional: professional_1754061789181_gtcpnqkrs, date: 2025-08-06
+✅ Generated 9 available slots
+📋 Creating public appointment for organization: e2c36daa-4a86-4853-aa48-6c29979998e7
+Appointment data: {
+  "serviceId": "evaluation",
+  "professionalId": "professional_1754061789181_gtcpnqkrs",
+  "date": "2025-08-06",
+  "time": "09:00",
+  "clientName": "sadasd",
+  "clientPhone": "2131231412",
+  "clientEmail": "owenslopez211@gmail.com",
+  "notes": ""
+}
+✅ Public appointment created successfully: apt_1754063204786_fjk60a4f8
+📋 Getting public organization data for: e2c36daa-4a86-4853-aa48-6c29979998e7
+✅ Public organization data retrieved successfully
+📋 Getting public professionals for organization: e2c36daa-4a86-4853-aa48-6c29979998e7
+✅ Found 1 active professionals
+📋 Getting public services for organization: e2c36daa-4a86-4853-aa48-6c29979998e7
+✅ Found 3 active services
+📋 Getting public professionals for organization: e2c36daa-4a86-4853-aa48-6c29979998e7
+✅ Found 1 active professionals
+📋 Getting public organization data for: e2c36daa-4a86-4853-aa48-6c29979998e7
+✅ Public organization data retrieved successfully
+📋 Getting public services for organization: e2c36daa-4a86-4853-aa48-6c29979998e7
+✅ Found 3 active services
+📋 Getting daily availability counts for org: e2c36daa-4a86-4853-aa48-6c29979998e7, professional: professional_1754061789181_gtcpnqkrs, dates: 2025-08-01, 2025-08-02, 2025-08-04, 2025-08-05, 2025-08-06, 2025-08-07
+✅ Generated daily counts for 6 dates
+📋 Getting daily availability counts for org: e2c36daa-4a86-4853-aa48-6c29979998e7, professional: professional_1754061789181_gtcpnqkrs, dates: 2025-08-01, 2025-08-02, 2025-08-04, 2025-08-05, 2025-08-06, 2025-08-07
+✅ Generated daily counts for 6 dates
+📋 Getting availability for org: e2c36daa-4a86-4853-aa48-6c29979998e7, professional: professional_1754061789181_gtcpnqkrs, date: 2025-08-05
+✅ Generated 5 available slots
+📋 Getting daily availability counts for org: e2c36daa-4a86-4853-aa48-6c29979998e7, professional: professional_1754061789181_gtcpnqkrs, dates: 2025-08-01, 2025-08-02, 2025-08-04, 2025-08-05, 2025-08-06, 2025-08-07
+✅ Generated daily counts for 6 dates
+📋 Getting daily availability counts for org: e2c36daa-4a86-4853-aa48-6c29979998e7, professional: professional_1754061789181_gtcpnqkrs, dates: 2025-08-01, 2025-08-02, 2025-08-04, 2025-08-05, 2025-08-06, 2025-08-07
+✅ Generated daily counts for 6 dates
+📋 Getting public organization data for: e2c36daa-4a86-4853-aa48-6c29979998e7
+✅ Public organization data retrieved successfully
+📋 Getting public services for organization: e2c36daa-4a86-4853-aa48-6c29979998e7
+✅ Found 3 active services
+📋 Getting public professionals for organization: e2c36daa-4a86-4853-aa48-6c29979998e7
+✅ Found 1 active professionals
+📋 Getting public services for organization: e2c36daa-4a86-4853-aa48-6c29979998e7
+✅ Found 3 active services
+📋 Getting public organization data for: e2c36daa-4a86-4853-aa48-6c29979998e7
+✅ Public organization data retrieved successfully
+📋 Getting public professionals for organization: e2c36daa-4a86-4853-aa48-6c29979998e7
+✅ Found 1 active professionals
+📋 Getting public organization data for: e2c36daa-4a86-4853-aa48-6c29979998e7
+✅ Public organization data retrieved successfully
+📋 Getting public services for organization: e2c36daa-4a86-4853-aa48-6c29979998e7
+✅ Found 3 active services
+📋 Getting public services for organization: e2c36daa-4a86-4853-aa48-6c29979998e7
+✅ Found 3 active services
+📋 Getting public professionals for organization: e2c36daa-4a86-4853-aa48-6c29979998e7
+✅ Found 1 active professionals
+📋 Getting public professionals for organization: e2c36daa-4a86-4853-aa48-6c29979998e7
+✅ Found 1 active professionals
+📋 Getting public organization data for: e2c36daa-4a86-4853-aa48-6c29979998e7
+✅ Public organization data retrieved successfully
+🏢 Getting organization for user: efa3cc77-9e2a-4427-9ec5-dd49ab5b3043
+✅ Organization found: ejemplo
+🏢 Getting organization for user: efa3cc77-9e2a-4427-9ec5-dd49ab5b3043
+✅ Organization found: ejemplo
+🏢 Getting organization for user: efa3cc77-9e2a-4427-9ec5-dd49ab5b3043
+✅ Organization found: ejemplo
+🏢 Getting organization for user: efa3cc77-9e2a-4427-9ec5-dd49ab5b3043
+✅ Organization found: ejemplo
+📋 Getting public professionals for organization: e2c36daa-4a86-4853-aa48-6c29979998e7
+✅ Found 1 active professionals
+📋 Getting public organization data for: e2c36daa-4a86-4853-aa48-6c29979998e7
+✅ Public organization data retrieved successfully
+📋 Getting public services for organization: e2c36daa-4a86-4853-aa48-6c29979998e7
+✅ Found 3 active services
+📋 Getting public organization data for: e2c36daa-4a86-4853-aa48-6c29979998e7
+✅ Public organization data retrieved successfully
+📋 Getting public services for organization: e2c36daa-4a86-4853-aa48-6c29979998e7
+✅ Found 3 active services
+📋 Getting public professionals for organization: e2c36daa-4a86-4853-aa48-6c29979998e7
+✅ Found 1 active professionals
+📋 Getting daily availability counts for org: e2c36daa-4a86-4853-aa48-6c29979998e7, professional: professional_1754061789181_gtcpnqkrs, dates: 2025-08-01, 2025-08-02, 2025-08-04, 2025-08-05, 2025-08-06, 2025-08-07
+✅ Generated daily counts for 6 dates
+📋 Getting daily availability counts for org: e2c36daa-4a86-4853-aa48-6c29979998e7, professional: professional_1754061789181_gtcpnqkrs, dates: 2025-08-01, 2025-08-02, 2025-08-04, 2025-08-05, 2025-08-06, 2025-08-07
+✅ Generated daily counts for 6 dates
+📋 Getting availability for org: e2c36daa-4a86-4853-aa48-6c29979998e7, professional: professional_1754061789181_gtcpnqkrs, date: 2025-08-01
+✅ Generated 5 available slots
+📋 Creating public appointment for organization: e2c36daa-4a86-4853-aa48-6c29979998e7
+Appointment data: {
+  "serviceId": "hyperbaric_session",
+  "professionalId": "professional_1754061789181_gtcpnqkrs",
+  "date": "2025-08-01",
+  "time": "09:00",
+  "clientName": "owens",
+  "clientPhone": "213142141",
+  "clientEmail": "Peluspeques@gmail.com",
+  "notes": ""
+}
+✅ Public appointment created successfully: apt_1754082646583_0kwzuvuc9

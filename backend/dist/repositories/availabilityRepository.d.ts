@@ -1,0 +1,11 @@
+import { Availability, AvailabilitySlot } from '../../../shared/types/business';
+export declare const createAvailability: (availabilityData: Omit<Availability, "id" | "createdAt" | "updatedAt">) => Promise<Availability>;
+export declare const getAvailabilityById: (orgId: string, availabilityId: string) => Promise<Availability | null>;
+export declare const getAvailabilityByEntity: (entityType: "staff" | "resource", entityId: string, date: string) => Promise<Availability | null>;
+export declare const getAvailabilityByEntityDateRange: (entityType: "staff" | "resource", entityId: string, startDate: string, endDate: string) => Promise<Availability[]>;
+export declare const getAvailabilityByOrgAndDate: (orgId: string, date: string) => Promise<Availability[]>;
+export declare const updateAvailability: (orgId: string, entityType: "staff" | "resource", entityId: string, date: string, updates: Partial<Availability>) => Promise<Availability>;
+export declare const bookTimeSlot: (orgId: string, entityType: "staff" | "resource", entityId: string, date: string, startTime: string, endTime: string, appointmentId: string) => Promise<Availability>;
+export declare const releaseTimeSlot: (orgId: string, entityType: "staff" | "resource", entityId: string, date: string, appointmentId: string) => Promise<Availability>;
+export declare const getAvailableTimeSlots: (entityType: "staff" | "resource", entityId: string, date: string, duration: number) => Promise<AvailabilitySlot[]>;
+export declare const findAvailableSlot: (entityType: "staff" | "resource", entityId: string, date: string, duration: number, preferredStartTime?: string) => Promise<AvailabilitySlot | null>;

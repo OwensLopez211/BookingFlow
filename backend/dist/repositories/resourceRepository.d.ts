@@ -1,0 +1,11 @@
+import { Resource } from '../../../shared/types/business';
+export declare const createResource: (resourceData: Omit<Resource, "id" | "createdAt" | "updatedAt">) => Promise<Resource>;
+export declare const getResourceById: (orgId: string, resourceId: string) => Promise<Resource | null>;
+export declare const getResourcesByOrgId: (orgId: string, activeOnly?: boolean) => Promise<Resource[]>;
+export declare const getResourcesByType: (orgId: string, type: Resource["type"], activeOnly?: boolean) => Promise<Resource[]>;
+export declare const updateResource: (orgId: string, resourceId: string, updates: Partial<Resource>) => Promise<Resource>;
+export declare const deleteResource: (orgId: string, resourceId: string) => Promise<void>;
+export declare const activateResource: (orgId: string, resourceId: string) => Promise<Resource>;
+export declare const deactivateResource: (orgId: string, resourceId: string) => Promise<Resource>;
+export declare const getAvailableResources: (orgId: string, datetime: string, duration: number, type?: Resource["type"]) => Promise<Resource[]>;
+export declare const getResourcesRequiringStaff: (orgId: string, staffRole?: string) => Promise<Resource[]>;

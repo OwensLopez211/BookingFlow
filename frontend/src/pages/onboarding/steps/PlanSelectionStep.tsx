@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/Button';
-import { Plan, PlanSelection } from '../../../types/subscription';
+import { Plan, PlanSelection } from '../../../../types/subscription';
 import { transbankService } from '../../../services/transbankService';
 
 interface PlanSelectionStepProps {
@@ -52,7 +52,7 @@ const plans: Plan[] = [
     description: 'Perfecto para emprendedores que están empezando y quieren probar la plataforma',
     icon: IconBasic,
     color: 'gray',
-    available: false,
+    available: true,
     popular: false,
     features: [
       { name: 'Hasta 1 recurso/profesional', included: true },
@@ -72,8 +72,8 @@ const plans: Plan[] = [
     color: 'blue',
     available: true,
     popular: true,
-    trialDays: 30, // 1 mes gratis
-    transbankAmount: 12990, // $12.990 CLP
+    trialDays: 30,
+    transbankAmount: 12990,
     features: [
       { name: 'Hasta 5 recursos/profesionales', included: true },
       { name: 'Máximo 1,000 citas por mes', included: true },
@@ -97,7 +97,7 @@ const plans: Plan[] = [
     color: 'purple',
     available: false,
     popular: false,
-    transbankAmount: 29990, // $29.990 CLP
+    transbankAmount: 29990,
     features: [
       { name: 'Hasta 10 recursos/profesionales', included: true },
       { name: 'Máximo 2,500 citas por mes', included: true },
@@ -122,7 +122,7 @@ export const PlanSelectionStep: React.FC<PlanSelectionStepProps> = ({
   showBackInFooter
 }) => {
   const [selectedPlan, setSelectedPlan] = useState<string>(
-    initialData?.planId || 'basic'
+    initialData?.planId || 'free'
   );
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -176,10 +176,9 @@ export const PlanSelectionStep: React.FC<PlanSelectionStepProps> = ({
   return (
     <div className="h-full flex flex-col">
       <form onSubmit={handleSubmit} className="flex-1 flex flex-col">
-        {/* Plans Grid - Single plan centered */}
+        {/* Plans Grid - Multiple plans */}
         <div className="flex-1 overflow-hidden">
-          <div className="flex justify-center items-start h-full">
-            <div className="w-full max-w-md">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 max-w-6xl mx-auto">
             {plans.map((plan) => {
               const IconComponent = plan.icon;
               const isSelected = selectedPlan === plan.id;
@@ -299,7 +298,6 @@ export const PlanSelectionStep: React.FC<PlanSelectionStepProps> = ({
                 </div>
               );
             })}
-            </div>
           </div>
         </div>
 
@@ -313,7 +311,7 @@ export const PlanSelectionStep: React.FC<PlanSelectionStepProps> = ({
             </div>
             <div className="ml-2">
               <p className="text-xs text-blue-700">
-                <strong>Plan Básico:</strong> Disfruta de 1 mes completamente gratis. Los métodos de pago se habilitarán próximamente. Por ahora, solo necesitas registrarte para empezar a usar todas las funciones.
+                <strong>Planes disponibles:</strong> Plan Gratuito para empezar y Plan Básico con 1 mes completamente gratis. El Plan Premium estará disponible próximamente.
               </p>
             </div>
           </div>
@@ -344,10 +342,10 @@ export const PlanSelectionStep: React.FC<PlanSelectionStepProps> = ({
             {isLoading ? (
               <div className="flex items-center">
                 <div className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin mr-1.5"></div>
-                Iniciando trial...
+                Completando registro...
               </div>
             ) : (
-              'Iniciar mes gratuito y completar registro'
+              selectedPlan === 'basic' ? 'Iniciar mes gratuito y completar registro' : 'Completar registro'
             )}
           </Button>
         </div>

@@ -65,6 +65,37 @@ export class BookFlowStack extends cdk.Stack {
       },
     });
 
+    // 💳 Subscriptions Table for Stripe integration
+    const subscriptionsTable = new dynamodb.Table(this, 'SubscriptionsTable', {
+      tableName: `bookflow-subscriptions-${stage}`,
+      partitionKey: { name: 'id', type: dynamodb.AttributeType.STRING },
+      billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
+      removalPolicy: stage === 'prod' ? cdk.RemovalPolicy.RETAIN : cdk.RemovalPolicy.DESTROY,
+      pointInTimeRecoverySpecification: {
+        pointInTimeRecoveryEnabled: stage === 'prod'
+      },
+    });
+
+    // GSI para buscar suscripciones por Organization ID
+    subscriptionsTable.addGlobalSecondaryIndex({
+      indexName: 'OrganizationIdIndex',
+      partitionKey: { name: 'organizationId', type: dynamodb.AttributeType.STRING },
+      sortKey: { name: 'createdAt', type: dynamodb.AttributeType.STRING },
+    });
+
+    // GSI para buscar suscripciones por Transbank Order ID
+    subscriptionsTable.addGlobalSecondaryIndex({
+      indexName: 'TransbankOrderIdIndex',
+      partitionKey: { name: 'transbankOrderId', type: dynamodb.AttributeType.STRING },
+    });
+
+    // GSI para buscar suscripciones por status
+    subscriptionsTable.addGlobalSecondaryIndex({
+      indexName: 'StatusIndex',
+      partitionKey: { name: 'status', type: dynamodb.AttributeType.STRING },
+      sortKey: { name: 'current_period_end', type: dynamodb.AttributeType.NUMBER },
+    });
+
     // 🔐 Cognito User Pool
     this.userPool = new cognito.UserPool(this, 'UserPool', {
       userPoolName: `bookflow-users-${stage}`,
@@ -148,7 +179,12 @@ export class BookFlowStack extends cdk.Stack {
       ORGANIZATIONS_TABLE: organizationsTable.tableName,
       USERS_TABLE: usersTable.tableName,
       APPOINTMENTS_TABLE: appointmentsTable.tableName,
+      SUBSCRIPTIONS_TABLE: subscriptionsTable.tableName,
       REGION: this.region,
+      // Transbank environment variables (these should be set in your deployment environment)
+      TRANSBANK_COMMERCE_CODE: process.env.TRANSBANK_COMMERCE_CODE || '597055555532',
+      TRANSBANK_API_KEY: process.env.TRANSBANK_API_KEY || '579B532A7440BB0C9079DED94D31EA1615BACEB56610332264630D42D0A36B1C',
+      TRANSBANK_ENVIRONMENT: process.env.TRANSBANK_ENVIRONMENT || 'integration',
     };
 
     // 🔧 Lambda Execution Role
@@ -174,7 +210,9 @@ export class BookFlowStack extends cdk.Stack {
                 organizationsTable.tableArn,
                 usersTable.tableArn,
                 appointmentsTable.tableArn,
+                subscriptionsTable.tableArn,
                 `${usersTable.tableArn}/index/*`,
+                `${subscriptionsTable.tableArn}/index/*`,
               ],
             }),
           ],
@@ -592,6 +630,22 @@ export class BookFlowStack extends cdk.Stack {
       `),
     });
 
+    // 💳 Transbank Function
+    const transbankFunction = new lambdaNodejs.NodejsFunction(this, 'TransbankFunction', {
+      functionName: `bookflow-transbank-${stage}`,
+      runtime: lambda.Runtime.NODEJS_18_X,
+      handler: 'handler',
+      entry: path.join(__dirname, '../../backend/src/functions/transbank.ts'),
+      timeout: cdk.Duration.seconds(30),
+      environment: lambdaEnvironment,
+      role: lambdaExecutionRole,
+      bundling: {
+        externalModules: ['aws-sdk'],
+        minify: true,
+        target: 'es2020',
+      },
+    });
+
     const organizationsFunction = new lambda.Function(this, 'OrganizationsFunction', {
       functionName: `bookflow-organizations-${stage}`,
       runtime: lambda.Runtime.NODEJS_18_X,
@@ -885,6 +939,51 @@ export class BookFlowStack extends cdk.Stack {
     // Organization settings route
     const organizationSettings = organizationById.addResource('settings');
     organizationSettings.addMethod('PUT', new apigateway.LambdaIntegration(organizationsFunction));
+
+    // 💳 Transbank routes with CORS
+    const transbank = v1.addResource('transbank', {
+      defaultCorsPreflightOptions: {
+        allowOrigins: stage === 'prod' 
+          ? ['https://bookflow.com']
+          : ['http://localhost:3000', 'http://localhost:5173'],
+        allowMethods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+        allowHeaders: ['Content-Type', 'Authorization'],
+      },
+    });
+
+    // Transbank transaction endpoints
+    const createTransaction = transbank.addResource('create-transaction');
+    createTransaction.addMethod('POST', new apigateway.LambdaIntegration(transbankFunction));
+
+    // Transbank transaction confirmation
+    const confirmTransaction = transbank.addResource('confirm-transaction');
+    confirmTransaction.addMethod('POST', new apigateway.LambdaIntegration(transbankFunction));
+
+    // Transbank payment verification
+    const verifyPayment = transbank.addResource('verify-payment');
+    const verifyPaymentToken = verifyPayment.addResource('{token}');
+    verifyPaymentToken.addMethod('GET', new apigateway.LambdaIntegration(transbankFunction));
+
+    // Transbank subscription management
+    const subscription = transbank.addResource('subscription');
+    const subscriptionOrgId = subscription.addResource('{organizationId}');
+    subscriptionOrgId.addMethod('GET', new apigateway.LambdaIntegration(transbankFunction));
+
+    // Transbank subscription cancellation
+    const cancelSubscription = transbank.addResource('cancel-subscription');
+    cancelSubscription.addMethod('POST', new apigateway.LambdaIntegration(transbankFunction));
+
+    // Transbank free trial
+    const startFreeTrial = transbank.addResource('start-free-trial');
+    startFreeTrial.addMethod('POST', new apigateway.LambdaIntegration(transbankFunction));
+
+    // Transbank monthly billing
+    const generateBilling = transbank.addResource('generate-billing');
+    generateBilling.addMethod('POST', new apigateway.LambdaIntegration(transbankFunction));
+
+    // Transbank payment confirmation webhook
+    const paymentConfirmation = transbank.addResource('payment-confirmation');
+    paymentConfirmation.addMethod('POST', new apigateway.LambdaIntegration(transbankFunction));
 
     // 📤 Stack Outputs
     new cdk.CfnOutput(this, 'UserPoolId', {

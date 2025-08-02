@@ -1,0 +1,11 @@
+import { APIGatewayProxyEvent, APIGatewayProxyResult } from 'aws-lambda';
+export declare const createStaff: (event: APIGatewayProxyEvent) => Promise<APIGatewayProxyResult>;
+export declare const getStaff: (event: APIGatewayProxyEvent) => Promise<APIGatewayProxyResult>;
+export declare const getAllStaff: (event: APIGatewayProxyEvent) => Promise<APIGatewayProxyResult>;
+export declare const updateStaff: (event: APIGatewayProxyEvent) => Promise<APIGatewayProxyResult>;
+export declare const deleteStaff: (event: APIGatewayProxyEvent) => Promise<APIGatewayProxyResult>;
+export declare const activateStaff: (event: APIGatewayProxyEvent) => Promise<APIGatewayProxyResult>;
+export declare const deactivateStaff: (event: APIGatewayProxyEvent) => Promise<APIGatewayProxyResult>;
+export declare const getStaffAvailability: (event: APIGatewayProxyEvent) => Promise<APIGatewayProxyResult>;
+export declare const generateStaffAvailability: (event: APIGatewayProxyEvent) => Promise<APIGatewayProxyResult>;
+export declare const getAvailableStaff: (event: APIGatewayProxyEvent) => Promise<APIGatewayProxyResult>;

@@ -1,6 +1,24 @@
 import { v4 as uuidv4 } from 'uuid';
 import { getItem, putItem, TABLES } from '../utils/dynamodb';
 
+const PLAN_LIMITS = {
+  free: {
+    maxResources: 1,
+    maxAppointmentsPerMonth: 100,
+    maxUsers: 1,
+  },
+  basic: {
+    maxResources: 5,
+    maxAppointmentsPerMonth: 1000,
+    maxUsers: 2,
+  },
+  premium: {
+    maxResources: 10,
+    maxAppointmentsPerMonth: 2500,
+    maxUsers: 10,
+  },
+};
+
 export interface Organization {
   id: string;
   name: string;
@@ -24,11 +42,41 @@ export interface Organization {
       autoConfirmation?: boolean;
       reminderHours?: number;
     };
+    appointmentSystem?: {
+      appointmentModel: string;
+      allowClientSelection: boolean;
+      bufferBetweenAppointments: number;
+      maxAdvanceBookingDays: number;
+      maxProfessionals?: number;
+      maxResources?: number;
+      maxResourcesPerSlot?: number;
+      professionals?: Array<{
+        id: string;
+        name: string;
+        photo?: string;
+        isActive: boolean;
+      }>;
+    };
     businessConfiguration?: {
       appointmentModel: string;
       allowClientSelection: boolean;
       bufferBetweenAppointments: number;
       maxAdvanceBookingDays: number;
+      maxProfessionals?: number;
+      maxResources?: number;
+      maxResourcesPerSlot?: number;
+      professionals?: Array<{
+        id: string;
+        name: string;
+        photo?: string;
+        isActive: boolean;
+      }>;
+    };
+    businessInfo?: {
+      businessName?: string;
+      businessAddress?: string;
+      businessPhone?: string;
+      businessEmail?: string;
     };
     services?: Array<{
       id?: string;
@@ -38,13 +86,20 @@ export interface Organization {
       price: number;
       isActive?: boolean;
     }>;
+    currency?: string;
   };
   subscription: {
-    plan: 'free' | 'premium';
+    plan: 'free' | 'basic' | 'premium';
     limits: {
       maxResources: number; // -1 means unlimited
       maxAppointmentsPerMonth: number; // -1 means unlimited
       maxUsers: number; // -1 means unlimited
+    };
+    trial?: {
+      isActive: boolean;
+      startDate: string;
+      endDate: string;
+      daysTotal: number;
     };
   };
   createdAt: string;
@@ -102,10 +157,18 @@ export const updateOrganization = async (orgId: string, updates: Partial<Organiz
     notifications: updates.settings.notifications ?
       { ...currentOrg.settings.notifications, ...updates.settings.notifications } :
       currentOrg.settings.notifications,
+    // Ensure appointmentSystem is properly merged
+    appointmentSystem: updates.settings.appointmentSystem ?
+      { ...currentOrg.settings.appointmentSystem, ...updates.settings.appointmentSystem } :
+      currentOrg.settings.appointmentSystem,
     // Ensure businessConfiguration is properly merged
     businessConfiguration: updates.settings.businessConfiguration ?
       { ...currentOrg.settings.businessConfiguration, ...updates.settings.businessConfiguration } :
       currentOrg.settings.businessConfiguration,
+    // Ensure businessInfo is properly merged
+    businessInfo: updates.settings.businessInfo ?
+      { ...currentOrg.settings.businessInfo, ...updates.settings.businessInfo } :
+      currentOrg.settings.businessInfo,
     // Ensure services is properly merged
     services: updates.settings.services || currentOrg.settings.services
   } : currentOrg.settings;
@@ -117,7 +180,11 @@ export const updateOrganization = async (orgId: string, updates: Partial<Organiz
     // Ensure limits is properly merged
     limits: updates.subscription.limits ?
       { ...currentOrg.subscription.limits, ...updates.subscription.limits } :
-      currentOrg.subscription.limits
+      currentOrg.subscription.limits,
+    // Ensure trial is properly merged
+    trial: updates.subscription.trial ?
+      { ...currentOrg.subscription.trial, ...updates.subscription.trial } :
+      currentOrg.subscription.trial
   } : currentOrg.subscription;
 
   const updatedOrganization = {
@@ -161,36 +228,12 @@ export const getDefaultOrganizationSettings = (templateType: 'beauty_salon' | 'h
     },
   };
 
-  // Industry-specific limits
-  let maxResources = 1;
-  switch (templateType) {
-    case 'beauty_salon':
-    case 'fitness_center':
-      maxResources = 3;
-      break;
-    case 'medical_clinic':
-      maxResources = 2;
-      break;
-    case 'hyperbaric_center':
-      maxResources = 1;
-      break;
-    case 'consultant':
-      maxResources = 1;
-      break;
-    case 'custom':
-      maxResources = 5;
-      break;
-  }
 
   return {
     settings: commonSettings,
     subscription: {
       plan: 'free' as const,
-      limits: {
-        maxResources,
-        maxAppointmentsPerMonth: 100,
-        maxUsers: 3,
-      },
+      limits: PLAN_LIMITS.free,
     },
   };
 };

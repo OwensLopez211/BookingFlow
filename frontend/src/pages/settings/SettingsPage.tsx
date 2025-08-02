@@ -19,6 +19,21 @@ import {
 
 export const SettingsPage: React.FC = () => {
   const { organization, loadingState, error, updateSettings } = useOrganization();
+  
+  // Helper function to get plan limits
+  const getPlanLimits = () => {
+    const currentPlan = organization?.subscription?.plan;
+    switch (currentPlan) {
+      case 'free':
+        return { maxResources: 1, maxProfessionals: 1, planName: 'gratuito' };
+      case 'basic':
+        return { maxResources: 5, maxProfessionals: 5, planName: 'básico' };
+      case 'premium':
+        return { maxResources: 10, maxProfessionals: 10, planName: 'premium' };
+      default:
+        return { maxResources: 1, maxProfessionals: 1, planName: 'gratuito' };
+    }
+  };
   const [activeTab, setActiveTab] = useState<'general' | 'hours' | 'appointments' | 'services' | 'notifications' | 'security' | 'appearance'>('general');
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
@@ -53,14 +68,24 @@ export const SettingsPage: React.FC = () => {
       console.log('✅ Organization and settings exist, updating formData');
       
       // Usar datos de businessConfiguration si appointmentSystem no existe
+      const planLimits = (() => {
+        const currentPlan = organization?.subscription?.plan;
+        switch (currentPlan) {
+          case 'free': return { maxResources: 1, maxProfessionals: 1 };
+          case 'basic': return { maxResources: 5, maxProfessionals: 5 };
+          case 'premium': return { maxResources: 10, maxProfessionals: 10 };
+          default: return { maxResources: 1, maxProfessionals: 1 };
+        }
+      })();
+
       const appointmentConfig = organization.settings.appointmentSystem || 
                                organization.settings.businessConfiguration || {
         appointmentModel: 'professional_based',
         allowClientSelection: true,
         bufferBetweenAppointments: 15,
         maxAdvanceBookingDays: 30,
-        maxProfessionals: 1,
-        maxResources: 1,
+        maxProfessionals: planLimits.maxProfessionals,
+        maxResources: planLimits.maxResources,
         professionals: []
       };
 
@@ -142,14 +167,25 @@ export const SettingsPage: React.FC = () => {
 
   const handleCancelEdit = () => {
     if (organization && organization.settings) {
+      // Get plan limits for default values
+      const planLimits = (() => {
+        const currentPlan = organization?.subscription?.plan;
+        switch (currentPlan) {
+          case 'free': return { maxResources: 1, maxProfessionals: 1 };
+          case 'basic': return { maxResources: 5, maxProfessionals: 5 };
+          case 'premium': return { maxResources: 10, maxProfessionals: 10 };
+          default: return { maxResources: 1, maxProfessionals: 1 };
+        }
+      })();
+
       const appointmentConfig = organization.settings.appointmentSystem || 
                                organization.settings.businessConfiguration || {
         appointmentModel: 'professional_based',
         allowClientSelection: true,
         bufferBetweenAppointments: 15,
         maxAdvanceBookingDays: 30,
-        maxProfessionals: 1,
-        maxResources: 1,
+        maxProfessionals: planLimits.maxProfessionals,
+        maxResources: planLimits.maxResources,
         professionals: []
       };
 
@@ -204,12 +240,16 @@ export const SettingsPage: React.FC = () => {
 
   const updateAppointmentSystem = (key: keyof AppointmentSystemSettings, value: any) => {
     // Validar límites del plan
-    if ((key === 'maxProfessionals' || key === 'maxResources') && organization?.subscription?.plan === 'free') {
+    if (key === 'maxProfessionals' || key === 'maxResources') {
       const numValue = parseInt(value) || 1;
-      if (numValue > 5) {
+      const planLimits = getPlanLimits();
+      const maxAllowed = key === 'maxProfessionals' ? planLimits.maxProfessionals : planLimits.maxResources;
+      
+      if (numValue > maxAllowed) {
+        const resourceType = key === 'maxProfessionals' ? 'profesionales' : 'recursos';
         showToast.error(
-          'Límite del plan básico',
-          'El plan básico permite máximo 5 profesionales/recursos. Actualiza tu plan para tener más.'
+          `Límite del plan ${planLimits.planName}`,
+          `El plan ${planLimits.planName} permite máximo ${maxAllowed} ${resourceType}. Actualiza tu plan para tener más.`
         );
         return;
       }
@@ -308,13 +348,14 @@ export const SettingsPage: React.FC = () => {
   };
 
   const addProfessional = () => {
-    const maxAllowed = organization?.subscription?.plan === 'free' ? 5 : 50;
+    const planLimits = getPlanLimits();
+    const maxAllowed = planLimits.maxProfessionals;
     const currentCount = formData.appointmentSystem.professionals?.length || 0;
     
     if (currentCount >= maxAllowed) {
       showToast.error(
         'Límite alcanzado',
-        `El plan ${organization?.subscription?.plan === 'free' ? 'básico' : 'premium'} permite máximo ${maxAllowed} profesionales.`
+        `El plan ${planLimits.planName} permite máximo ${maxAllowed} profesionales.`
       );
       return;
     }
@@ -749,6 +790,27 @@ export const SettingsPage: React.FC = () => {
       case 'appointments':
         return (
           <div className="space-y-6">
+            {/* Plan Current Info */}
+            <div className="bg-gradient-to-r from-blue-50 to-blue-100 border border-blue-200 rounded-lg p-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h4 className="text-sm font-semibold text-blue-800 mb-1">
+                    Plan Actual: {getPlanLimits().planName.charAt(0).toUpperCase() + getPlanLimits().planName.slice(1)}
+                  </h4>
+                  <p className="text-xs text-blue-700">
+                    Límites: {getPlanLimits().maxProfessionals} profesionales • {getPlanLimits().maxResources} recursos • {organization?.subscription?.limits?.maxAppointmentsPerMonth || 100} citas/mes
+                  </p>
+                </div>
+                {organization?.subscription?.plan === 'free' && (
+                  <div className="text-right">
+                    <button className="text-xs bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded-md transition-colors">
+                      Actualizar Plan
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>
+
             {/* Sistema de Citas */}
             <div className="space-y-4">
               <h3 className="text-lg font-semibold text-gray-800">Sistema de Citas</h3>
@@ -843,18 +905,16 @@ export const SettingsPage: React.FC = () => {
                           <input
                             type="number"
                             min="1"
-                            max={organization?.subscription?.plan === 'free' ? 5 : 50}
+                            max={getPlanLimits().maxProfessionals}
                             value={formData.appointmentSystem.maxProfessionals || 1}
                             onChange={(e) => updateAppointmentSystem('maxProfessionals', parseInt(e.target.value) || 1)}
                             disabled={!isEditing}
                             className="w-20 px-3 py-2 bg-white border border-gray-300 rounded-lg text-sm disabled:bg-gray-100"
                           />
                           <span className="text-sm text-gray-600">profesionales</span>
-                          {organization?.subscription?.plan === 'free' && (
-                            <span className="text-xs text-orange-600 bg-orange-50 px-2 py-1 rounded">
-                              Plan básico: máx. 5
-                            </span>
-                          )}
+                          <span className="text-xs text-orange-600 bg-orange-50 px-2 py-1 rounded">
+                            Plan {getPlanLimits().planName}: máx. {getPlanLimits().maxProfessionals}
+                          </span>
                         </div>
                       </div>
                     )}
@@ -866,15 +926,42 @@ export const SettingsPage: React.FC = () => {
                           <div>
                             <h4 className="text-sm font-semibold text-gray-800">Profesionales</h4>
                             <p className="text-xs text-gray-600">Agrega los profesionales que trabajarán en tu negocio</p>
+                            <div className="flex items-center space-x-2 mt-2">
+                              <span className="text-xs text-gray-500">
+                                {formData.appointmentSystem.professionals?.length || 0} de {getPlanLimits().maxProfessionals} utilizados
+                              </span>
+                              <div className="flex-1 bg-gray-200 rounded-full h-1.5">
+                                <div 
+                                  className={`h-1.5 rounded-full transition-all duration-300 ${
+                                    (formData.appointmentSystem.professionals?.length || 0) >= getPlanLimits().maxProfessionals 
+                                      ? 'bg-red-500' 
+                                      : (formData.appointmentSystem.professionals?.length || 0) > getPlanLimits().maxProfessionals * 0.8
+                                        ? 'bg-yellow-500'
+                                        : 'bg-green-500'
+                                  }`}
+                                  style={{ 
+                                    width: `${Math.min(100, ((formData.appointmentSystem.professionals?.length || 0) / getPlanLimits().maxProfessionals) * 100)}%` 
+                                  }}
+                                />
+                              </div>
+                            </div>
                           </div>
                           {isEditing && (
-                            <button
-                              onClick={addProfessional}
-                              className="flex items-center space-x-2 bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded-lg text-sm font-medium transition-colors duration-200"
-                            >
-                              <PlusIcon className="h-4 w-4" />
-                              <span>Agregar</span>
-                            </button>
+                            <div className="text-right">
+                              {(formData.appointmentSystem.professionals?.length || 0) >= getPlanLimits().maxProfessionals ? (
+                                <div className="text-xs text-red-600 mb-2">
+                                  Límite alcanzado
+                                </div>
+                              ) : null}
+                              <button
+                                onClick={addProfessional}
+                                disabled={(formData.appointmentSystem.professionals?.length || 0) >= getPlanLimits().maxProfessionals}
+                                className="flex items-center space-x-2 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-white px-3 py-2 rounded-lg text-sm font-medium transition-colors duration-200"
+                              >
+                                <PlusIcon className="h-4 w-4" />
+                                <span>Agregar</span>
+                              </button>
+                            </div>
                           )}
                         </div>
                         
@@ -990,18 +1077,16 @@ export const SettingsPage: React.FC = () => {
                           <input
                             type="number"
                             min="1"
-                            max={organization?.subscription?.plan === 'free' ? 5 : 50}
+                            max={getPlanLimits().maxResources}
                             value={formData.appointmentSystem.maxResources || 1}
                             onChange={(e) => updateAppointmentSystem('maxResources', parseInt(e.target.value) || 1)}
                             disabled={!isEditing}
                             className="w-20 px-3 py-2 bg-white border border-gray-300 rounded-lg text-sm disabled:bg-gray-100"
                           />
                           <span className="text-sm text-gray-600">recursos</span>
-                          {organization?.subscription?.plan === 'free' && (
-                            <span className="text-xs text-orange-600 bg-orange-50 px-2 py-1 rounded">
-                              Plan básico: máx. 5
-                            </span>
-                          )}
+                          <span className="text-xs text-orange-600 bg-orange-50 px-2 py-1 rounded">
+                            Plan {getPlanLimits().planName}: máx. {getPlanLimits().maxResources}
+                          </span>
                         </div>
                       </div>
                     )}

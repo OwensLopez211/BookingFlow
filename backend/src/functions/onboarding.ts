@@ -294,6 +294,20 @@ const syncOnboardingDataToOrganization = async (user: any) => {
             plan: planLimits.plan,
             limits: planLimits.limits
           };
+          
+          // Add trial information for basic plan
+          if (step.data.planId === 'basic') {
+            const now = new Date();
+            const trialDays = step.data.trialDays || 30;
+            const endDate = new Date(now.getTime() + (trialDays * 24 * 60 * 60 * 1000));
+            
+            organizationUpdates.subscription.trial = {
+              isActive: true,
+              startDate: now.toISOString(),
+              endDate: endDate.toISOString(),
+              daysTotal: trialDays
+            };
+          }
         }
         break;
     }
@@ -377,6 +391,39 @@ const handleStepSpecificLogic = async (user: any, stepNumber: number, stepData: 
           }
         });
         console.log(`User ${user.id} selected plan: ${stepData.planId} - Organization subscription updated`);
+        
+        // Start free trial for basic plan
+        if (stepData.planId === 'basic') {
+          try {
+            const now = new Date();
+            const trialDays = stepData.trialDays || 30;
+            const endDate = new Date(now.getTime() + (trialDays * 24 * 60 * 60 * 1000));
+            
+            console.log(`🎯 ONBOARDING STEP 5: Starting trial for ${user.orgId}`);
+            console.log(`📅 Trial start: ${now.toISOString()}`);
+            console.log(`📅 Trial end: ${endDate.toISOString()}`);
+            console.log(`📊 Trial days: ${trialDays}`);
+            
+            // Update organization with trial information
+            await updateOrganization(user.orgId, {
+              subscription: {
+                plan: planLimits.plan,
+                limits: planLimits.limits,
+                trial: {
+                  isActive: true,
+                  startDate: now.toISOString(),
+                  endDate: endDate.toISOString(),
+                  daysTotal: trialDays
+                }
+              }
+            });
+            
+            console.log(`✅ Free trial started for organization ${user.orgId} - ${trialDays} days until ${endDate.toISOString()}`);
+          } catch (error) {
+            console.error('❌ Error starting free trial:', error);
+            // Don't fail the onboarding if trial creation fails
+          }
+        }
       }
       break;
   }

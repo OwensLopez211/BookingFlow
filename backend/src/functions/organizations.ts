@@ -14,6 +14,7 @@ import {
   serverErrorResponse,
   notFoundResponse,
 } from '../utils/response';
+import { withMetrics } from '../middleware/requestMetrics';
 
 const extractUserFromToken = async (authHeader?: string) => {
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
@@ -30,7 +31,7 @@ const extractUserFromToken = async (authHeader?: string) => {
   return result.user;
 };
 
-export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
+const organizationsHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
   console.log('=== ORGANIZATIONS HANDLER ===');
   console.log('Event:', JSON.stringify(event, null, 2));
 
@@ -140,6 +141,7 @@ export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPr
     // UPDATE ORGANIZATION SETTINGS
     if (path?.match(/\/organizations\/[^/]+\/settings$/) && httpMethod === 'PUT') {
       console.log('=== UPDATE ORGANIZATION SETTINGS REQUEST ===');
+      console.log('📦 Received request body:', JSON.stringify(requestData, null, 2));
       
       const orgId = pathParameters?.orgId;
       if (!orgId) {
@@ -155,10 +157,53 @@ export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPr
         return unauthorizedResponse('No tienes permisos para modificar esta organización');
       }
 
-      const result = await updateOrganizationService(orgId, currentUser.id, { settings: requestData });
+      // Restructure data to separate organization fields from settings
+      const organizationData: any = {};
+      const settingsData: any = {};
+      
+      // Extract organization-level fields (handle empty strings as valid values)
+      if (requestData.name !== undefined) organizationData.name = requestData.name;
+      if (requestData.address !== undefined) organizationData.address = requestData.address || null;
+      if (requestData.phone !== undefined) organizationData.phone = requestData.phone || null;
+      if (requestData.email !== undefined) organizationData.email = requestData.email || null;
+      if (requestData.currency !== undefined) organizationData.currency = requestData.currency;
+      
+      // Extract settings fields
+      if (requestData.timezone !== undefined) settingsData.timezone = requestData.timezone;
+      if (requestData.businessHours !== undefined) settingsData.businessHours = requestData.businessHours;
+      if (requestData.notifications !== undefined) settingsData.notifications = requestData.notifications;
+      if (requestData.appointmentSystem !== undefined) settingsData.appointmentSystem = requestData.appointmentSystem;
+      if (requestData.businessInfo !== undefined) settingsData.businessInfo = requestData.businessInfo;
+      if (requestData.services !== undefined) settingsData.services = requestData.services;
+      
+      // Combine data
+      const updateData = {
+        ...organizationData,
+        ...(Object.keys(settingsData).length > 0 && { settings: settingsData })
+      };
+      
+      console.log('📦 Structured update data:', JSON.stringify(updateData, null, 2));
+      
+      const result = await updateOrganizationService(orgId, currentUser.id, updateData);
 
       console.log('Organization settings updated successfully:', orgId);
-      return successResponse(result, 'Configuraciones de la organización actualizadas exitosamente');
+      
+      // Return the result directly with proper structure for frontend
+      return {
+        statusCode: 200,
+        headers: {
+          'Content-Type': 'application/json',
+          'Access-Control-Allow-Origin': '*',
+          'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+          'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+        },
+        body: JSON.stringify({
+          success: result.success,
+          organization: result.organization,
+          message: result.message || 'Configuraciones de la organización actualizadas exitosamente',
+          timestamp: new Date().toISOString(),
+        }),
+      };
     }
 
     // LIST ORGANIZATIONS (for admin users who might manage multiple orgs)
@@ -209,3 +254,5 @@ export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPr
     return serverErrorResponse(`Error interno del servidor: ${error.message}`);
   }
 };
+
+export const handler = withMetrics(organizationsHandler, { trackUser: true });

@@ -272,3 +272,48 @@ export const markNoShow = async (event: APIGatewayProxyEvent): Promise<APIGatewa
     return createResponse(400, { error: error.message });
   }
 };
+
+export const debugAllAppointments = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
+  try {
+    const user = await authMiddleware(event);
+    if (!user.orgId) {
+      return createResponse(403, { error: 'Organization access required' });
+    }
+
+    const queryParams = event.queryStringParameters || {};
+    const limit = queryParams.limit ? parseInt(queryParams.limit) : 50;
+    
+    const startDate = new Date();
+    startDate.setFullYear(startDate.getFullYear() - 1);
+    const endDate = new Date();
+    endDate.setFullYear(endDate.getFullYear() + 1);
+    
+    const appointments = await appointmentRepo.getAppointmentsByOrgAndDateRange(
+      user.orgId,
+      startDate.toISOString().split('T')[0],
+      endDate.toISOString().split('T')[0]
+    );
+
+    const limitedAppointments = appointments.slice(0, limit);
+
+    return createResponse(200, {
+      message: `Debug: Found ${appointments.length} total appointments`,
+      data: {
+        totalCount: appointments.length,
+        returnedCount: limitedAppointments.length,
+        appointments: limitedAppointments,
+        queryInfo: {
+          orgId: user.orgId,
+          dateRange: {
+            start: startDate.toISOString().split('T')[0],
+            end: endDate.toISOString().split('T')[0]
+          },
+          limit
+        }
+      }
+    });
+  } catch (error: any) {
+    console.error('Debug appointments error:', error);
+    return createResponse(500, { error: error.message });
+  }
+};

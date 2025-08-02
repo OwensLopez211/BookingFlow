@@ -4,6 +4,7 @@ exports.handler = void 0;
 const organizationService_1 = require("../services/organizationService");
 const authService_1 = require("../services/authService");
 const response_1 = require("../utils/response");
+const requestMetrics_1 = require("../middleware/requestMetrics");
 const extractUserFromToken = async (authHeader) => {
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
         throw new Error('Token de acceso requerido');
@@ -15,7 +16,7 @@ const extractUserFromToken = async (authHeader) => {
     }
     return result.user;
 };
-const handler = async (event) => {
+const organizationsHandler = async (event) => {
     console.log('=== ORGANIZATIONS HANDLER ===');
     console.log('Event:', JSON.stringify(event, null, 2));
     try {
@@ -101,6 +102,7 @@ const handler = async (event) => {
         // UPDATE ORGANIZATION SETTINGS
         if (path?.match(/\/organizations\/[^/]+\/settings$/) && httpMethod === 'PUT') {
             console.log('=== UPDATE ORGANIZATION SETTINGS REQUEST ===');
+            console.log('📦 Received request body:', JSON.stringify(requestData, null, 2));
             const orgId = pathParameters?.orgId;
             if (!orgId) {
                 return (0, response_1.errorResponse)('ID de organización requerido', 400);
@@ -112,9 +114,57 @@ const handler = async (event) => {
             if (currentUser.orgId !== orgId) {
                 return (0, response_1.unauthorizedResponse)('No tienes permisos para modificar esta organización');
             }
-            const result = await (0, organizationService_1.updateOrganizationService)(orgId, currentUser.id, { settings: requestData });
+            // Restructure data to separate organization fields from settings
+            const organizationData = {};
+            const settingsData = {};
+            // Extract organization-level fields (handle empty strings as valid values)
+            if (requestData.name !== undefined)
+                organizationData.name = requestData.name;
+            if (requestData.address !== undefined)
+                organizationData.address = requestData.address || null;
+            if (requestData.phone !== undefined)
+                organizationData.phone = requestData.phone || null;
+            if (requestData.email !== undefined)
+                organizationData.email = requestData.email || null;
+            if (requestData.currency !== undefined)
+                organizationData.currency = requestData.currency;
+            // Extract settings fields
+            if (requestData.timezone !== undefined)
+                settingsData.timezone = requestData.timezone;
+            if (requestData.businessHours !== undefined)
+                settingsData.businessHours = requestData.businessHours;
+            if (requestData.notifications !== undefined)
+                settingsData.notifications = requestData.notifications;
+            if (requestData.appointmentSystem !== undefined)
+                settingsData.appointmentSystem = requestData.appointmentSystem;
+            if (requestData.businessInfo !== undefined)
+                settingsData.businessInfo = requestData.businessInfo;
+            if (requestData.services !== undefined)
+                settingsData.services = requestData.services;
+            // Combine data
+            const updateData = {
+                ...organizationData,
+                ...(Object.keys(settingsData).length > 0 && { settings: settingsData })
+            };
+            console.log('📦 Structured update data:', JSON.stringify(updateData, null, 2));
+            const result = await (0, organizationService_1.updateOrganizationService)(orgId, currentUser.id, updateData);
             console.log('Organization settings updated successfully:', orgId);
-            return (0, response_1.successResponse)(result, 'Configuraciones de la organización actualizadas exitosamente');
+            // Return the result directly with proper structure for frontend
+            return {
+                statusCode: 200,
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Access-Control-Allow-Origin': '*',
+                    'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+                    'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+                },
+                body: JSON.stringify({
+                    success: result.success,
+                    organization: result.organization,
+                    message: result.message || 'Configuraciones de la organización actualizadas exitosamente',
+                    timestamp: new Date().toISOString(),
+                }),
+            };
         }
         // LIST ORGANIZATIONS (for admin users who might manage multiple orgs)
         if (path?.endsWith('/organizations') && httpMethod === 'GET') {
@@ -155,4 +205,4 @@ const handler = async (event) => {
         return (0, response_1.serverErrorResponse)(`Error interno del servidor: ${error.message}`);
     }
 };
-exports.handler = handler;
+exports.handler = (0, requestMetrics_1.withMetrics)(organizationsHandler, { trackUser: true });

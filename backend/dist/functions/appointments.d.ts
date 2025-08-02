@@ -1,0 +1,12 @@
+import { APIGatewayProxyEvent, APIGatewayProxyResult } from 'aws-lambda';
+export declare const createAppointment: (event: APIGatewayProxyEvent) => Promise<APIGatewayProxyResult>;
+export declare const getAppointment: (event: APIGatewayProxyEvent) => Promise<APIGatewayProxyResult>;
+export declare const updateAppointment: (event: APIGatewayProxyEvent) => Promise<APIGatewayProxyResult>;
+export declare const cancelAppointment: (event: APIGatewayProxyEvent) => Promise<APIGatewayProxyResult>;
+export declare const rescheduleAppointment: (event: APIGatewayProxyEvent) => Promise<APIGatewayProxyResult>;
+export declare const getAppointments: (event: APIGatewayProxyEvent) => Promise<APIGatewayProxyResult>;
+export declare const getAppointmentStats: (event: APIGatewayProxyEvent) => Promise<APIGatewayProxyResult>;
+export declare const confirmAppointment: (event: APIGatewayProxyEvent) => Promise<APIGatewayProxyResult>;
+export declare const completeAppointment: (event: APIGatewayProxyEvent) => Promise<APIGatewayProxyResult>;
+export declare const markNoShow: (event: APIGatewayProxyEvent) => Promise<APIGatewayProxyResult>;
+export declare const debugAllAppointments: (event: APIGatewayProxyEvent) => Promise<APIGatewayProxyResult>;

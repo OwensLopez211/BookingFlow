@@ -27,7 +27,7 @@ export declare const registerUserAndOrganization: (data: RegisterData) => Promis
     organization: {
         id: string;
         name: string;
-        templateType: "beauty_salon" | "hyperbaric_center";
+        templateType: "beauty_salon" | "hyperbaric_center" | "medical_clinic" | "fitness_center" | "consultant" | "custom";
     };
     tokens: {
         accessToken: string | undefined;

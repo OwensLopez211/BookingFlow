@@ -1,0 +1,11 @@
+import { Staff } from '../../../shared/types/business';
+export declare const createStaff: (staffData: Omit<Staff, "id" | "createdAt" | "updatedAt">) => Promise<Staff>;
+export declare const getStaffById: (orgId: string, staffId: string) => Promise<Staff | null>;
+export declare const getStaffByOrgId: (orgId: string, activeOnly?: boolean) => Promise<Staff[]>;
+export declare const getStaffByRole: (orgId: string, role: string, activeOnly?: boolean) => Promise<Staff[]>;
+export declare const getStaffBySpecialty: (orgId: string, specialty: string) => Promise<Staff[]>;
+export declare const updateStaff: (orgId: string, staffId: string, updates: Partial<Staff>) => Promise<Staff>;
+export declare const deleteStaff: (orgId: string, staffId: string) => Promise<void>;
+export declare const activateStaff: (orgId: string, staffId: string) => Promise<Staff>;
+export declare const deactivateStaff: (orgId: string, staffId: string) => Promise<Staff>;
+export declare const getAvailableStaff: (orgId: string, datetime: string, duration: number, requiredSpecialties?: string[]) => Promise<Staff[]>;

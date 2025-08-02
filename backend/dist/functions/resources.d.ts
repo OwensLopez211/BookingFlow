@@ -1,0 +1,12 @@
+import { APIGatewayProxyEvent, APIGatewayProxyResult } from 'aws-lambda';
+export declare const createResource: (event: APIGatewayProxyEvent) => Promise<APIGatewayProxyResult>;
+export declare const getResource: (event: APIGatewayProxyEvent) => Promise<APIGatewayProxyResult>;
+export declare const getAllResources: (event: APIGatewayProxyEvent) => Promise<APIGatewayProxyResult>;
+export declare const updateResource: (event: APIGatewayProxyEvent) => Promise<APIGatewayProxyResult>;
+export declare const deleteResource: (event: APIGatewayProxyEvent) => Promise<APIGatewayProxyResult>;
+export declare const activateResource: (event: APIGatewayProxyEvent) => Promise<APIGatewayProxyResult>;
+export declare const deactivateResource: (event: APIGatewayProxyEvent) => Promise<APIGatewayProxyResult>;
+export declare const getResourceAvailability: (event: APIGatewayProxyEvent) => Promise<APIGatewayProxyResult>;
+export declare const generateResourceAvailability: (event: APIGatewayProxyEvent) => Promise<APIGatewayProxyResult>;
+export declare const getAvailableResources: (event: APIGatewayProxyEvent) => Promise<APIGatewayProxyResult>;
+export declare const blockResourceTime: (event: APIGatewayProxyEvent) => Promise<APIGatewayProxyResult>;

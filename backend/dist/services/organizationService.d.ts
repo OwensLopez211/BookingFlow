@@ -5,6 +5,10 @@ export interface CreateOrganizationData {
 }
 export interface UpdateOrganizationData {
     name?: string;
+    address?: string;
+    phone?: string;
+    email?: string;
+    currency?: string;
     settings?: {
         timezone?: string;
         businessHours?: Record<string, {
@@ -18,6 +22,49 @@ export interface UpdateOrganizationData {
             autoConfirmation?: boolean;
             reminderHours?: number;
         };
+        appointmentSystem?: {
+            appointmentModel?: 'professional_based' | 'resource_based' | 'hybrid';
+            allowClientSelection?: boolean;
+            bufferBetweenAppointments?: number;
+            maxAdvanceBookingDays?: number;
+            maxProfessionals?: number;
+            maxResources?: number;
+            professionals?: Array<{
+                id: string;
+                name: string;
+                photo?: string;
+                isActive: boolean;
+            }>;
+        };
+        businessConfiguration?: {
+            appointmentModel?: 'professional_based' | 'resource_based' | 'hybrid';
+            allowClientSelection?: boolean;
+            bufferBetweenAppointments?: number;
+            maxAdvanceBookingDays?: number;
+            maxProfessionals?: number;
+            maxResources?: number;
+            professionals?: Array<{
+                id: string;
+                name: string;
+                photo?: string;
+                isActive: boolean;
+            }>;
+        };
+        businessInfo?: {
+            businessName?: string;
+            businessAddress?: string;
+            businessPhone?: string;
+            businessEmail?: string;
+        };
+        services?: Array<{
+            id?: string;
+            name: string;
+            description?: string;
+            duration: number;
+            price: number;
+            isActive?: boolean;
+        }>;
+        currency?: string;
     };
 }
 export declare const createOrganizationService: (data: CreateOrganizationData) => Promise<{
@@ -25,18 +72,80 @@ export declare const createOrganizationService: (data: CreateOrganizationData) =
     organization: {
         id: string;
         name: string;
-        templateType: "beauty_salon" | "hyperbaric_center";
+        templateType: "beauty_salon" | "hyperbaric_center" | "medical_clinic" | "fitness_center" | "consultant" | "custom";
         settings: {
             timezone: string;
-            businessHours: any;
-            notifications: any;
+            businessHours: {
+                [key: string]: {
+                    isOpen: boolean;
+                    openTime: string;
+                    closeTime: string;
+                };
+            };
+            notifications: {
+                emailReminders?: boolean;
+                smsReminders?: boolean;
+                autoConfirmation?: boolean;
+                reminderHours?: number;
+            };
+            appointmentSystem?: {
+                appointmentModel: string;
+                allowClientSelection: boolean;
+                bufferBetweenAppointments: number;
+                maxAdvanceBookingDays: number;
+                maxProfessionals?: number;
+                maxResources?: number;
+                maxResourcesPerSlot?: number;
+                professionals?: Array<{
+                    id: string;
+                    name: string;
+                    photo?: string;
+                    isActive: boolean;
+                }>;
+            };
+            businessConfiguration?: {
+                appointmentModel: string;
+                allowClientSelection: boolean;
+                bufferBetweenAppointments: number;
+                maxAdvanceBookingDays: number;
+                maxProfessionals?: number;
+                maxResources?: number;
+                maxResourcesPerSlot?: number;
+                professionals?: Array<{
+                    id: string;
+                    name: string;
+                    photo?: string;
+                    isActive: boolean;
+                }>;
+            };
+            businessInfo?: {
+                businessName?: string;
+                businessAddress?: string;
+                businessPhone?: string;
+                businessEmail?: string;
+            };
+            services?: Array<{
+                id?: string;
+                name: string;
+                description?: string;
+                duration: number;
+                price: number;
+                isActive?: boolean;
+            }>;
+            currency?: string;
         };
         subscription: {
-            plan: "free" | "premium";
+            plan: "free" | "basic" | "premium";
             limits: {
                 maxResources: number;
                 maxAppointmentsPerMonth: number;
                 maxUsers: number;
+            };
+            trial?: {
+                isActive: boolean;
+                startDate: string;
+                endDate: string;
+                daysTotal: number;
             };
         };
         createdAt: string;
@@ -48,18 +157,84 @@ export declare const getOrganizationService: (orgId: string, userId: string) => 
     organization: {
         id: string;
         name: string;
-        templateType: "beauty_salon" | "hyperbaric_center";
+        templateType: "beauty_salon" | "hyperbaric_center" | "medical_clinic" | "fitness_center" | "consultant" | "custom";
+        address: string | undefined;
+        phone: string | undefined;
+        email: string | undefined;
+        currency: string | undefined;
         settings: {
             timezone: string;
-            businessHours: any;
-            notifications: any;
+            businessHours: {
+                [key: string]: {
+                    isOpen: boolean;
+                    openTime: string;
+                    closeTime: string;
+                };
+            };
+            notifications: {
+                emailReminders?: boolean;
+                smsReminders?: boolean;
+                autoConfirmation?: boolean;
+                reminderHours?: number;
+            };
+            appointmentSystem?: {
+                appointmentModel: string;
+                allowClientSelection: boolean;
+                bufferBetweenAppointments: number;
+                maxAdvanceBookingDays: number;
+                maxProfessionals?: number;
+                maxResources?: number;
+                maxResourcesPerSlot?: number;
+                professionals?: Array<{
+                    id: string;
+                    name: string;
+                    photo?: string;
+                    isActive: boolean;
+                }>;
+            };
+            businessConfiguration?: {
+                appointmentModel: string;
+                allowClientSelection: boolean;
+                bufferBetweenAppointments: number;
+                maxAdvanceBookingDays: number;
+                maxProfessionals?: number;
+                maxResources?: number;
+                maxResourcesPerSlot?: number;
+                professionals?: Array<{
+                    id: string;
+                    name: string;
+                    photo?: string;
+                    isActive: boolean;
+                }>;
+            };
+            businessInfo?: {
+                businessName?: string;
+                businessAddress?: string;
+                businessPhone?: string;
+                businessEmail?: string;
+            };
+            services?: Array<{
+                id?: string;
+                name: string;
+                description?: string;
+                duration: number;
+                price: number;
+                isActive?: boolean;
+            }>;
+            currency?: string;
         };
         subscription: {
-            plan: "free" | "premium";
+            plan: "free" | "basic" | "premium";
             limits: {
                 maxResources: number;
                 maxAppointmentsPerMonth: number;
                 maxUsers: number;
+            };
+            trial?: {
+                isActive: boolean;
+                startDate: string;
+                endDate: string;
+                daysTotal: number;
             };
         };
         createdAt: string;
@@ -71,20 +246,87 @@ export declare const updateOrganizationService: (orgId: string, userId: string, 
     organization: {
         id: string;
         name: string;
-        templateType: "beauty_salon" | "hyperbaric_center";
+        templateType: "beauty_salon" | "hyperbaric_center" | "medical_clinic" | "fitness_center" | "consultant" | "custom";
+        address: string | undefined;
+        phone: string | undefined;
+        email: string | undefined;
+        currency: string | undefined;
         settings: {
             timezone: string;
-            businessHours: any;
-            notifications: any;
+            businessHours: {
+                [key: string]: {
+                    isOpen: boolean;
+                    openTime: string;
+                    closeTime: string;
+                };
+            };
+            notifications: {
+                emailReminders?: boolean;
+                smsReminders?: boolean;
+                autoConfirmation?: boolean;
+                reminderHours?: number;
+            };
+            appointmentSystem?: {
+                appointmentModel: string;
+                allowClientSelection: boolean;
+                bufferBetweenAppointments: number;
+                maxAdvanceBookingDays: number;
+                maxProfessionals?: number;
+                maxResources?: number;
+                maxResourcesPerSlot?: number;
+                professionals?: Array<{
+                    id: string;
+                    name: string;
+                    photo?: string;
+                    isActive: boolean;
+                }>;
+            };
+            businessConfiguration?: {
+                appointmentModel: string;
+                allowClientSelection: boolean;
+                bufferBetweenAppointments: number;
+                maxAdvanceBookingDays: number;
+                maxProfessionals?: number;
+                maxResources?: number;
+                maxResourcesPerSlot?: number;
+                professionals?: Array<{
+                    id: string;
+                    name: string;
+                    photo?: string;
+                    isActive: boolean;
+                }>;
+            };
+            businessInfo?: {
+                businessName?: string;
+                businessAddress?: string;
+                businessPhone?: string;
+                businessEmail?: string;
+            };
+            services?: Array<{
+                id?: string;
+                name: string;
+                description?: string;
+                duration: number;
+                price: number;
+                isActive?: boolean;
+            }>;
+            currency?: string;
         };
         subscription: {
-            plan: "free" | "premium";
+            plan: "free" | "basic" | "premium";
             limits: {
                 maxResources: number;
                 maxAppointmentsPerMonth: number;
                 maxUsers: number;
             };
+            trial?: {
+                isActive: boolean;
+                startDate: string;
+                endDate: string;
+                daysTotal: number;
+            };
         };
+        createdAt: string;
         updatedAt: string;
     };
     message: string;

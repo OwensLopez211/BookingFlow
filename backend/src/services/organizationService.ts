@@ -7,9 +7,17 @@ import {
   Organization 
 } from '../repositories/organizationRepository';
 import { getUserById } from '../repositories/userRepository';
+import { 
+  getBusinessConfigurationByOrgId, 
+  updateBusinessConfiguration 
+} from '../repositories/businessConfigurationRepository';
 
 const updateOrganizationSchema = z.object({
   name: z.string().min(2, 'El nombre debe tener al menos 2 caracteres').optional(),
+  address: z.string().nullable().optional(),
+  phone: z.string().nullable().optional(),
+  email: z.string().email('Email inválido').nullable().optional().or(z.literal('')),
+  currency: z.string().optional(),
   settings: z.object({
     timezone: z.string().optional(),
     businessHours: z.record(z.string(), z.object({
@@ -23,6 +31,49 @@ const updateOrganizationSchema = z.object({
       autoConfirmation: z.boolean().optional(),
       reminderHours: z.number().optional(),
     }).optional(),
+    appointmentSystem: z.object({
+      appointmentModel: z.enum(['professional_based', 'resource_based', 'hybrid']).optional(),
+      allowClientSelection: z.boolean().optional(),
+      bufferBetweenAppointments: z.number().optional(),
+      maxAdvanceBookingDays: z.number().optional(),
+      maxProfessionals: z.number().min(1).max(50).optional(),
+      maxResources: z.number().min(1).max(50).optional(),
+      professionals: z.array(z.object({
+        id: z.string(),
+        name: z.string(),
+        photo: z.string().optional(),
+        isActive: z.boolean(),
+      })).optional(),
+    }).optional(),
+    businessConfiguration: z.object({
+      appointmentModel: z.enum(['professional_based', 'resource_based', 'hybrid']).optional(),
+      allowClientSelection: z.boolean().optional(),
+      bufferBetweenAppointments: z.number().optional(),
+      maxAdvanceBookingDays: z.number().optional(),
+      maxProfessionals: z.number().min(1).max(50).optional(),
+      maxResources: z.number().min(1).max(50).optional(),
+      professionals: z.array(z.object({
+        id: z.string(),
+        name: z.string(),
+        photo: z.string().optional(),
+        isActive: z.boolean(),
+      })).optional(),
+    }).optional(),
+    businessInfo: z.object({
+      businessName: z.string().optional(),
+      businessAddress: z.string().nullable().optional(),
+      businessPhone: z.string().nullable().optional(),
+      businessEmail: z.string().email('Email inválido').nullable().optional().or(z.literal('')),
+    }).optional(),
+    services: z.array(z.object({
+      id: z.string().optional(),
+      name: z.string(),
+      description: z.string().optional(),
+      duration: z.number().positive('La duración debe ser positiva'),
+      price: z.number().min(0, 'El precio no puede ser negativo'),
+      isActive: z.boolean().optional(),
+    })).optional(),
+    currency: z.string().optional(),
   }).optional(),
 });
 
@@ -34,6 +85,10 @@ export interface CreateOrganizationData {
 
 export interface UpdateOrganizationData {
   name?: string;
+  address?: string;
+  phone?: string;
+  email?: string;
+  currency?: string;
   settings?: {
     timezone?: string;
     businessHours?: Record<string, {
@@ -47,6 +102,49 @@ export interface UpdateOrganizationData {
       autoConfirmation?: boolean;
       reminderHours?: number;
     };
+    appointmentSystem?: {
+      appointmentModel?: 'professional_based' | 'resource_based' | 'hybrid';
+      allowClientSelection?: boolean;
+      bufferBetweenAppointments?: number;
+      maxAdvanceBookingDays?: number;
+      maxProfessionals?: number;
+      maxResources?: number;
+      professionals?: Array<{
+        id: string;
+        name: string;
+        photo?: string;
+        isActive: boolean;
+      }>;
+    };
+    businessConfiguration?: {
+      appointmentModel?: 'professional_based' | 'resource_based' | 'hybrid';
+      allowClientSelection?: boolean;
+      bufferBetweenAppointments?: number;
+      maxAdvanceBookingDays?: number;
+      maxProfessionals?: number;
+      maxResources?: number;
+      professionals?: Array<{
+        id: string;
+        name: string;
+        photo?: string;
+        isActive: boolean;
+      }>;
+    };
+    businessInfo?: {
+      businessName?: string;
+      businessAddress?: string;
+      businessPhone?: string;
+      businessEmail?: string;
+    };
+    services?: Array<{
+      id?: string;
+      name: string;
+      description?: string;
+      duration: number;
+      price: number;
+      isActive?: boolean;
+    }>;
+    currency?: string;
   };
 }
 
@@ -114,6 +212,10 @@ export const getOrganizationService = async (orgId: string, userId: string) => {
         id: organization.id,
         name: organization.name,
         templateType: organization.templateType,
+        address: organization.address,
+        phone: organization.phone,
+        email: organization.email,
+        currency: organization.currency,
         settings: organization.settings,
         subscription: organization.subscription,
         createdAt: organization.createdAt,
@@ -131,7 +233,13 @@ export const updateOrganizationService = async (
   userId: string, 
   updates: UpdateOrganizationData
 ) => {
+  console.log('🔄 updateOrganizationService called with:');
+  console.log('  - orgId:', orgId);
+  console.log('  - userId:', userId);
+  console.log('  - updates:', JSON.stringify(updates, null, 2));
+
   const validatedUpdates = updateOrganizationSchema.parse(updates);
+  console.log('✅ Validation passed, validated updates:', JSON.stringify(validatedUpdates, null, 2));
 
   try {
     // Validate that the user exists and has permissions
@@ -155,47 +263,152 @@ export const updateOrganizationService = async (
     }
 
     // Merge updates with current organization
+    console.log('📋 Current organization before update:', JSON.stringify(currentOrg, null, 2));
+    
+    // Handle synchronization between organization root fields and businessInfo
+    const syncBusinessInfo = {
+      ...currentOrg.settings.businessInfo,
+      // Sync organization root fields to businessInfo if they're being updated
+      ...(validatedUpdates.name !== undefined && { businessName: validatedUpdates.name }),
+      ...(validatedUpdates.address !== undefined && { businessAddress: validatedUpdates.address }),
+      ...(validatedUpdates.phone !== undefined && { businessPhone: validatedUpdates.phone }),
+      ...(validatedUpdates.email !== undefined && { businessEmail: validatedUpdates.email }),
+      // Apply any direct businessInfo updates
+      ...(validatedUpdates.settings?.businessInfo ? validatedUpdates.settings.businessInfo : {}),
+    };
+    
+    // Check if we need to update settings (either because settings were provided or root fields changed)
+    const needsSettingsUpdate = validatedUpdates.settings || 
+                                validatedUpdates.name !== undefined || 
+                                validatedUpdates.address !== undefined || 
+                                validatedUpdates.phone !== undefined || 
+                                validatedUpdates.email !== undefined;
+    
+    console.log('🔍 Settings update analysis:');
+    console.log('  - validatedUpdates.settings exists:', !!validatedUpdates.settings);
+    console.log('  - needsSettingsUpdate:', needsSettingsUpdate);
+    console.log('  - syncBusinessInfo:', JSON.stringify(syncBusinessInfo, null, 2));
+
     const organizationToUpdate: Organization = {
       ...currentOrg,
-      ...(validatedUpdates.name && { name: validatedUpdates.name }),
-      ...(validatedUpdates.settings && {
+      ...(validatedUpdates.name !== undefined && { name: validatedUpdates.name }),
+      ...(validatedUpdates.address !== undefined && { address: validatedUpdates.address }),
+      ...(validatedUpdates.phone !== undefined && { phone: validatedUpdates.phone }),
+      ...(validatedUpdates.email !== undefined && { email: validatedUpdates.email }),
+      ...(validatedUpdates.currency !== undefined && { currency: validatedUpdates.currency }),
+      ...(needsSettingsUpdate && {
         settings: {
           ...currentOrg.settings,
-          ...(validatedUpdates.settings.timezone && { 
+          ...(validatedUpdates.settings?.timezone !== undefined && { 
             timezone: validatedUpdates.settings.timezone 
           }),
-          ...(validatedUpdates.settings.businessHours && { 
+          ...(validatedUpdates.settings?.currency !== undefined && { 
+            currency: validatedUpdates.settings.currency 
+          }),
+          ...(validatedUpdates.settings?.businessHours !== undefined && { 
             businessHours: {
               ...currentOrg.settings.businessHours,
               ...validatedUpdates.settings.businessHours,
             }
           }),
-          ...(validatedUpdates.settings.notifications && { 
+          ...(validatedUpdates.settings?.notifications !== undefined && { 
             notifications: {
               ...currentOrg.settings.notifications,
               ...validatedUpdates.settings.notifications,
             }
+          }),
+          ...(validatedUpdates.settings?.appointmentSystem !== undefined && { 
+            appointmentSystem: {
+              ...currentOrg.settings.appointmentSystem,
+              ...validatedUpdates.settings.appointmentSystem,
+            }
+          }),
+          ...(validatedUpdates.settings?.businessConfiguration !== undefined && { 
+            businessConfiguration: {
+              ...currentOrg.settings.businessConfiguration,
+              ...validatedUpdates.settings.businessConfiguration,
+            }
+          }),
+          // Always sync businessInfo (including automatic sync from root fields)
+          businessInfo: syncBusinessInfo,
+          ...(validatedUpdates.settings?.services !== undefined && { 
+            services: validatedUpdates.settings.services.map(service => ({
+              ...service,
+              id: service.id || `service_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+              isActive: service.isActive !== undefined ? service.isActive : true
+            }))
           }),
         }
       }),
       updatedAt: new Date().toISOString(),
     };
 
+    console.log('💾 Organization to update in database:', JSON.stringify(organizationToUpdate, null, 2));
+
     // Update organization in database
     const updatedOrganization = await updateOrganization(orgId, organizationToUpdate);
     
-    return {
+    // If appointment system or business configuration settings were updated, 
+    // also update the business configuration entity
+    if (validatedUpdates.settings?.appointmentSystem || validatedUpdates.settings?.businessConfiguration) {
+      try {
+        const businessConfig = await getBusinessConfigurationByOrgId(orgId);
+        if (businessConfig) {
+          const businessConfigUpdates: any = {};
+          
+          // Use data from appointmentSystem or businessConfiguration
+          const configData = validatedUpdates.settings.appointmentSystem || validatedUpdates.settings.businessConfiguration;
+          
+          if (configData?.appointmentModel) {
+            businessConfigUpdates.appointmentModel = configData.appointmentModel;
+          }
+          
+          if (configData && Object.keys(configData).length > 0) {
+            businessConfigUpdates.settings = {
+              ...businessConfig.settings,
+              ...(configData.allowClientSelection !== undefined && { 
+                allowClientSelection: configData.allowClientSelection 
+              }),
+              ...(configData.bufferBetweenAppointments !== undefined && { 
+                bufferBetweenAppointments: configData.bufferBetweenAppointments 
+              }),
+              ...(configData.maxAdvanceBookingDays !== undefined && { 
+                maxAdvanceBookingDays: configData.maxAdvanceBookingDays 
+              }),
+            };
+          }
+          
+          if (Object.keys(businessConfigUpdates).length > 0) {
+            await updateBusinessConfiguration(orgId, businessConfig.id, businessConfigUpdates);
+            console.log(`✅ Business configuration updated for organization: ${orgId}`);
+          }
+        }
+      } catch (error) {
+        console.error('❌ Failed to update business configuration:', error);
+        // Don't fail the entire operation if business config update fails
+      }
+    }
+    
+    const finalResult = {
       success: true,
       organization: {
         id: updatedOrganization.id,
         name: updatedOrganization.name,
         templateType: updatedOrganization.templateType,
+        address: updatedOrganization.address,
+        phone: updatedOrganization.phone,
+        email: updatedOrganization.email,
+        currency: updatedOrganization.currency,
         settings: updatedOrganization.settings,
         subscription: updatedOrganization.subscription,
+        createdAt: updatedOrganization.createdAt,
         updatedAt: updatedOrganization.updatedAt,
       },
       message: 'Organizaci�n actualizada exitosamente',
     };
+    
+    console.log('✅ Final service result:', JSON.stringify(finalResult, null, 2));
+    return finalResult;
   } catch (error: any) {
     console.error('Error in updateOrganizationService:', error);
     throw new Error(error.message || 'Error actualizando la organizaci�n');

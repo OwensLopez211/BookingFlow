@@ -27,7 +27,7 @@ export interface Organization extends BaseEntity {
         notifications: NotificationSettings;
     };
     subscription: {
-        plan: 'free' | 'premium';
+        plan: 'free' | 'basic' | 'premium';
         limits: ResourceLimits;
     };
 }
@@ -60,3 +60,5 @@ export interface ResourceLimits {
     maxAppointmentsPerMonth: number;
     maxUsers: number;
 }
+export declare const PLAN_LIMITS: Record<'free' | 'basic' | 'premium', ResourceLimits>;
+export declare function getPlanLimits(plan: 'free' | 'basic' | 'premium'): ResourceLimits;

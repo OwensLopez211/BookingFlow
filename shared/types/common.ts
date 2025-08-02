@@ -31,7 +31,7 @@ export interface BaseEntity {
       notifications: NotificationSettings;
     };
     subscription: {
-      plan: 'free' | 'premium';
+      plan: 'free' | 'basic' | 'premium';
       limits: ResourceLimits;
     };
   }
@@ -67,4 +67,26 @@ export interface BaseEntity {
     maxResources: number;
     maxAppointmentsPerMonth: number;
     maxUsers: number;
+  }
+
+  export const PLAN_LIMITS: Record<'free' | 'basic' | 'premium', ResourceLimits> = {
+    free: {
+      maxResources: 1,
+      maxAppointmentsPerMonth: 100,
+      maxUsers: 1,
+    },
+    basic: {
+      maxResources: 5,
+      maxAppointmentsPerMonth: 1000,
+      maxUsers: 2,
+    },
+    premium: {
+      maxResources: 10,
+      maxAppointmentsPerMonth: 2500,
+      maxUsers: 10,
+    },
+  };
+
+  export function getPlanLimits(plan: 'free' | 'basic' | 'premium'): ResourceLimits {
+    return PLAN_LIMITS[plan];
   }
