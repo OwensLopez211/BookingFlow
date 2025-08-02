@@ -68,6 +68,7 @@ const CustomToast = ({
       ${config.bg} ${config.border}
       transform transition-all duration-300
       animate-[slideInFromBottomRight_0.6s_cubic-bezier(0.68,-0.55,0.265,1.55)_forwards]
+      group
     `}>
       {/* Gradient accent line */}
       <div className={`absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b ${config.gradient} rounded-l-2xl`} />
@@ -111,7 +112,7 @@ const CustomToast = ({
       <div className="absolute bottom-0 left-0 right-0 h-1 bg-white/30 rounded-b-2xl overflow-hidden">
         <div className={`
           h-full bg-gradient-to-r ${config.gradient} 
-          animate-[shrink_4000ms_linear_forwards]
+          animate-[shrink_4000ms_linear_forwards] group-hover:[animation-play-state:paused]
         `} />
       </div>
     </div>
@@ -221,19 +222,6 @@ export const ToastProvider: React.FC = () => {
           }
         }
         
-        /* Add a subtle bounce effect on hover */
-        .toast-container:hover {
-          animation: subtleBounce 0.3s ease-out;
-        }
-        
-        @keyframes subtleBounce {
-          0%, 100% {
-            transform: scale(1.05);
-          }
-          50% {
-            transform: scale(1.08);
-          }
-        }
       `}</style>
     </>
   );
