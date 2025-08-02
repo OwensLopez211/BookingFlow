@@ -7,9 +7,11 @@ import {
   ChartBarIcon,
   ChevronDownIcon,
   BellIcon,
+  GlobeAltIcon,
 } from '@heroicons/react/24/outline';
 import { authService } from '@/services/authService';
 import { useAuthStore } from '@/stores/authStore';
+import { TrialStatusBadge } from '@/components/ui';
 
 const navigation = [
   { name: 'Dashboard', href: '/dashboard', icon: HomeIcon, enabled: true },
@@ -131,8 +133,25 @@ export const NavigationBar: React.FC = () => {
             })}
           </nav>
 
-          {/* Right side - Notifications & User Menu */}
+          {/* Right side - Public Site, Notifications & User Menu */}
           <div className="flex items-center space-x-2">
+            {/* Public Site Button */}
+            <Link
+              to={`/book/${organization?.id || 'demo'}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="relative p-2.5 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-all duration-200 group"
+              title="Ver sitio público de reservas"
+            >
+              <GlobeAltIcon className="h-5 w-5 group-hover:scale-110 transition-transform duration-200" />
+              <div className="absolute -top-1 -right-1 w-2 h-2 bg-green-500 rounded-full border border-white animate-pulse"></div>
+            </Link>
+
+            {/* Trial Status Badge */}
+            <div className="hidden sm:block">
+              <TrialStatusBadge />
+            </div>
+
             {/* Notifications */}
             <button className="relative p-2.5 text-gray-500 hover:text-gray-700 hover:bg-gray-100/80 rounded-xl transition-all duration-200">
               <BellIcon className="h-5 w-5" />
@@ -179,6 +198,15 @@ export const NavigationBar: React.FC = () => {
                     >
                       <span>Configuración</span>
                     </Link>
+                    {(user?.role === 'owner' || user?.role === 'admin') && (
+                      <Link
+                        to="/metrics"
+                        className="flex items-center px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                        onClick={() => setIsUserMenuOpen(false)}
+                      >
+                        <span>Métricas y Costos</span>
+                      </Link>
+                    )}
                   </div>
                   <div className="border-t border-gray-100 py-2">
                     <button
