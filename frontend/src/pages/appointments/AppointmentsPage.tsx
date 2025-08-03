@@ -63,9 +63,9 @@ export const AppointmentsPage: React.FC = () => {
   const isResourceBased = appointmentModel === 'resource_based';
   
   // Get the selected professional or resource if applicable
-  const selectedProfessional = isProfessionalBased 
-    ? organization?.settings?.appointmentSystem?.professionals?.find(p => p.isActive)?.id
-    : undefined;
+  // In professional-based mode, we want to load ALL appointments to show in all professional columns
+  // Only filter by specific professional/resource if we're in resource-based mode or have a specific selection
+  const selectedProfessional = undefined; // Don't filter by professional - we want all appointments
   const selectedResource = isResourceBased
     ? organization?.settings?.appointmentSystem?.resources?.find(r => r.isActive)?.id
     : undefined;
@@ -94,6 +94,13 @@ export const AppointmentsPage: React.FC = () => {
         // Get appointments for selected date
         const selectedDateStr = formatDateForAPI(selectedDate);
         console.log('🔧 Loading appointments for selected date:', selectedDateStr);
+        console.log('🔧 API parameters:', {
+          date: selectedDateStr,
+          selectedProfessional,
+          selectedResource,
+          isProfessionalBased,
+          isResourceBased
+        });
         
         const dayAppointments = await appointmentService.getAppointmentsByDate(
           selectedDateStr,
@@ -158,6 +165,7 @@ export const AppointmentsPage: React.FC = () => {
       rawDate: apt.date,
       normalizedDate: normalizeDateString(apt.date)
     }))
+
   });
 
   // Stats for the dashboard cards - calculate from real data
@@ -173,6 +181,53 @@ export const AppointmentsPage: React.FC = () => {
     );
   };
 
+  const handleCreateAppointment = async (appointmentData: any) => {
+    try {
+      console.log('🔧 Creating appointment:', appointmentData);
+      
+      // Create the datetime ISO string
+      const datetime = new Date(`${appointmentData.date}T${appointmentData.startTime}:00`).toISOString();
+      
+      // Get service info if available
+      const selectedService = organization?.settings?.services?.find(s => s.id === appointmentData.serviceId);
+      
+      // Prepare the request according to CreateAppointmentRequest interface
+      const createRequest = {
+        clientInfo: appointmentData.clientInfo,
+        serviceInfo: {
+          name: appointmentData.title,
+          duration: appointmentData.duration,
+          price: selectedService?.price || 0
+        },
+        datetime: datetime,
+        duration: appointmentData.duration,
+        preferredStaffId: appointmentData.professionalId,
+        notes: appointmentData.notes || undefined
+      };
+      
+      // Call the appointment service
+      await appointmentService.createAppointment(createRequest);
+      
+      showToast.success(
+        '¡Cita creada exitosamente!',
+        `Cita programada para ${appointmentData.clientInfo.name} el ${appointmentData.date} a las ${appointmentData.startTime}`
+      );
+      
+      // Reload appointments to show the new one
+      // Force a re-render by setting the selected date
+      const currentDate = selectedDate;
+      setSelectedDate(new Date(currentDate.getTime() + 1));
+      setTimeout(() => setSelectedDate(currentDate), 100);
+      
+    } catch (error) {
+      console.error('Error creating appointment:', error);
+      showToast.error(
+        'Error al crear la cita',
+        'No se pudo crear la cita. Por favor, inténtalo de nuevo.'
+      );
+    }
+  };
+
   const handleTestToasts = () => {
     // Demo function to show different toast types
     setTimeout(() => showToast.info('Información', 'Esta es una notificación informativa'), 500);
@@ -183,7 +238,7 @@ export const AppointmentsPage: React.FC = () => {
   return (
     <>
       {/* Desktop Layout */}
-      <div className="hidden lg:flex h-full flex-col space-y-6">
+      <div className="hidden lg:flex h-full flex-col space-y-4 max-h-full overflow-hidden">
         {/* Desktop Header Design */}
         <div className="flex-shrink-0 relative">
           {/* Background Gradient */}
@@ -322,26 +377,27 @@ export const AppointmentsPage: React.FC = () => {
         </div>
 
         {/* Desktop Calendar and Agenda Layout */}
-        <div className="flex-1 grid grid-cols-5 gap-6 min-h-0">
-          <div className="col-span-2">
+        <div className="flex-1 grid grid-cols-5 gap-4 min-h-0 overflow-hidden">
+          <div className="col-span-2 min-h-0">
             <Calendar
               selectedDate={selectedDate}
               onDateSelect={setSelectedDate}
               appointments={appointmentCounts}
             />
           </div>
-          <div className="col-span-3">
+          <div className="col-span-3 min-h-0">
             <AgendaView
               selectedDate={selectedDate}
               appointments={todayAppointments}
               organization={organization}
+              onCreateAppointment={handleCreateAppointment}
             />
           </div>
         </div>
       </div>
 
       {/* Mobile Layout */}
-      <div className="lg:hidden h-full flex flex-col pb-20">
+      <div className="lg:hidden h-full flex flex-col pb-20 max-h-full overflow-hidden">
         {/* Mobile Header - Compact */}
         <div className="flex-shrink-0 relative">
           <div className="absolute inset-0 bg-gradient-to-r from-blue-600 via-blue-700 to-indigo-700 rounded-2xl opacity-95"></div>
@@ -462,12 +518,13 @@ export const AppointmentsPage: React.FC = () => {
 
         {/* Mobile Content Area - Fixed height to prevent overflow */}
         <div className="flex-1 px-4 py-2 min-h-0 overflow-hidden">
-          <div className="h-full">
+          <div className="h-full min-h-0">
             {activeTab === 'agenda' ? (
               <AgendaView
                 selectedDate={selectedDate}
                 appointments={todayAppointments}
                 organization={organization}
+                onCreateAppointment={handleCreateAppointment}
               />
             ) : (
               <Calendar
