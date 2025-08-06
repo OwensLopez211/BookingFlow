@@ -64,7 +64,11 @@ export interface AuthResponse {
 export const authService = {
   async login(data: LoginRequest): Promise<AuthResponse> {
     try {
+      console.log('🚀 AuthService: Enviando solicitud de login a:', `${API_BASE_URL}/v1/auth/login`);
+      console.log('📤 AuthService: Datos de login:', { email: data.email, password: '[HIDDEN]' });
+      
       const response = await apiClient.post('/v1/auth/login', data);
+      console.log('📥 AuthService: Respuesta del servidor:', response.status, response.statusText);
       
       if (response.data.success && response.data.tokens) {
         localStorage.setItem('accessToken', response.data.tokens.accessToken);
@@ -80,12 +84,21 @@ export const authService = {
         }
       }
       
+      console.log('✅ AuthService: Datos de respuesta:', response.data);
       return response.data;
     } catch (error: any) {
-      console.error('Login error:', error);
+      console.error('❌ AuthService: Error de login:', error);
+      console.error('❌ AuthService: Detalles del error:', {
+        status: error.response?.status,
+        statusText: error.response?.statusText,
+        data: error.response?.data,
+        message: error.message,
+        url: error.config?.url
+      });
+      
       return {
         success: false,
-        error: error.response?.data?.error || 'Error during login',
+        error: error.response?.data?.error || error.message || 'Error during login',
       };
     }
   },

@@ -6,12 +6,12 @@ import {
   BookOpenIcon, 
   ChartBarIcon,
   ChevronDownIcon,
-  BellIcon,
   GlobeAltIcon,
 } from '@heroicons/react/24/outline';
 import { authService } from '@/services/authService';
 import { useAuthStore } from '@/stores/authStore';
 import { TrialStatusBadge } from '@/components/ui';
+import { NotificationDropdown } from '@/components/notifications';
 
 const navigation = [
   { name: 'Dashboard', href: '/dashboard', icon: HomeIcon, enabled: true },
@@ -153,10 +153,7 @@ export const NavigationBar: React.FC = () => {
             </div>
 
             {/* Notifications */}
-            <button className="relative p-2.5 text-gray-500 hover:text-gray-700 hover:bg-gray-100/80 rounded-xl transition-all duration-200">
-              <BellIcon className="h-5 w-5" />
-              <div className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full border-2 border-white"></div>
-            </button>
+            <NotificationDropdown />
 
             {/* User Menu */}
             <div className="relative" ref={userMenuRef}>

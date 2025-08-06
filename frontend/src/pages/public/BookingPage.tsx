@@ -20,6 +20,7 @@ import {
   DailyAvailabilityCount
 } from '@/services/publicBookingService';
 import { formatCurrency } from '@/utils/currency';
+import { realTimeNotificationService } from '@/services/realTimeNotificationService';
 
 // Helper function to create date from YYYY-MM-DD string without timezone issues
 const createLocalDate = (dateString: string): Date => {
@@ -175,10 +176,22 @@ export const BookingPage: React.FC = () => {
         clientPhone: details.clientPhone,
         clientEmail: details.clientEmail,
         notes: details.notes || '',
+        status: 'pending' as const, // ✅ Nueva cita siempre inicia como pendiente
       };
 
       const result = await publicBookingService.createAppointment(orgId, appointmentData);
       console.log('✅ Appointment created successfully:', result.id);
+      
+      // Enviar notificación en tiempo real a los administradores de la organización
+      realTimeNotificationService.notifyAppointmentCreated({
+        appointmentId: result.id,
+        clientName: details.clientName,
+        serviceName: bookingData.service.name,
+        professionalName: bookingData.professional?.name,
+        date: bookingData.date,
+        time: bookingData.time,
+        orgId: orgId,
+      });
       
     } catch (error: any) {
       console.error('❌ Error creating appointment:', error);

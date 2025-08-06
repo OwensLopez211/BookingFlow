@@ -85,10 +85,12 @@ export const useAuthStore = create<AuthState>()(
       error: null,
 
       login: async (credentials: LoginRequest): Promise<boolean> => {
+        console.log('🔐 AuthStore: Iniciando login para:', credentials.email);
         set({ isLoading: true, error: null });
         
         try {
           const response = await authService.login(credentials);
+          console.log('📨 AuthStore: Respuesta del servicio de login:', response);
           
           if (response.success && response.user) {
             const user = response.user as User;
@@ -109,8 +111,11 @@ export const useAuthStore = create<AuthState>()(
               `¡${timeOfDay}, ${firstName}!`,
               'Bienvenido de vuelta a BookFlow. ¡Listo para gestionar tus citas!'
             );
+            
+            // TODO: Agregar notificación de login cuando el sistema esté estable
             return true;
           } else {
+            console.log('❌ AuthStore: Login falló:', response.error);
             set({
               isLoading: false,
               error: response.error || 'Error durante el login',
@@ -123,6 +128,7 @@ export const useAuthStore = create<AuthState>()(
             return false;
           }
         } catch (error: any) {
+          console.log('🚨 AuthStore: Excepción durante login:', error);
           const errorMessage = error.message || 'Error durante el login';
           set({
             isLoading: false,
@@ -158,6 +164,8 @@ export const useAuthStore = create<AuthState>()(
               `¡Bienvenido a BookFlow, ${firstName}!`,
               'Tu cuenta ha sido creada exitosamente. ¡Comienza a gestionar tus citas ahora!'
             );
+            
+            // TODO: Agregar notificación de registro cuando el sistema esté estable
             return true;
           } else {
             set({

@@ -31,19 +31,35 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
     return <Navigate to="/auth/login" state={{ from: location }} replace />;
   }
 
-  // Check onboarding status
-  if (requireOnboarding && user && (!user.onboardingStatus?.isCompleted)) {
-    // If user is not on onboarding page, redirect them there
-    if (location.pathname !== '/onboarding') {
+  // Check onboarding status with better logging
+  const onboardingCompleted = user?.onboardingStatus?.isCompleted;
+  const completedStepsCount = user?.onboardingStatus?.completedSteps?.length || 0;
+  const hasCompletedAllSteps = completedStepsCount === 5;
+  
+  console.log('🔍 ProtectedRoute check:', {
+    requireOnboarding,
+    onboardingCompleted,
+    completedStepsCount,
+    hasCompletedAllSteps,
+    currentPath: location.pathname,
+    userId: user?.id
+  });
+
+  // Only redirect to onboarding if:
+  // 1. Route requires onboarding completion
+  // 2. User is NOT currently on onboarding pages
+  // 3. Either onboarding is not completed OR less than 5 steps are done
+  if (requireOnboarding && user && (!onboardingCompleted || !hasCompletedAllSteps)) {
+    const isOnOnboardingPage = location.pathname.startsWith('/onboarding');
+    if (!isOnOnboardingPage) {
+      console.log('🔄 ProtectedRoute: Redirecting to onboarding - incomplete onboarding');
       return <Navigate to="/onboarding" replace />;
     }
   }
 
   // If user has completed onboarding but is on onboarding page, redirect to dashboard
-  // BUT ONLY if they have completed ALL 5 steps (not just backend isCompleted flag)
-  const hasCompletedAllSteps = user?.onboardingStatus?.completedSteps?.length === 5;
-  if (!requireOnboarding && user?.onboardingStatus?.isCompleted && hasCompletedAllSteps && location.pathname === '/onboarding') {
-    console.log('ProtectedRoute: Redirecting completed onboarding to dashboard');
+  if (!requireOnboarding && onboardingCompleted && hasCompletedAllSteps && location.pathname === '/onboarding') {
+    console.log('🔄 ProtectedRoute: Redirecting completed onboarding to dashboard');
     return <Navigate to="/dashboard" replace />;
   }
 

@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { ToastProvider } from '@/components/ui';
+import { NotificationProvider } from '@/components/notifications';
 
 // Layouts
 import { PublicLayout } from '@/components/layout/PublicLayout';
@@ -21,6 +22,7 @@ import { ForgotPasswordPage } from '@/pages/auth/ForgotPasswordPage';
 
 // Onboarding
 import { OnboardingPage } from '@/pages/onboarding/OnboardingPage';
+import { OneclickReturnPage } from '@/pages/onboarding/OneclickReturnPage';
 
 // Private Pages
 import { DashboardPage } from '@/pages/dashboard/DashboardPage';
@@ -41,8 +43,9 @@ function App() {
 
   return (
     <Router>
-      <div className="App">
-        <Routes>
+      <NotificationProvider>
+        <div className="App">
+          <Routes>
           {/* Public Routes */}
           <Route path="/" element={<PublicLayout />}>
             <Route index element={<HomePage />} />
@@ -78,10 +81,16 @@ function App() {
             <Route path="forgot-password" element={<ForgotPasswordPage />} />
           </Route>
 
-          {/* Onboarding Route */}
+          {/* Onboarding Routes */}
           <Route path="/onboarding" element={
             <ProtectedRoute requireOnboarding={false}>
               <OnboardingPage />
+            </ProtectedRoute>
+          } />
+          
+          <Route path="/onboarding/oneclick-return" element={
+            <ProtectedRoute requireOnboarding={false}>
+              <OneclickReturnPage />
             </ProtectedRoute>
           } />
 
@@ -135,9 +144,10 @@ function App() {
           <Route path="*" element={<NotFoundPage />} />
         </Routes>
 
-        {/* Toast Notifications */}
-        <ToastProvider />
-      </div>
+          {/* Toast Notifications */}
+          <ToastProvider />
+        </div>
+      </NotificationProvider>
     </Router>
   );
 }

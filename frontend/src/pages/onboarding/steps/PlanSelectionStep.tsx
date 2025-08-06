@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/Button';
-import { Plan, PlanSelection } from '../../../../types/subscription';
+import { Plan, PlanSelection, OneClickSetupFormData } from '../../../../types/subscription';
 import { transbankService } from '../../../services/transbankService';
+import { useAuth } from '@/hooks/useAuth';
 
 interface PlanSelectionStepProps {
   onComplete: (data: PlanSelection) => void;
@@ -65,7 +66,7 @@ const plans: Plan[] = [
   {
     id: 'basic',
     name: 'Plan Básico',
-    price: '$12.990',
+    price: '$14.990',
     period: 'por mes (+IVA)',
     description: 'Perfecto para pequeñas empresas que necesitan agilizar su gestión de citas',
     icon: IconProfessional,
@@ -73,7 +74,7 @@ const plans: Plan[] = [
     available: true,
     popular: true,
     trialDays: 30,
-    transbankAmount: 12990,
+    transbankAmount: 14990,
     features: [
       { name: 'Hasta 5 recursos/profesionales', included: true },
       { name: 'Máximo 1,000 citas por mes', included: true },
@@ -98,6 +99,7 @@ const plans: Plan[] = [
     available: false,
     popular: false,
     transbankAmount: 29990,
+    trialDays: 30,
     features: [
       { name: 'Hasta 10 recursos/profesionales', included: true },
       { name: 'Máximo 2,500 citas por mes', included: true },
@@ -121,9 +123,16 @@ export const PlanSelectionStep: React.FC<PlanSelectionStepProps> = ({
   canGoBack,
   showBackInFooter
 }) => {
+  const { user } = useAuth();
   const [selectedPlan, setSelectedPlan] = useState<string>(
     initialData?.planId || 'free'
   );
+  const [showOneclickSetup, setShowOneclickSetup] = useState(false);
+  const [oneclickForm, setOneclickForm] = useState<OneClickSetupFormData>({
+    email: user?.email || '',
+    acceptTerms: false,
+  });
+  const [isSettingUpOneclick, setIsSettingUpOneclick] = useState(false);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -135,6 +144,13 @@ export const PlanSelectionStep: React.FC<PlanSelectionStepProps> = ({
 
     const selectedPlanData = plans.find(p => p.id === selectedPlan);
     
+    // Si es plan básico o premium, mostrar configuración OneClick
+    if (selectedPlan === 'basic' || selectedPlan === 'premium') {
+      setShowOneclickSetup(true);
+      return;
+    }
+
+    // Plan gratuito - completar directamente
     onComplete({
       planId: selectedPlan,
       planName: selectedPlanData?.name,
@@ -142,8 +158,64 @@ export const PlanSelectionStep: React.FC<PlanSelectionStepProps> = ({
       planPeriod: selectedPlanData?.period,
       transbankAmount: selectedPlanData?.transbankAmount,
       trialDays: selectedPlanData?.trialDays,
-      requiresPayment: false, // Sin pagos por ahora, solo trial gratuito
+      requiresPayment: false,
+      enableOneClick: false,
     });
+  };
+
+  const handleOneclickSetup = async () => {
+    if (!oneclickForm.acceptTerms) {
+      alert('Debes aceptar los términos y condiciones para continuar');
+      return;
+    }
+
+    if (!user?.orgId) {
+      alert('Error: No se pudo obtener la información de la organización');
+      return;
+    }
+
+    setIsSettingUpOneclick(true);
+
+    try {
+      const selectedPlanData = plans.find(p => p.id === selectedPlan);
+      const returnUrl = `${window.location.origin}/onboarding/oneclick-return`;
+      
+      // Iniciar inscripción OneClick directamente
+      // Generate a shorter username (max 40 chars for Transbank)
+      const shortUsername = `u_${user.orgId.replace(/-/g, '').substring(0, 32)}`;
+      const inscriptionData = await transbankService.startOneclickInscription({
+        username: shortUsername,
+        email: user.email,
+        returnUrl: returnUrl,
+      });
+
+      // GUARDAR los datos del plan en localStorage para completar después del return de OneClick
+      const planData = {
+        planId: selectedPlan,
+        planName: selectedPlanData?.name,
+        planPrice: selectedPlanData?.price,
+        planPeriod: selectedPlanData?.period,
+        transbankAmount: selectedPlanData?.transbankAmount,
+        trialDays: selectedPlanData?.trialDays,
+        requiresPayment: true,
+        enableOneClick: true,
+        oneclickData: {
+          username: shortUsername,
+          email: user.email,
+          returnUrl: returnUrl,
+        }
+      };
+      
+      localStorage.setItem('pendingPlanData', JSON.stringify(planData));
+      
+      // Redirigir al usuario a Webpay usando POST con TBK_TOKEN según documentación de Transbank
+      console.log('🔗 Redirecting to Transbank Webpay via POST:', inscriptionData);
+      transbankService.redirectToTransbankWebpay(inscriptionData.urlWebpay, inscriptionData.token);
+    } catch (error) {
+      console.error('Error setting up OneClick:', error);
+      alert('Error configurando el método de pago. Por favor, inténtalo de nuevo.');
+      setIsSettingUpOneclick(false);
+    }
   };
 
   const getColorClasses = (color: string, selected: boolean, available: boolean) => {
@@ -345,11 +417,116 @@ export const PlanSelectionStep: React.FC<PlanSelectionStepProps> = ({
                 Completando registro...
               </div>
             ) : (
-              selectedPlan === 'basic' ? 'Iniciar mes gratuito y completar registro' : 'Completar registro'
+              selectedPlan === 'basic' || selectedPlan === 'premium' ? 'Configurar método de pago' : 'Completar registro'
             )}
           </Button>
         </div>
       </form>
+
+      {/* OneClick Setup Modal */}
+      {showOneclickSetup && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 w-full max-w-md mx-4">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold text-gray-900">
+                Configurar método de pago
+              </h3>
+              <button
+                onClick={() => setShowOneclickSetup(false)}
+                className="text-gray-400 hover:text-gray-600"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            <div className="mb-4">
+              <div className="bg-blue-50 border border-blue-200 rounded-md p-3 mb-4">
+                <div className="flex">
+                  <div className="flex-shrink-0">
+                    <svg className="w-4 h-4 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                  </div>
+                  <div className="ml-2">
+                    <p className="text-sm text-blue-700">
+                      <strong>¿Cómo funciona?</strong>
+                    </p>
+                    <ul className="text-xs text-blue-600 mt-1 space-y-1">
+                      <li>• Registraremos tu tarjeta con un cobro de $1 peso</li>
+                      <li>• Comenzarás tu mes gratuito inmediatamente</li>
+                      <li>• Al finalizar el trial, se cobrará automáticamente</li>
+                      <li>• Puedes cancelar antes del cobro sin costos</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                <div className="bg-gray-50 border border-gray-200 rounded-md p-3">
+                  <div className="flex items-center">
+                    <div className="flex-shrink-0">
+                      <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.207" />
+                      </svg>
+                    </div>
+                    <div className="ml-2">
+                      <p className="text-sm text-gray-700">
+                        <strong>Email de confirmación:</strong> {user?.email}
+                      </p>
+                      <p className="text-xs text-gray-500">
+                        Se enviará la confirmación a este email después de configurar el método de pago.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex items-start">
+                  <input
+                    type="checkbox"
+                    id="acceptTerms"
+                    checked={oneclickForm.acceptTerms}
+                    onChange={(e) => setOneclickForm({ ...oneclickForm, acceptTerms: e.target.checked })}
+                    className="mt-1 mr-2"
+                    required
+                  />
+                  <label htmlFor="acceptTerms" className="text-xs text-gray-600">
+                    Acepto los <a href="#" className="text-blue-600 hover:underline">términos y condiciones</a> y 
+                    autorizo el cobro automático de mi suscripción mensual de{' '}
+                    <strong>${plans.find(p => p.id === selectedPlan)?.transbankAmount?.toLocaleString('es-CL')}</strong> 
+                    {' '}al finalizar el período de prueba gratuito de {plans.find(p => p.id === selectedPlan)?.trialDays} días.
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex space-x-3">
+              <button
+                onClick={() => setShowOneclickSetup(false)}
+                className="flex-1 px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                disabled={isSettingUpOneclick}
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={handleOneclickSetup}
+                disabled={!oneclickForm.acceptTerms || isSettingUpOneclick}
+                className="flex-1 px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {isSettingUpOneclick ? (
+                  <div className="flex items-center justify-center">
+                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
+                    Configurando...
+                  </div>
+                ) : (
+                  'Configurar método de pago'
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

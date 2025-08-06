@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Card, Button, Input, LoadingSpinner, showToast } from '@/components/ui';
 import { useOrganization } from '../../hooks/useOrganization';
 import { BusinessHours, DaySchedule, NotificationSettings, AppointmentSystemSettings, BusinessInfo, Service, Professional } from '../../../types/organization';
+import { SubscriptionDashboard } from '../../components/dashboard/SubscriptionDashboard';
 import { 
   CogIcon,
   ClockIcon,
@@ -14,7 +15,8 @@ import {
   PlusIcon,
   TrashIcon,
   UserCircleIcon,
-  ClockIcon as ClockOutlineIcon
+  ClockIcon as ClockOutlineIcon,
+  CreditCardIcon
 } from '@heroicons/react/24/outline';
 
 export const SettingsPage: React.FC = () => {
@@ -34,7 +36,7 @@ export const SettingsPage: React.FC = () => {
         return { maxResources: 1, maxProfessionals: 1, planName: 'gratuito' };
     }
   };
-  const [activeTab, setActiveTab] = useState<'general' | 'hours' | 'appointments' | 'services' | 'notifications' | 'security' | 'appearance'>('general');
+  const [activeTab, setActiveTab] = useState<'general' | 'hours' | 'appointments' | 'services' | 'notifications' | 'subscription' | 'security' | 'appearance'>('general');
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [professionalScheduleModal, setProfessionalScheduleModal] = useState<{isOpen: boolean, professionalIndex: number | null}>({isOpen: false, professionalIndex: null});
@@ -516,6 +518,7 @@ export const SettingsPage: React.FC = () => {
     { id: 'appointments', name: 'Citas', icon: CalendarIcon },
     { id: 'services', name: 'Servicios', icon: CogIcon },
     { id: 'notifications', name: 'Notificaciones', icon: BellIcon },
+    { id: 'subscription', name: 'Suscripción', icon: CreditCardIcon },
     { id: 'security', name: 'Seguridad', icon: ShieldCheckIcon },
     { id: 'appearance', name: 'Apariencia', icon: PaintBrushIcon },
   ] as const;
@@ -1466,6 +1469,13 @@ export const SettingsPage: React.FC = () => {
                 </div>
               </div>
             </div>
+          </div>
+        );
+
+      case 'subscription':
+        return (
+          <div className="space-y-6">
+            <SubscriptionDashboard />
           </div>
         );
 

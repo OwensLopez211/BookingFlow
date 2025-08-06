@@ -11,6 +11,8 @@ import {
   serverErrorResponse,
 } from '../utils/response';
 import { withMetrics } from '../middleware/requestMetrics';
+import { billingService } from '../services/billingService';
+import { notificationService } from '../services/notificationService';
 
 const extractUserFromToken = async (authHeader?: string) => {
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
@@ -193,6 +195,351 @@ const transbankHandler = async (event: APIGatewayProxyEvent): Promise<APIGateway
     if (path?.endsWith('/transbank/payment-confirmation') && httpMethod === 'POST') {
       console.log('=== PAYMENT CONFIRMATION WEBHOOK - DISABLED ===');
       return errorResponse('Los pagos están temporalmente deshabilitados.', 400);
+    }
+
+    // ============ ONECLICK ENDPOINTS ============
+
+    // START ONECLICK INSCRIPTION
+    if (path?.endsWith('/transbank/oneclick/start-inscription') && httpMethod === 'POST') {
+      console.log('=== START ONECLICK INSCRIPTION ===');
+      
+      const { username, email, returnUrl } = requestData;
+      
+      if (!username || !email || !returnUrl) {
+        return errorResponse('Username, email y returnUrl requeridos', 400);
+      }
+
+      try {
+        const result = await transbankService.startOneclickInscription({
+          username,
+          email,
+          returnUrl
+        });
+        
+        return successResponse(result, 'Inscripción OneClick iniciada exitosamente');
+      } catch (error: any) {
+        console.error('Error starting OneClick inscription:', error);
+        return serverErrorResponse(`Error iniciando inscripción OneClick: ${error.message}`);
+      }
+    }
+
+    // FINISH ONECLICK INSCRIPTION
+    if (path?.endsWith('/transbank/oneclick/finish-inscription') && httpMethod === 'POST') {
+      console.log('=== FINISH ONECLICK INSCRIPTION ===');
+      
+      const { token } = requestData;
+      
+      if (!token) {
+        return errorResponse('Token requerido', 400);
+      }
+
+      try {
+        const result = await transbankService.finishOneclickInscription({ token });
+        
+        return successResponse(result, 'Inscripción OneClick finalizada exitosamente');
+      } catch (error: any) {
+        console.error('Error finishing OneClick inscription:', error);
+        return serverErrorResponse(`Error finalizando inscripción OneClick: ${error.message}`);
+      }
+    }
+
+    // REMOVE ONECLICK INSCRIPTION
+    if (path?.endsWith('/transbank/oneclick/remove-inscription') && httpMethod === 'POST') {
+      console.log('=== REMOVE ONECLICK INSCRIPTION ===');
+      
+      const { tbkUser, username } = requestData;
+      
+      if (!tbkUser || !username) {
+        return errorResponse('tbkUser y username requeridos', 400);
+      }
+
+      try {
+        const result = await transbankService.removeOneclickInscription(tbkUser, username);
+        
+        return successResponse(result, 'Inscripción OneClick eliminada exitosamente');
+      } catch (error: any) {
+        console.error('Error removing OneClick inscription:', error);
+        return serverErrorResponse(`Error eliminando inscripción OneClick: ${error.message}`);
+      }
+    }
+
+    // CHARGE ONECLICK
+    if (path?.endsWith('/transbank/oneclick/charge') && httpMethod === 'POST') {
+      console.log('=== CHARGE ONECLICK ===');
+      
+      const { username, tbkUser, buyOrder, amount, childCommerceCode } = requestData;
+      
+      if (!username || !tbkUser || !buyOrder || !amount) {
+        return errorResponse('Username, tbkUser, buyOrder y amount requeridos', 400);
+      }
+
+      try {
+        const result = await transbankService.chargeOneclick({
+          username,
+          tbkUser,
+          buyOrder,
+          amount,
+          childCommerceCode
+        });
+        
+        return successResponse(result, 'Cobro OneClick ejecutado exitosamente');
+      } catch (error: any) {
+        console.error('Error charging OneClick:', error);
+        return serverErrorResponse(`Error ejecutando cobro OneClick: ${error.message}`);
+      }
+    }
+
+    // START TRIAL WITH ONECLICK
+    if (path?.endsWith('/transbank/start-trial-with-oneclick') && httpMethod === 'POST') {
+      console.log('=== START TRIAL WITH ONECLICK ===');
+      
+      const { planId, organizationId, trialDays, oneclickToken, oneclickUsername } = requestData;
+      
+      if (!planId || !organizationId || !trialDays || !oneclickToken || !oneclickUsername) {
+        return errorResponse('Todos los campos requeridos: planId, organizationId, trialDays, oneclickToken, oneclickUsername', 400);
+      }
+
+      // Verify user has access to organization
+      if (currentUser.orgId !== organizationId) {
+        return unauthorizedResponse('No tienes permisos para esta organización');
+      }
+
+      try {
+        // Check if organization already has a subscription
+        const existingSubscription = await subscriptionRepository.getByOrganizationId(organizationId);
+        
+        if (existingSubscription) {
+          return errorResponse('La organización ya tiene una suscripción activa', 400);
+        }
+
+        // Create subscription with OneClick data (but not complete inscription yet)
+        const now = Math.floor(Date.now() / 1000);
+        const trialEnd = now + (trialDays * 24 * 60 * 60);
+        const periodEnd = now + (30 * 24 * 60 * 60);
+
+        const subscription = await subscriptionRepository.createSubscription({
+          organizationId,
+          customerId: `cus_${organizationId}`,
+          planId,
+          planName: 'Plan Básico',
+          status: 'trialing',
+          current_period_start: now,
+          current_period_end: periodEnd,
+          trial_start: now,
+          trial_end: trialEnd,
+          amount: 14990,
+          currency: 'CLP',
+          interval: 'month',
+          payment_method: 'transbank_oneclick',
+          // OneClick specific fields
+          oneclick_username: oneclickUsername,
+          oneclick_inscription_token: oneclickToken,
+          oneclick_active: false, // Will be true after successful inscription
+          payment_attempts: 0,
+        });
+
+        return successResponse({ 
+          success: true,
+          subscription,
+          message: 'Trial iniciado. Completa la inscripción OneClick para activar el cobro automático.'
+        }, 'Trial con OneClick iniciado exitosamente');
+      } catch (error: any) {
+        console.error('Error starting trial with OneClick:', error);
+        return serverErrorResponse(`Error iniciando trial con OneClick: ${error.message}`);
+      }
+    }
+
+    // COMPLETE ONECLICK INSCRIPTION (after user returns from Transbank)
+    if (path?.endsWith('/transbank/oneclick/complete-inscription') && httpMethod === 'POST') {
+      console.log('=== COMPLETE ONECLICK INSCRIPTION ===');
+      
+      const { organizationId, token } = requestData;
+      
+      if (!organizationId || !token) {
+        return errorResponse('OrganizationId y token requeridos', 400);
+      }
+
+      // Verify user has access to organization
+      if (currentUser.orgId !== organizationId) {
+        return unauthorizedResponse('No tienes permisos para esta organización');
+      }
+
+      try {
+        // Get subscription
+        const subscription = await subscriptionRepository.getByOrganizationId(organizationId);
+        
+        if (!subscription) {
+          return errorResponse('Suscripción no encontrada', 404);
+        }
+
+        if (subscription.oneclick_inscription_token !== token) {
+          return errorResponse('Token de inscripción inválido', 400);
+        }
+
+        // Finish OneClick inscription
+        const inscriptionResult = await transbankService.finishOneclickInscription({ token });
+        
+        if (inscriptionResult.success && inscriptionResult.tbkUser) {
+          // Update subscription with OneClick user ID
+          const updatedSubscription = await subscriptionRepository.updateSubscription(subscription.id, {
+            oneclick_user_id: inscriptionResult.tbkUser,
+            oneclick_active: true,
+            oneclick_inscription_date: Math.floor(Date.now() / 1000),
+          });
+
+          return successResponse({
+            success: true,
+            subscription: updatedSubscription,
+            inscriptionResult
+          }, 'Inscripción OneClick completada exitosamente');
+        } else {
+          return errorResponse('Error completando la inscripción OneClick', 400);
+        }
+      } catch (error: any) {
+        console.error('Error completing OneClick inscription:', error);
+        return serverErrorResponse(`Error completando inscripción OneClick: ${error.message}`);
+      }
+    }
+
+    // GET ONECLICK STATUS
+    if (path?.match(/\/transbank\/oneclick\/status\/(.+)$/) && httpMethod === 'GET') {
+      console.log('=== GET ONECLICK STATUS ===');
+      
+      const organizationId = path.split('/').pop();
+      if (!organizationId) {
+        return errorResponse('Organization ID requerido', 400);
+      }
+
+      // Verify user has access to organization
+      if (currentUser.orgId !== organizationId) {
+        return unauthorizedResponse('No tienes permisos para esta organización');
+      }
+
+      try {
+        const subscription = await subscriptionRepository.getByOrganizationId(organizationId);
+        
+        if (!subscription) {
+          return successResponse({
+            hasOneClick: false,
+            message: 'No se encontró suscripción'
+          }, 'Estado OneClick obtenido');
+        }
+
+        const oneclickStatus = {
+          hasOneClick: subscription.oneclick_active || false,
+          username: subscription.oneclick_username,
+          userId: subscription.oneclick_user_id,
+          inscriptionDate: subscription.oneclick_inscription_date,
+          paymentMethod: subscription.payment_method,
+          status: subscription.status,
+          trialEnd: subscription.trial_end,
+          nextBillingDate: subscription.next_billing_date,
+        };
+
+        return successResponse(oneclickStatus, 'Estado OneClick obtenido exitosamente');
+      } catch (error: any) {
+        console.error('Error getting OneClick status:', error);
+        return serverErrorResponse(`Error obteniendo estado OneClick: ${error.message}`);
+      }
+    }
+
+    // ============ BILLING MANAGEMENT ENDPOINTS ============
+
+    // MANUAL BILLING TRIGGER (for testing)
+    if (path?.endsWith('/billing/run-daily') && httpMethod === 'POST') {
+      console.log('=== MANUAL BILLING TRIGGER ===');
+      
+      // Only allow owner role to trigger manual billing
+      if (currentUser.role !== 'owner') {
+        return unauthorizedResponse('Solo los propietarios pueden ejecutar facturación manual');
+      }
+
+      try {
+        const results = await billingService.runDailyBilling();
+
+        return successResponse({
+          success: true,
+          results: {
+            trialNotifications: results.trialNotifications.length,
+            chargeResults: results.chargeResults,
+            retryResults: results.retryResults,
+            totalNotifications: results.totalNotifications,
+            errorsCount: results.errors.length,
+            errors: results.errors.slice(0, 10), // Limitar errores en respuesta
+            alertsGenerated: results.alerts.length,
+            alertsSent: results.alertResults.sent,
+            alertsFailed: results.alertResults.failed,
+          },
+          timestamp: new Date().toISOString(),
+        }, 'Facturación manual ejecutada exitosamente');
+      } catch (error: any) {
+        console.error('Error in manual billing:', error);
+        return serverErrorResponse(`Error ejecutando facturación manual: ${error.message}`);
+      }
+    }
+
+    // GET BILLING STATS
+    if (path?.endsWith('/billing/stats') && httpMethod === 'GET') {
+      console.log('=== GET BILLING STATS ===');
+      
+      try {
+        const stats = await subscriptionRepository.getSubscriptionStats();
+        
+        // Obtener trials que vencen en 1, 7, y 30 días
+        const expiring1Day = await subscriptionRepository.getTrialsExpiring(1);
+        const expiring7Days = await subscriptionRepository.getTrialsExpiring(7);
+        const expiring30Days = await subscriptionRepository.getTrialsExpiring(30);
+        
+        // Obtener suscripciones que necesitan reintento
+        const needingRetry = await subscriptionRepository.getSubscriptionsForRetry();
+
+        const billingStats = {
+          ...stats,
+          expiring: {
+            in1Day: expiring1Day.length,
+            in7Days: expiring7Days.length,
+            in30Days: expiring30Days.length,
+          },
+          needingRetry: needingRetry.length,
+          oneClickActive: stats.trialing + stats.active, // Aproximación
+        };
+
+        return successResponse(billingStats, 'Estadísticas de facturación obtenidas exitosamente');
+      } catch (error: any) {
+        console.error('Error getting billing stats:', error);
+        return serverErrorResponse(`Error obteniendo estadísticas: ${error.message}`);
+      }
+    }
+
+    // ============ NOTIFICATION TESTING ENDPOINTS ============
+
+    // TEST EMAIL NOTIFICATION
+    if (path?.endsWith('/notifications/test-email') && httpMethod === 'POST') {
+      console.log('=== TEST EMAIL NOTIFICATION ===');
+      
+      const { email } = requestData;
+      
+      if (!email) {
+        return errorResponse('Email requerido', 400);
+      }
+
+      // Only allow owner role to test notifications
+      if (currentUser.role !== 'owner') {
+        return unauthorizedResponse('Solo los propietarios pueden probar notificaciones');
+      }
+
+      try {
+        const result = await notificationService.sendTestNotification(email);
+        
+        return successResponse({
+          success: result.success,
+          messageId: result.messageId,
+          error: result.error
+        }, result.success ? 'Email de prueba enviado exitosamente' : 'Error enviando email de prueba');
+      } catch (error: any) {
+        console.error('Error sending test email:', error);
+        return serverErrorResponse(`Error enviando email de prueba: ${error.message}`);
+      }
     }
 
     // Route not found

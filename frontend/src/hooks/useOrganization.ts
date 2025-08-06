@@ -18,19 +18,29 @@ export const useOrganization = () => {
     errorMessage: string
   ): boolean => {
     console.log('🔍 handleApiResponse ejecutándose...');
+    console.log('📊 Estructura completa del result:', JSON.stringify(result, null, 2));
     console.log('📊 Evaluando condiciones:');
     console.log('  - result.success:', result.success);
     console.log('  - result.organization existe:', !!result.organization);
+    console.log('  - result.data existe:', !!result.data);
     console.log('  - result.data?.organization existe:', !!result.data?.organization);
+    console.log('  - result.data?.success:', result.data?.success);
     
-    if (result.success && result.organization) {
-      console.log('✅ Camino 1: result.organization encontrado');
+    // Nueva lógica: si result.data tiene success y organization, usar esos datos
+    if (result.success && result.data?.success && result.data?.organization) {
+      console.log('✅ Camino 1: result.data tiene success y organization');
+      setOrganization(result.data.organization);
+      setLoadingState('success');
+      setError(null);
+      return true;
+    } else if (result.success && result.organization) {
+      console.log('✅ Camino 2: result.organization encontrado directamente');
       setOrganization(result.organization);
       setLoadingState('success');
       setError(null);
       return true;
     } else if (result.success && result.data?.organization) {
-      console.log('✅ Camino 2: result.data.organization encontrado');
+      console.log('✅ Camino 3: result.data.organization encontrado');
       setOrganization(result.data.organization);
       setLoadingState('success');
       setError(null);
@@ -74,6 +84,11 @@ export const useOrganization = () => {
       console.log('🔄 Llamando a organizationService.getMyOrganization()...');
       const result = await organizationService.getMyOrganization();
       console.log('📥 Resultado del service:', result);
+      console.log('📊 Análisis del resultado:');
+      console.log('  - result.success:', result.success);
+      console.log('  - result.organization:', result.organization);
+      console.log('  - result.data:', result.data);
+      console.log('  - result.data?.organization:', result.data?.organization);
       
       if (result.success || result.organization || result.data?.organization) {
         // Obtener datos adicionales del onboarding y configuración de negocio
@@ -160,9 +175,11 @@ export const useOrganization = () => {
           organization
         };
         
+        console.log('🚀 Llamando handleApiResponse con enrichedResult:', enrichedResult);
         const success = handleApiResponse(enrichedResult, 'Organización obtenida exitosamente', 'Error obteniendo la organización');
         console.log('✅ handleApiResponse resultado:', success);
       } else {
+        console.log('🚀 Llamando handleApiResponse con result original:', result);
         const success = handleApiResponse(result, 'Organización obtenida exitosamente', 'Error obteniendo la organización');
         console.log('✅ handleApiResponse resultado:', success);
       }
@@ -243,7 +260,7 @@ export const useOrganization = () => {
         abortControllerRef.current.abort();
       }
     };
-  }, [fetchOrganization]);
+  }, []); // ✅ Ejecutar solo una vez al montar el componente
 
   // Debug: observar cambios en la organización
   useEffect(() => {

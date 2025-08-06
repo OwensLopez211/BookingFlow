@@ -19,7 +19,7 @@ export const DashboardPage: React.FC = () => {
   ];
 
   return (
-    <div>
+    <>
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-8">
         <div>
@@ -166,6 +166,6 @@ export const DashboardPage: React.FC = () => {
           </div>
         </Card>
       </div>
-    </div>
+    </>
   );
 };

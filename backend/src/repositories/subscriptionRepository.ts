@@ -25,9 +25,19 @@ export interface Subscription {
   amount: number;
   currency: string;
   interval: 'month' | 'year';
-  payment_method: 'transbank' | 'manual';
+  payment_method: 'transbank' | 'transbank_oneclick' | 'manual';
   last_payment_date?: number;
   next_billing_date?: number;
+  // OneClick specific fields
+  oneclick_user_id?: string;        // tbkUser from Transbank OneClick
+  oneclick_username?: string;       // Custom username for OneClick
+  oneclick_inscription_token?: string; // Token from inscription process
+  oneclick_inscription_date?: number;  // When OneClick was set up
+  oneclick_active: boolean;         // Is OneClick active
+  // Payment attempt tracking
+  payment_attempts: number;         // Number of failed payment attempts
+  last_payment_attempt?: number;    // Timestamp of last payment attempt
+  retry_payment_at?: number;        // When to retry payment (for failed attempts)
   createdAt: string;
   updatedAt: string;
 }
@@ -48,9 +58,18 @@ export interface CreateSubscriptionData {
   amount: number;
   currency: string;
   interval: 'month' | 'year';
-  payment_method: 'transbank' | 'manual';
+  payment_method: 'transbank' | 'transbank_oneclick' | 'manual';
   last_payment_date?: number;
   next_billing_date?: number;
+  // OneClick specific fields
+  oneclick_user_id?: string;
+  oneclick_username?: string;
+  oneclick_inscription_token?: string;
+  oneclick_inscription_date?: number;
+  oneclick_active?: boolean;
+  payment_attempts?: number;
+  last_payment_attempt?: number;
+  retry_payment_at?: number;
 }
 
 export interface UpdateSubscriptionData {
@@ -66,9 +85,18 @@ export interface UpdateSubscriptionData {
   interval?: 'month' | 'year';
   transbankOrderId?: string;
   transbankTransactionId?: string;
-  payment_method?: 'transbank' | 'manual';
+  payment_method?: 'transbank' | 'transbank_oneclick' | 'manual';
   last_payment_date?: number;
   next_billing_date?: number;
+  // OneClick specific fields
+  oneclick_user_id?: string;
+  oneclick_username?: string;
+  oneclick_inscription_token?: string;
+  oneclick_inscription_date?: number;
+  oneclick_active?: boolean;
+  payment_attempts?: number;
+  last_payment_attempt?: number;
+  retry_payment_at?: number;
 }
 
 export class SubscriptionRepository {
@@ -98,6 +126,15 @@ export class SubscriptionRepository {
       payment_method: data.payment_method,
       last_payment_date: data.last_payment_date,
       next_billing_date: data.next_billing_date,
+      // OneClick specific fields
+      oneclick_user_id: data.oneclick_user_id,
+      oneclick_username: data.oneclick_username,
+      oneclick_inscription_token: data.oneclick_inscription_token,
+      oneclick_inscription_date: data.oneclick_inscription_date,
+      oneclick_active: data.oneclick_active || false,
+      payment_attempts: data.payment_attempts || 0,
+      last_payment_attempt: data.last_payment_attempt,
+      retry_payment_at: data.retry_payment_at,
       createdAt: now,
       updatedAt: now,
     };
@@ -139,7 +176,7 @@ export class SubscriptionRepository {
   /**
    * Obtiene una suscripción por Organization ID
    */
-  async getSubscriptionByOrganizationId(organizationId: string): Promise<Subscription | null> {
+  async getByOrganizationId(organizationId: string): Promise<Subscription | null> {
     const command = new QueryCommand({
       TableName: TABLE_NAME,
       IndexName: 'OrganizationIdIndex', // GSI necesario
@@ -285,6 +322,104 @@ export class SubscriptionRepository {
     } catch (error) {
       console.error('Error getting expiring subscriptions:', error);
       throw new Error('Failed to get expiring subscriptions');
+    }
+  }
+
+  /**
+   * Obtiene suscripciones que necesitan ser cobradas (trials que expiran)
+   */
+  async getTrialsExpiring(daysFromNow: number = 1): Promise<Subscription[]> {
+    const targetTimestamp = Math.floor(Date.now() / 1000) + (daysFromNow * 24 * 60 * 60);
+    const nowTimestamp = Math.floor(Date.now() / 1000);
+    
+    const command = new QueryCommand({
+      TableName: TABLE_NAME,
+      IndexName: 'StatusIndex', // GSI necesario
+      KeyConditionExpression: '#status = :status',
+      FilterExpression: 'trial_end <= :targetTimestamp AND trial_end > :now AND oneclick_active = :oneclickActive',
+      ExpressionAttributeNames: {
+        '#status': 'status',
+      },
+      ExpressionAttributeValues: {
+        ':status': 'trialing',
+        ':targetTimestamp': targetTimestamp,
+        ':now': nowTimestamp,
+        ':oneclickActive': true,
+      },
+    });
+
+    try {
+      const result = await docClient.send(command);
+      return result.Items as Subscription[];
+    } catch (error) {
+      console.error('Error getting expiring trials:', error);
+      throw new Error('Failed to get expiring trials');
+    }
+  }
+
+  /**
+   * Obtiene suscripciones con pagos fallidos que necesitan reintento
+   */
+  async getSubscriptionsForRetry(): Promise<Subscription[]> {
+    const nowTimestamp = Math.floor(Date.now() / 1000);
+    
+    const command = new QueryCommand({
+      TableName: TABLE_NAME,
+      IndexName: 'StatusIndex', // GSI necesario
+      KeyConditionExpression: '#status = :status',
+      FilterExpression: 'retry_payment_at <= :now AND payment_attempts < :maxAttempts',
+      ExpressionAttributeNames: {
+        '#status': 'status',
+      },
+      ExpressionAttributeValues: {
+        ':status': 'past_due',
+        ':now': nowTimestamp,
+        ':maxAttempts': 3, // Máximo 3 intentos
+      },
+    });
+
+    try {
+      const result = await docClient.send(command);
+      return result.Items as Subscription[];
+    } catch (error) {
+      console.error('Error getting subscriptions for retry:', error);
+      throw new Error('Failed to get subscriptions for retry');
+    }
+  }
+
+  /**
+   * Actualiza el contador de intentos de pago
+   */
+  async updatePaymentAttempt(subscriptionId: string, success: boolean): Promise<Subscription> {
+    const nowTimestamp = Math.floor(Date.now() / 1000);
+    
+    if (success) {
+      // Si el pago fue exitoso, resetear contadores y activar suscripción
+      return this.updateSubscription(subscriptionId, {
+        status: 'active',
+        payment_attempts: 0,
+        last_payment_attempt: nowTimestamp,
+        retry_payment_at: undefined,
+        last_payment_date: nowTimestamp,
+        next_billing_date: nowTimestamp + (30 * 24 * 60 * 60), // Next billing in 30 days
+      });
+    } else {
+      // Si falló, incrementar contador y programar reintento
+      const subscription = await this.getSubscriptionById(subscriptionId);
+      if (!subscription) {
+        throw new Error('Subscription not found');
+      }
+      
+      const newAttempts = subscription.payment_attempts + 1;
+      const retryDelay = Math.pow(2, newAttempts) * 24 * 60 * 60; // Exponential backoff: 2, 4, 8 days
+      
+      return this.updateSubscription(subscriptionId, {
+        status: newAttempts >= 3 ? 'canceled' : 'past_due',
+        payment_attempts: newAttempts,
+        last_payment_attempt: nowTimestamp,
+        retry_payment_at: newAttempts < 3 ? nowTimestamp + retryDelay : undefined,
+        canceled_at: newAttempts >= 3 ? nowTimestamp : undefined,
+      });
     }
   }
 

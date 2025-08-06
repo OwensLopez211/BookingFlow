@@ -67,6 +67,7 @@ export interface CreateAppointmentRequest {
   clientPhone: string;
   clientEmail: string;
   notes?: string;
+  status?: 'pending' | 'confirmed' | 'cancelled';
 }
 
 export interface CreatedAppointment {

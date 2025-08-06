@@ -1,0 +1,7 @@
+variable debito 0.60 % +iva
+tarifa fija 0.001784 uf+iva
+
+variable credito 1.36 % +iva
+tarifa fija 0.0011915 uf +iva
+
+

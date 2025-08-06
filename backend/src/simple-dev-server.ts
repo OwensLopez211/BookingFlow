@@ -3,6 +3,27 @@
  * A direct Express server that bypasses AWS Lambda complexity
  */
 
+// Load environment variables from .env file
+import * as fs from 'fs';
+import * as path from 'path';
+
+// Load .env file manually
+const envPath = path.join(__dirname, '..', '.env');
+if (fs.existsSync(envPath)) {
+  const envContent = fs.readFileSync(envPath, 'utf8');
+  envContent.split('\n').forEach(line => {
+    const trimmedLine = line.trim();
+    if (trimmedLine && !trimmedLine.startsWith('#')) {
+      const [key, ...valueParts] = trimmedLine.split('=');
+      if (key && valueParts.length > 0) {
+        const value = valueParts.join('=').trim();
+        process.env[key.trim()] = value;
+      }
+    }
+  });
+  console.log('🔧 Environment variables loaded from .env file');
+}
+
 import express from 'express';
 import cors from 'cors';
 import jwt from 'jsonwebtoken';
@@ -21,11 +42,40 @@ const app = express();
 const PORT = 3001;
 const JWT_SECRET = 'local-development-secret-for-bookflow';
 
-// Configure Transbank environment variables for local development
-process.env.TRANSBANK_COMMERCE_CODE = process.env.TRANSBANK_COMMERCE_CODE || '597055555532';
-process.env.TRANSBANK_API_KEY = process.env.TRANSBANK_API_KEY || '579B532A7440BB0C9079DED94D31EA1615BACEB56610332264630D42D0A36B1C';
-process.env.TRANSBANK_ENVIRONMENT = 'TEST'; // For local development
+// Configure Transbank environment variables for integration testing
+process.env.TRANSBANK_ENVIRONMENT = 'INTEGRATION'; // Use real integration environment
+// Las credenciales se obtienen automáticamente del SDK para el ambiente de integración
 process.env.SUBSCRIPTIONS_TABLE = 'bookflow-subscriptions-local';
+
+// Development storage for OneClick subscriptions (in-memory)
+interface DevSubscription {
+  id: string;
+  organizationId: string;
+  customerId: string;
+  planId: string;
+  planName: string;
+  status: string;
+  current_period_start: number;
+  current_period_end: number;
+  trial_start?: number;
+  trial_end?: number;
+  amount: number;
+  currency: string;
+  interval: string;
+  payment_method: string;
+  // OneClick specific fields
+  oneclick_username?: string;
+  oneclick_user_id?: string;
+  oneclick_inscription_token?: string;
+  oneclick_inscription_date?: number;
+  oneclick_active?: boolean;
+  oneclick_card_type?: string;
+  oneclick_card_number?: string;
+  oneclick_authorization_code?: string;
+  payment_attempts: number;
+}
+
+let devSubscriptions: DevSubscription[] = [];
 
 // Helper function to convert Express request to Lambda event
 const expressToLambdaEvent = (req: any, res: any): any => {
@@ -146,6 +196,22 @@ interface Organization {
 // Simple in-memory storage
 let users: any[] = [];
 let organizations: Organization[] = [];
+
+// Storage for SSE connections
+const sseConnections = new Map<string, Set<any>>(); // orgId -> Set of response objects
+
+// Storage for notifications history
+interface StoredNotification {
+  id: string;
+  orgId: string;
+  type: string;
+  data: any;
+  timestamp: string;
+  isRead: boolean;
+  createdAt: string;
+}
+
+const notificationsHistory: StoredNotification[] = [];
 
 // Initialize with test data
 const initializeTestData = () => {
@@ -584,6 +650,384 @@ app.get('/v1/auth/me', authenticateToken, (req: any, res) => {
     res.status(500).json({ success: false, error: 'Error interno del servidor' });
   }
 });
+
+// =============================================
+// REAL-TIME NOTIFICATIONS ENDPOINTS
+// =============================================
+
+// GET /v1/notifications/stream/:orgId - SSE endpoint for real-time notifications
+app.get('/v1/notifications/stream/:orgId', (req: any, res) => {
+  try {
+    const { orgId } = req.params;
+    const { token } = req.query;
+
+    console.log(`🔔 SSE connection attempt for org: ${orgId}`);
+    
+    // Authenticate using query parameter token
+    if (!token) {
+      console.log('❌ SSE connection denied - no token provided');
+      return res.status(401).json({ 
+        success: false, 
+        error: 'Token de acceso requerido' 
+      });
+    }
+
+    let user;
+    try {
+      user = jwt.verify(token as string, JWT_SECRET) as any;
+    } catch (error) {
+      console.log('❌ SSE connection denied - invalid token');
+      return res.status(403).json({ 
+        success: false, 
+        error: 'Token inválido' 
+      });
+    }
+
+    console.log(`🔔 SSE user verified: ${user.userId}, role: ${user.role}`);
+    
+    // Verify user is owner and belongs to the organization
+    if (user.role !== 'owner' || user.orgId !== orgId) {
+      console.log('❌ SSE connection denied - not owner or wrong org');
+      return res.status(403).json({ 
+        success: false, 
+        error: 'Solo los propietarios pueden recibir notificaciones en tiempo real' 
+      });
+    }
+
+    // Set SSE headers
+    res.writeHead(200, {
+      'Content-Type': 'text/event-stream',
+      'Cache-Control': 'no-cache',
+      'Connection': 'keep-alive',
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Headers': 'Cache-Control'
+    });
+
+    // Send initial connection message
+    res.write(`data: ${JSON.stringify({
+      type: 'connection_established',
+      timestamp: new Date().toISOString(),
+      message: 'Conectado a notificaciones en tiempo real'
+    })}\n\n`);
+
+    // Store connection
+    if (!sseConnections.has(orgId)) {
+      sseConnections.set(orgId, new Set());
+    }
+    sseConnections.get(orgId)!.add(res);
+    
+    console.log(`✅ SSE connection established for org: ${orgId}, total connections: ${sseConnections.get(orgId)!.size}`);
+
+    // Keep alive ping every 30 seconds
+    const keepAlive = setInterval(() => {
+      if (!res.headersSent) {
+        res.write(`data: ${JSON.stringify({ type: 'ping', timestamp: new Date().toISOString() })}\n\n`);
+      }
+    }, 30000);
+
+    // Handle client disconnect
+    req.on('close', () => {
+      console.log(`🔌 SSE client disconnected for org: ${orgId}`);
+      clearInterval(keepAlive);
+      
+      const connections = sseConnections.get(orgId);
+      if (connections) {
+        connections.delete(res);
+        if (connections.size === 0) {
+          sseConnections.delete(orgId);
+        }
+        console.log(`🔗 Remaining connections for org ${orgId}: ${connections.size}`);
+      }
+    });
+
+    req.on('error', (error) => {
+      console.error('❌ SSE connection error:', error);
+      clearInterval(keepAlive);
+      
+      const connections = sseConnections.get(orgId);
+      if (connections) {
+        connections.delete(res);
+        if (connections.size === 0) {
+          sseConnections.delete(orgId);
+        }
+      }
+    });
+
+  } catch (error) {
+    console.error('❌ SSE endpoint error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Error estableciendo conexión SSE'
+    });
+  }
+});
+
+// POST /v1/notifications/send - Send notification to connected clients
+app.post('/v1/notifications/send', authenticateToken, (req: any, res) => {
+  try {
+    const notification = req.body;
+    console.log('📤 Received notification to send:', notification);
+
+    if (!notification.type || !notification.data) {
+      return res.status(400).json({
+        success: false,
+        error: 'Notification must have type and data fields'
+      });
+    }
+
+    // Extract orgId from notification data
+    const orgId = notification.data.orgId;
+    if (!orgId) {
+      return res.status(400).json({
+        success: false,
+        error: 'Notification data must include orgId'
+      });
+    }
+
+    // Get connections for this organization
+    const connections = sseConnections.get(orgId);
+    if (!connections || connections.size === 0) {
+      console.log(`📡 No active connections for org: ${orgId}`);
+      return res.json({
+        success: true,
+        message: 'No active connections for this organization',
+        sentTo: 0
+      });
+    }
+
+    // Send notification to all connected clients
+    let sentCount = 0;
+    const deadConnections = new Set();
+
+    connections.forEach((connection) => {
+      try {
+        connection.write(`data: ${JSON.stringify(notification)}\n\n`);
+        sentCount++;
+      } catch (error) {
+        console.error('❌ Error sending to connection:', error);
+        deadConnections.add(connection);
+      }
+    });
+
+    // Clean up dead connections
+    deadConnections.forEach(conn => connections.delete(conn));
+
+    console.log(`✅ Notification sent to ${sentCount} connections for org: ${orgId}`);
+
+    res.json({
+      success: true,
+      message: 'Notification sent successfully',
+      sentTo: sentCount
+    });
+
+  } catch (error) {
+    console.error('❌ Send notification error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Error sending notification'
+    });
+  }
+});
+
+// GET /v1/notifications - Get notification history for organization
+app.get('/v1/notifications', authenticateToken, (req: any, res) => {
+  try {
+    const user = req.user;
+    const { limit = 50, offset = 0, unreadOnly = false } = req.query;
+
+    console.log(`📖 Getting notification history for org: ${user.orgId}, user: ${user.userId}`);
+    
+    // Verify user is owner
+    if (user.role !== 'owner') {
+      return res.status(403).json({
+        success: false,
+        error: 'Solo los propietarios pueden ver las notificaciones'
+      });
+    }
+
+    // Filter notifications for this organization
+    let orgNotifications = notificationsHistory.filter(n => n.orgId === user.orgId);
+    
+    // Filter by read status if requested
+    if (unreadOnly === 'true') {
+      orgNotifications = orgNotifications.filter(n => !n.isRead);
+    }
+
+    // Sort by creation date (newest first)
+    orgNotifications.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+
+    // Apply pagination
+    const total = orgNotifications.length;
+    const paginatedNotifications = orgNotifications.slice(Number(offset), Number(offset) + Number(limit));
+
+    console.log(`✅ Returning ${paginatedNotifications.length} notifications (${total} total)`);
+
+    res.json({
+      success: true,
+      notifications: paginatedNotifications,
+      pagination: {
+        total,
+        limit: Number(limit),
+        offset: Number(offset),
+        hasMore: Number(offset) + Number(limit) < total
+      }
+    });
+
+  } catch (error) {
+    console.error('❌ Get notifications error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Error obteniendo historial de notificaciones'
+    });
+  }
+});
+
+// PUT /v1/notifications/:id/read - Mark notification as read
+app.put('/v1/notifications/:id/read', authenticateToken, (req: any, res) => {
+  try {
+    const { id } = req.params;
+    const user = req.user;
+
+    const notificationIndex = notificationsHistory.findIndex(n => 
+      n.id === id && n.orgId === user.orgId
+    );
+
+    if (notificationIndex === -1) {
+      return res.status(404).json({
+        success: false,
+        error: 'Notificación no encontrada'
+      });
+    }
+
+    notificationsHistory[notificationIndex].isRead = true;
+
+    res.json({
+      success: true,
+      message: 'Notificación marcada como leída'
+    });
+
+  } catch (error) {
+    console.error('❌ Mark notification as read error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Error marcando notificación como leída'
+    });
+  }
+});
+
+// PUT /v1/notifications/mark-all-read - Mark all notifications as read
+app.put('/v1/notifications/mark-all-read', authenticateToken, (req: any, res) => {
+  try {
+    const user = req.user;
+
+    let markedCount = 0;
+    notificationsHistory.forEach(notification => {
+      if (notification.orgId === user.orgId && !notification.isRead) {
+        notification.isRead = true;
+        markedCount++;
+      }
+    });
+
+    res.json({
+      success: true,
+      message: `${markedCount} notificaciones marcadas como leídas`,
+      markedCount
+    });
+
+  } catch (error) {
+    console.error('❌ Mark all notifications as read error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Error marcando todas las notificaciones como leídas'
+    });
+  }
+});
+
+// GET /v1/notifications/unread-count - Get unread notifications count
+app.get('/v1/notifications/unread-count', authenticateToken, (req: any, res) => {
+  try {
+    const user = req.user;
+
+    const unreadCount = notificationsHistory.filter(n => 
+      n.orgId === user.orgId && !n.isRead
+    ).length;
+
+    res.json({
+      success: true,
+      unreadCount
+    });
+
+  } catch (error) {
+    console.error('❌ Get unread count error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Error obteniendo contador de notificaciones sin leer'
+    });
+  }
+});
+
+// Helper function to save notification to history
+const saveNotificationToHistory = (orgId: string, notification: any): string => {
+  const notificationId = `notif_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+  
+  const storedNotification: StoredNotification = {
+    id: notificationId,
+    orgId: orgId,
+    type: notification.type,
+    data: notification.data,
+    timestamp: notification.timestamp,
+    isRead: false,
+    createdAt: new Date().toISOString(),
+  };
+
+  notificationsHistory.push(storedNotification);
+  console.log(`💾 Notification saved to history: ${notificationId} for org: ${orgId}`);
+  
+  return notificationId;
+};
+
+// Helper function to broadcast notification to organization
+const broadcastNotificationToOrg = (orgId: string, notification: any) => {
+  const connections = sseConnections.get(orgId);
+  if (!connections || connections.size === 0) {
+    console.log(`📡 No active connections for org: ${orgId}`);
+    return 0;
+  }
+
+  let sentCount = 0;
+  const deadConnections = new Set();
+
+  connections.forEach((connection) => {
+    try {
+      connection.write(`data: ${JSON.stringify(notification)}\n\n`);
+      sentCount++;
+    } catch (error) {
+      console.error('❌ Error broadcasting to connection:', error);
+      deadConnections.add(connection);
+    }
+  });
+
+  // Clean up dead connections
+  deadConnections.forEach(conn => connections.delete(conn));
+
+  console.log(`📤 Broadcasted notification to ${sentCount} connections for org: ${orgId}`);
+  return sentCount;
+};
+
+// Combined function to save and broadcast notification
+const processNotification = (orgId: string, notification: any) => {
+  // Always save to history first
+  const notificationId = saveNotificationToHistory(orgId, notification);
+  
+  // Then try to broadcast if there are active connections
+  const sentCount = broadcastNotificationToOrg(orgId, {
+    ...notification,
+    id: notificationId // Include the saved notification ID
+  });
+  
+  console.log(`📋 Notification processed: saved=${notificationId}, broadcast=${sentCount} connections`);
+  return { notificationId, sentCount };
+};
 
 // Get user's organization
 app.get('/v1/organizations/me', authenticateToken, (req: any, res) => {
@@ -1534,7 +1978,7 @@ app.post('/public/organization/:orgId/appointments', (req, res) => {
       clientPhone: appointmentData.clientPhone,
       clientEmail: appointmentData.clientEmail,
       notes: appointmentData.notes || '',
-      status: 'confirmed',
+      status: appointmentData.status || 'pending', // ✅ Usar status del frontend o default a pending
       createdAt: new Date().toISOString(),
     };
 
@@ -1544,6 +1988,31 @@ app.post('/public/organization/:orgId/appointments', (req, res) => {
     console.log('✅ Public appointment created successfully:', appointmentId);
     console.log('✅ Total appointments now:', appointments.length);
     console.log('🔧 Last appointment in array:', appointments[appointments.length - 1]);
+
+    // Send real-time notification to organization owners
+    const notificationData = {
+      type: 'appointment_created',
+      data: {
+        appointmentId: appointmentId,
+        clientName: appointmentData.clientName,
+        serviceName: service.name,
+        professionalName: appointmentData.professionalId ? 
+          organization.settings.appointmentSystem?.professionals?.find(p => p.id === appointmentData.professionalId)?.name || 'No especificado'
+          : 'No especificado',
+        date: appointmentData.date,
+        time: appointmentData.time,
+        orgId: orgId,
+        title: 'Nueva cita pendiente de confirmación',
+        message: `${appointmentData.clientName} ha solicitado una cita para ${service.name} - Pendiente de confirmación`,
+        category: 'appointment',
+        priority: 'high',
+      },
+      timestamp: new Date().toISOString(),
+    };
+
+    console.log('📤 Processing notification for new public appointment...');
+    const result = processNotification(orgId, notificationData);
+    console.log(`✅ Notification processed: ID=${result.notificationId}, sent to ${result.sentCount} connections`);
 
     res.status(201).json({
       success: true,
@@ -1997,6 +2466,78 @@ app.delete('/debug/appointments', (req, res) => {
   }
 });
 
+// Debug endpoint for SSE connections
+app.get('/debug/notifications/connections', (req, res) => {
+  try {
+    const connectionStats = {};
+    
+    sseConnections.forEach((connections, orgId) => {
+      connectionStats[orgId] = connections.size;
+    });
+
+    res.json({
+      success: true,
+      message: 'Debug: SSE connections status',
+      totalOrganizations: sseConnections.size,
+      connectionStats,
+      totalConnections: Array.from(sseConnections.values()).reduce((sum, set) => sum + set.size, 0)
+    });
+  } catch (error) {
+    console.error('Debug SSE connections error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Error retrieving SSE connections debug info'
+    });
+  }
+});
+
+// Debug endpoint to test notification sending
+app.post('/debug/notifications/test', (req, res) => {
+  try {
+    const { orgId, message = 'Test notification' } = req.body;
+    
+    if (!orgId) {
+      return res.status(400).json({
+        success: false,
+        error: 'orgId is required'
+      });
+    }
+
+    const testNotification = {
+      type: 'appointment_created',
+      data: {
+        appointmentId: 'test-' + Date.now(),
+        clientName: 'Cliente Test',
+        serviceName: 'Servicio Test',
+        professionalName: 'Profesional Test',
+        date: new Date().toISOString().split('T')[0],
+        time: '14:30',
+        orgId: orgId,
+        title: 'Test - Nueva cita agendada',
+        message: message,
+        category: 'appointment',
+        priority: 'high',
+      },
+      timestamp: new Date().toISOString(),
+    };
+
+    const sentTo = broadcastNotificationToOrg(orgId, testNotification);
+
+    res.json({
+      success: true,
+      message: 'Test notification sent',
+      sentTo,
+      notification: testNotification
+    });
+  } catch (error) {
+    console.error('Debug test notification error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Error sending test notification'
+    });
+  }
+});
+
 // Debug endpoint to reset appointments to initial test data
 app.post('/debug/appointments/reset', (req, res) => {
   try {
@@ -2117,10 +2658,373 @@ app.post('/debug/appointments/reset', (req, res) => {
 });
 
 // =============================================
-// TRANSBANK ENDPOINTS (LOCAL TESTING)
+// ONECLICK ENDPOINTS (LOCAL DEVELOPMENT)
 // =============================================
 
-// Transbank middleware to handle all /v1/transbank/* routes  
+// OneClick Start Inscription
+app.post('/v1/transbank/oneclick/start-inscription', authenticateToken, async (req, res) => {
+  try {
+    console.log('🔷 OneClick Start Inscription (Local Dev)');
+    const { username, email, returnUrl } = req.body;
+    
+    if (!username || !email || !returnUrl) {
+      return res.status(400).json({
+        success: false,
+        error: 'Username, email y returnUrl requeridos'
+      });
+    }
+
+    // Import and use transbankService directly
+    const { transbankService } = require('./services/transbankService');
+    
+    const result = await transbankService.startOneclickInscription({
+      username,
+      email,
+      returnUrl
+    });
+    
+    res.json({
+      success: true,
+      message: 'Inscripción OneClick iniciada exitosamente',
+      data: result
+    });
+  } catch (error) {
+    console.error('❌ OneClick start inscription error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Error iniciando inscripción OneClick: ' + (error instanceof Error ? error.message : 'Unknown error')
+    });
+  }
+});
+
+// OneClick Finish Inscription
+app.post('/v1/transbank/oneclick/finish-inscription', authenticateToken, async (req, res) => {
+  try {
+    console.log('🔷 OneClick Finish Inscription (Local Dev)');
+    const { token } = req.body;
+    
+    if (!token) {
+      return res.status(400).json({
+        success: false,
+        error: 'Token requerido'
+      });
+    }
+
+    const { transbankService } = require('./services/transbankService');
+    
+    const result = await transbankService.finishOneclickInscription({ token });
+    
+    res.json({
+      success: true,
+      message: 'Inscripción OneClick finalizada exitosamente',
+      data: result
+    });
+  } catch (error) {
+    console.error('❌ OneClick finish inscription error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Error finalizando inscripción OneClick: ' + (error instanceof Error ? error.message : 'Unknown error')
+    });
+  }
+});
+
+// Public endpoint - Complete OneClick Inscription and Start Trial 
+// No authentication required as we validate using OneClick token and stored data
+app.post('/public/transbank/oneclick/complete-inscription', async (req, res) => {
+  try {
+    console.log('🔷 Complete OneClick Inscription and Start Trial (Public - No Auth Required)');
+    const { token, planData } = req.body;
+    
+    if (!token || !planData) {
+      return res.status(400).json({
+        success: false,
+        error: 'Token y datos del plan requeridos'
+      });
+    }
+
+    // Validate required fields in planData
+    if (!planData.organizationId || !planData.planId || !planData.oneclickData?.username) {
+      return res.status(400).json({
+        success: false,
+        error: 'Datos del plan incompletos (organizationId, planId, oneclickData requeridos)'
+      });
+    }
+
+    console.log('🔹 Processing OneClick completion for org:', planData.organizationId);
+
+    const { transbankService } = require('./services/transbankService');
+    
+    // 1. Finish OneClick inscription
+    console.log('🔹 Step 1: Finishing OneClick inscription...');
+    console.log('🔹 Token length:', token.length);
+    console.log('🔹 Token prefix:', token.substring(0, 20) + '...');
+    
+    let inscriptionResult;
+    try {
+      inscriptionResult = await transbankService.finishOneclickInscription({ token });
+      console.log('🔹 Inscription result:', inscriptionResult);
+    } catch (inscriptionError) {
+      console.error('❌ Error in finishOneclickInscription:', inscriptionError);
+      return res.status(400).json({
+        success: false,
+        error: 'Error procesando la inscripción OneClick: ' + (inscriptionError instanceof Error ? inscriptionError.message : 'Error desconocido')
+      });
+    }
+    
+    if (!inscriptionResult.success) {
+      console.error('❌ Inscription not successful:', inscriptionResult);
+      return res.status(400).json({
+        success: false,
+        error: 'La inscripción OneClick no pudo ser completada. Respuesta: ' + JSON.stringify(inscriptionResult)
+      });
+    }
+
+    // 2. Create trial subscription with OneClick data
+    console.log('🔹 Step 2: Creating trial subscription...');
+    const now = Math.floor(Date.now() / 1000);
+    const trialDays = planData.trialDays || 30;
+    const trialEnd = now + (trialDays * 24 * 60 * 60);
+    const periodEnd = now + (30 * 24 * 60 * 60);
+
+    const subscription = {
+      id: `sub_trial_oneclick_${Date.now()}`,
+      organizationId: planData.organizationId,
+      customerId: `cus_${planData.organizationId}`,
+      planId: planData.planId,
+      planName: planData.planName || 'Plan Básico',
+      status: 'trialing',
+      current_period_start: now,
+      current_period_end: periodEnd,
+      trial_start: now,
+      trial_end: trialEnd,
+      amount: planData.transbankAmount || 14990,
+      currency: 'CLP',
+      interval: 'month',
+      payment_method: 'transbank_oneclick',
+      // OneClick specific data
+      oneclick_username: planData.oneclickData?.username,
+      oneclick_user_id: inscriptionResult.tbkUser,
+      oneclick_inscription_token: token,
+      oneclick_inscription_date: now,
+      oneclick_active: true, // Now active after successful inscription
+      oneclick_card_type: inscriptionResult.cardType,
+      oneclick_card_number: inscriptionResult.cardNumber,
+      payment_attempts: 0,
+    };
+
+    // Store subscription in development storage
+    devSubscriptions.push(subscription as DevSubscription);
+    
+    console.log('✅ OneClick inscription completed and trial created:', {
+      subscription: subscription.id,
+      tbkUser: inscriptionResult.tbkUser,
+      cardType: inscriptionResult.cardType,
+      cardNumber: inscriptionResult.cardNumber
+    });
+    console.log('📊 Total devSubscriptions:', devSubscriptions.length);
+    
+    res.json({
+      success: true,
+      message: 'Inscripción OneClick completada y trial iniciado exitosamente',
+      data: { 
+        subscription,
+        oneclick: {
+          tbkUser: inscriptionResult.tbkUser,
+          cardType: inscriptionResult.cardType,
+          cardNumber: inscriptionResult.cardNumber,
+          inscriptionDate: now
+        }
+      }
+    });
+  } catch (error) {
+    console.error('❌ Complete OneClick inscription error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Error completando inscripción OneClick: ' + (error instanceof Error ? error.message : 'Unknown error')
+    });
+  }
+});
+
+// Get OneClick Status for organization
+app.get('/v1/transbank/oneclick/status/:organizationId', authenticateToken, async (req, res) => {
+  try {
+    console.log('🔍 Getting OneClick status for org:', req.params.organizationId);
+    const user = (req as any).user;
+    const { organizationId } = req.params;
+    
+    // Verify user has access to organization
+    if (user.orgId !== organizationId) {
+      return res.status(403).json({
+        success: false,
+        error: 'No tienes permisos para esta organización'
+      });
+    }
+
+    // Check if there's a subscription with OneClick data for this organization
+    const oneclickSubscription = devSubscriptions.find((sub: DevSubscription) => 
+      sub.organizationId === organizationId && 
+      sub.oneclick_active && 
+      sub.oneclick_user_id
+    );
+
+    console.log('🔍 Searching in devSubscriptions:', devSubscriptions.length, 'subscriptions');
+    console.log('🔍 Looking for organizationId:', organizationId);
+
+    if (oneclickSubscription) {
+      const oneclickStatus = {
+        hasOneClick: true,
+        username: oneclickSubscription.oneclick_username,
+        userId: oneclickSubscription.oneclick_user_id,
+        inscriptionDate: oneclickSubscription.oneclick_inscription_date,
+        cardType: oneclickSubscription.oneclick_card_type,
+        cardNumber: oneclickSubscription.oneclick_card_number,
+        authorizationCode: oneclickSubscription.oneclick_authorization_code,
+        paymentMethod: 'transbank_oneclick',
+        status: 'active',
+        nextBillingDate: oneclickSubscription.current_period_end
+      };
+
+      console.log('✅ OneClick status found:', oneclickStatus);
+      
+      res.json({
+        success: true,
+        data: oneclickStatus
+      });
+    } else {
+      console.log('ℹ️ No OneClick found for organization');
+      
+      res.json({
+        success: true,
+        data: {
+          hasOneClick: false,
+          paymentMethod: null,
+          status: 'not_configured'
+        }
+      });
+    }
+  } catch (error) {
+    console.error('❌ Error getting OneClick status:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Error obteniendo estado OneClick: ' + (error instanceof Error ? error.message : 'Unknown error')
+    });
+  }
+});
+
+// Legacy endpoint - Start Trial with OneClick (kept for compatibility)
+app.post('/v1/transbank/start-trial-with-oneclick', authenticateToken, async (req, res) => {
+  try {
+    console.log('🔷 Start Trial with OneClick (Local Dev - Legacy)');
+    const user = (req as any).user;
+    const { planId, organizationId, trialDays, oneclickToken, oneclickUsername } = req.body;
+    
+    if (!planId || !organizationId || !trialDays) {
+      return res.status(400).json({
+        success: false,
+        error: 'Plan ID, Organization ID y trial days requeridos'
+      });
+    }
+
+    // Verify user has access to organization
+    if (user.orgId !== organizationId) {
+      return res.status(403).json({
+        success: false,
+        error: 'No tienes permisos para esta organización'
+      });
+    }
+
+    // Create a trial subscription with OneClick data (stored in memory for dev)
+    const now = Math.floor(Date.now() / 1000);
+    const trialEnd = now + (trialDays * 24 * 60 * 60);
+    const periodEnd = now + (30 * 24 * 60 * 60);
+
+    const subscription = {
+      id: `sub_trial_oneclick_${Date.now()}`,
+      organizationId,
+      customerId: `cus_${organizationId}`,
+      planId,
+      planName: 'Plan Básico',
+      status: 'trialing',
+      current_period_start: now,
+      current_period_end: periodEnd,
+      trial_start: now,
+      trial_end: trialEnd,
+      amount: 14990,
+      currency: 'CLP',
+      interval: 'month',
+      payment_method: 'transbank_oneclick',
+      oneclick_username: oneclickUsername,
+      oneclick_inscription_token: oneclickToken,
+      oneclick_active: false, // Still false in legacy mode
+      payment_attempts: 0,
+    };
+
+    console.log('✅ Trial with OneClick created (legacy):', subscription);
+    
+    res.json({
+      success: true,
+      message: 'Trial iniciado con OneClick exitosamente',
+      data: { subscription }
+    });
+  } catch (error) {
+    console.error('❌ Start trial with OneClick error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Error iniciando trial con OneClick: ' + (error instanceof Error ? error.message : 'Unknown error')
+    });
+  }
+});
+
+// Start Free Trial (existing endpoint but simplified)
+app.post('/v1/transbank/start-free-trial', authenticateToken, async (req, res) => {
+  try {
+    console.log('🔷 Start Free Trial (Local Dev)');
+    const user = (req as any).user;
+    const { planId, organizationId, trialDays } = req.body;
+    
+    if (!planId || !organizationId || !trialDays) {
+      return res.status(400).json({
+        success: false,
+        error: 'Plan ID, Organization ID y trial days requeridos'
+      });
+    }
+
+    // Verify user has access to organization
+    if (user.orgId !== organizationId) {
+      return res.status(403).json({
+        success: false,
+        error: 'No tienes permisos para esta organización'
+      });
+    }
+
+    const { transbankService } = require('./services/transbankService');
+    
+    const subscription = await transbankService.startFreeTrial(
+      planId,
+      organizationId,
+      trialDays,
+      user.email
+    );
+
+    res.json({
+      success: true,
+      message: 'Prueba gratuita iniciada exitosamente',
+      data: { subscription }
+    });
+  } catch (error) {
+    console.error('❌ Start free trial error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Error iniciando prueba gratuita: ' + (error instanceof Error ? error.message : 'Unknown error')
+    });
+  }
+});
+
+// =============================================
+// TRANSBANK ENDPOINTS (AWS LAMBDA PROXY - DISABLED IN DEV)
+// =============================================
+
+// Transbank middleware to handle remaining /v1/transbank/* routes  
 app.use('/v1/transbank', async (req, res) => {
   try {
     console.log(`🔷 Transbank endpoint called: ${req.method} ${req.path}`);
@@ -2131,7 +3035,7 @@ app.use('/v1/transbank', async (req, res) => {
     const lambdaEvent = expressToLambdaEvent(req, res);
     
     // Call the Transbank Lambda handler
-    const lambdaResponse = await transbankHandler(lambdaEvent, {} as any);
+    const lambdaResponse = await transbankHandler(lambdaEvent);
     
     console.log('🔷 Lambda response:', lambdaResponse);
     
@@ -2198,6 +3102,8 @@ app.listen(PORT, () => {
   console.log('  🔐 POST /v1/auth/login');
   console.log('  🔐 POST /v1/auth/register');
   console.log('  🔐 GET  /v1/auth/me');
+  console.log('  🔔 GET  /v1/notifications/stream/:orgId');
+  console.log('  🔔 POST /v1/notifications/send');
   console.log('  🏢 GET  /v1/organizations/me');
   console.log('  🏢 PUT  /v1/organizations/:orgId/settings');
   console.log('  🎯 GET  /onboarding/status');
@@ -2217,10 +3123,16 @@ app.listen(PORT, () => {
   console.log('  🌐 GET  /public/organization/:orgId/availability/daily-counts');
   console.log('  🌐 GET  /public/organization/:orgId/availability');
   console.log('  🌐 POST /public/organization/:orgId/appointments');
+  console.log('  🔄 POST /public/transbank/oneclick/complete-inscription');
   console.log('  💳 GET  /v1/transbank/subscription/:organizationId');
   console.log('  💳 POST /v1/transbank/cancel-subscription');
   console.log('  💳 POST /v1/transbank/start-free-trial');
-  console.log('  ❌ Endpoints de pago deshabilitados temporalmente');
+  console.log('  🔄 POST /v1/transbank/oneclick/start-inscription');
+  console.log('  🔄 POST /v1/transbank/oneclick/finish-inscription');
+  console.log('  🔄 POST /v1/transbank/oneclick/complete-inscription');
+  console.log('  🔄 GET  /v1/transbank/oneclick/status/:organizationId');
+  console.log('  🔄 POST /v1/transbank/start-trial-with-oneclick');
+  console.log('  ❌ Otros endpoints de pago deshabilitados temporalmente');
   console.log('  🐛 GET  /debug/users');
   console.log('  🐛 GET  /debug/organizations');
   console.log('  🐛 GET  /debug/subscriptions');
@@ -2229,6 +3141,8 @@ app.listen(PORT, () => {
   console.log('  🐛 DELETE /debug/appointments');
   console.log('  🐛 POST /debug/appointments/reset');
   console.log('  🐛 GET  /debug/appointments/filtered?startDate&endDate - NO AUTH for testing');
+  console.log('  🐛 GET  /debug/notifications/connections');
+  console.log('  🐛 POST /debug/notifications/test');
 });
 
 export default app;

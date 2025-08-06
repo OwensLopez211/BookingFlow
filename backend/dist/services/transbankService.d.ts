@@ -41,6 +41,43 @@ export interface TransactionResult {
     orderId: string;
     amount: number;
 }
+export interface OneClickInscriptionParams {
+    username: string;
+    email: string;
+    returnUrl: string;
+}
+export interface OneClickInscriptionResult {
+    success: boolean;
+    token?: string;
+    urlWebpay?: string;
+    tbkUser?: string;
+}
+export interface OneClickFinishInscriptionParams {
+    token: string;
+}
+export interface OneClickFinishInscriptionResult {
+    success: boolean;
+    tbkUser?: string;
+    authorizationCode?: string;
+    cardType?: string;
+    cardNumber?: string;
+}
+export interface OneClickChargeParams {
+    username: string;
+    tbkUser: string;
+    buyOrder: string;
+    amount: number;
+    childCommerceCode?: string;
+}
+export interface OneClickChargeResult {
+    success: boolean;
+    authorizationCode?: string;
+    buyOrder?: string;
+    cardNumber?: string;
+    amount?: number;
+    transactionDate?: string;
+    installmentsNumber?: number;
+}
 export declare class TransbankService {
     /**
      * Crea una transacción de Webpay Plus para el plan seleccionado
@@ -83,6 +120,32 @@ export declare class TransbankService {
     handlePaymentConfirmation(token: string, orderId: string): Promise<{
         handled: boolean;
         subscription?: SubscriptionInfo;
+    }>;
+    /**
+     * Inicia una inscripción OneClick
+     */
+    startOneclickInscription(params: OneClickInscriptionParams): Promise<OneClickInscriptionResult>;
+    /**
+     * Finaliza una inscripción OneClick
+     */
+    finishOneclickInscription(params: OneClickFinishInscriptionParams): Promise<OneClickFinishInscriptionResult>;
+    /**
+     * Elimina una inscripción OneClick
+     */
+    removeOneclickInscription(tbkUser: string, username: string): Promise<{
+        success: boolean;
+    }>;
+    /**
+     * Ejecuta un cobro OneClick
+     */
+    chargeOneclick(params: OneClickChargeParams): Promise<OneClickChargeResult>;
+    /**
+     * Inicia un trial con OneClick configurado para cobro automático al vencer
+     */
+    startTrialWithOneclickInscription(planId: string, organizationId: string, trialDays: number, userEmail: string, oneclickUsername: string, returnUrl: string): Promise<{
+        success: boolean;
+        subscription?: SubscriptionInfo;
+        oneclick?: OneClickInscriptionResult;
     }>;
 }
 export declare const transbankService: TransbankService;
