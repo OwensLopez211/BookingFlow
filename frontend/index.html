@@ -11,7 +11,7 @@
     
     <!-- Favicon and Icons -->
     <link rel="icon" type="image/webp" href="/miniatura.webp" />
-    <link rel="apple-touch-icon" href="/bookingflowlogo.png" />
+    <link rel="apple-touch-icon" href="/miniatura.webp" />
     <link rel="manifest" href="/manifest.json" />
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;700&display=swap" rel="stylesheet">
 
@@ -50,64 +50,18 @@
     <link rel="dns-prefetch" href="//api.bookflow.app" />
     <link rel="preconnect" href="https://api.bookflow.app" crossorigin />
     
-    <!-- Loading Screen Styles -->
-    <link rel="stylesheet" href="/loading.css" />
     
     <!-- Preload critical assets -->
     <link rel="preload" href="/miniatura.webp" as="image" type="image/webp" />
     <link rel="preload" href="/bookingflowlogo.png" as="image" type="image/png" />
   </head>
   <body>
-    <!-- Loading Screen -->
-    <div id="loading-screen">
-      <div class="logo-container">
-        <div class="logo">
-          <img src="/miniatura.webp" alt="BookFlow Logo" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
-          <svg class="logo-fallback" style="display: none;" width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M12 2L2 7L12 12L22 7L12 2Z" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-            <path d="M2 17L12 22L22 17" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-            <path d="M2 12L12 17L22 12" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
-        </div>
-      </div>
-      <div class="spinner"></div>
-      <div class="text">BookFlow</div>
-      <div class="subtext">Cargando tu sistema de citas...</div>
-      <div class="progress-container">
-        <div class="progress-bar"></div>
-      </div>
-    </div>
-    
     <!-- App Root -->
     <div id="root"></div>
     
     <!-- Main App Script -->
     <script type="module" src="/src/main.tsx"></script>
     
-    <!-- Loading Screen Script -->
-    <script>
-      // Remove loading screen when app is ready
-      window.addEventListener('load', function() {
-        setTimeout(function() {
-          document.body.classList.add('loaded');
-          setTimeout(function() {
-            const loadingScreen = document.getElementById('loading-screen');
-            if (loadingScreen) {
-              loadingScreen.remove();
-            }
-          }, 300);
-        }, 500);
-      });
-      
-      // Fallback: remove loading screen after 10 seconds
-      setTimeout(function() {
-        document.body.classList.add('loaded');
-        const loadingScreen = document.getElementById('loading-screen');
-        if (loadingScreen) {
-          loadingScreen.remove();
-        }
-      }, 10000);
-    </script>
     
     <!-- Service Worker Registration -->
     <script>

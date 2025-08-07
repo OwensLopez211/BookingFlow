@@ -51,10 +51,10 @@ export const Navigation: React.FC = () => {
       { name: 'Integraciones', description: 'Conecta con tus herramientas favoritas', href: '/features/integrations' }
     ],
     pricing: [
-      { name: 'Plan Básico', description: 'Perfecto para empezar', href: '/pricing/basic' },
-      { name: 'Plan Profesional', description: 'Para negocios en crecimiento', href: '/pricing/professional' },
-      { name: 'Plan Empresa', description: 'Soluciones escalables', href: '/pricing/enterprise' },
-      { name: 'Comparar Planes', description: 'Ve todas las características', href: '/pricing/compare' }
+      { name: 'Plan Básico', description: 'Perfecto para empezar', href: '/pricing/basic', available: true },
+      { name: 'Plan Profesional', description: 'No disponible - Próximamente', href: '#', available: false },
+      { name: 'Plan Empresa', description: 'No disponible - Próximamente', href: '#', available: false },
+      { name: 'Comparar Planes', description: 'No disponible - Próximamente', href: '#', available: false }
     ],
     roadmap: [
       { name: 'Próximas Funciones', description: 'Lo que viene en 2025', href: '/roadmap/upcoming' },
@@ -230,7 +230,7 @@ export const Navigation: React.FC = () => {
 // Componente NavDropdown para menús desplegables en desktop
 const NavDropdown: React.FC<{
   title: string;
-  items: Array<{ name: string; description: string; href: string }>;
+  items: Array<{ name: string; description: string; href: string; available?: boolean }>;
   isActive: boolean;
   onHover: (isEntering: boolean) => void;
 }> = ({ title, items, isActive, onHover }) => {
@@ -257,20 +257,43 @@ const NavDropdown: React.FC<{
         isActive ? 'opacity-100 translate-y-0 visible' : 'opacity-0 -translate-y-2 invisible'
       }`}>
         <div className="p-2">
-          {items.map((item, index) => (
-            <Link
-              key={index}
-              to={item.href}
-              className="block p-3 rounded-lg hover:bg-gradient-to-r hover:from-purple-50 hover:to-blue-50 transition-all duration-200 group"
-            >
-              <div className="font-medium text-gray-900 group-hover:text-purple-700 transition-colors duration-200">
-                {item.name}
-              </div>
-              <div className="text-sm text-gray-500 group-hover:text-purple-600 transition-colors duration-200">
-                {item.description}
-              </div>
-            </Link>
-          ))}
+          {items.map((item, index) => {
+            const isAvailable = item.available !== false;
+            
+            if (!isAvailable) {
+              return (
+                <div
+                  key={index}
+                  className="block p-3 rounded-lg bg-gray-50/50 border border-gray-200/50 cursor-not-allowed opacity-60"
+                >
+                  <div className="font-medium text-gray-500 flex items-center justify-between">
+                    {item.name}
+                    <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-200 text-gray-600">
+                      No disponible
+                    </span>
+                  </div>
+                  <div className="text-sm text-gray-400">
+                    {item.description}
+                  </div>
+                </div>
+              );
+            }
+
+            return (
+              <Link
+                key={index}
+                to={item.href}
+                className="block p-3 rounded-lg hover:bg-gradient-to-r hover:from-purple-50 hover:to-blue-50 transition-all duration-200 group"
+              >
+                <div className="font-medium text-gray-900 group-hover:text-purple-700 transition-colors duration-200">
+                  {item.name}
+                </div>
+                <div className="text-sm text-gray-500 group-hover:text-purple-600 transition-colors duration-200">
+                  {item.description}
+                </div>
+              </Link>
+            );
+          })}
         </div>
       </div>
     </div>
@@ -280,7 +303,7 @@ const NavDropdown: React.FC<{
 // Componente MobileAccordion para menús móviles
 const MobileAccordion: React.FC<{
   title: string;
-  items: Array<{ name: string; description: string; href: string }>;
+  items: Array<{ name: string; description: string; href: string; available?: boolean }>;
   onItemClick: () => void;
 }> = ({ title, items, onItemClick }) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -306,21 +329,46 @@ const MobileAccordion: React.FC<{
         isOpen ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
       }`}>
         <div className="border-t border-gray-200/50 bg-gradient-to-b from-white to-gray-50/50">
-          {items.map((item, index) => (
-            <Link
-              key={index}
-              to={item.href}
-              onClick={onItemClick}
-              className="block px-6 py-3 hover:bg-gradient-to-r hover:from-purple-50 hover:to-blue-50 transition-all duration-200 group border-b border-gray-100/50 last:border-b-0"
-            >
-              <div className="font-medium text-gray-800 group-hover:text-purple-700 text-sm transition-colors duration-200">
-                {item.name}
-              </div>
-              <div className="text-xs text-gray-500 group-hover:text-purple-600 mt-0.5 transition-colors duration-200">
-                {item.description}
-              </div>
-            </Link>
-          ))}
+          {items.map((item, index) => {
+            const isAvailable = item.available !== false;
+            
+            if (!isAvailable) {
+              return (
+                <div
+                  key={index}
+                  className="block px-6 py-3 border-b border-gray-100/50 last:border-b-0 bg-gray-50/30 cursor-not-allowed opacity-60"
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="font-medium text-gray-600 text-sm">
+                      {item.name}
+                    </div>
+                    <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gray-200 text-gray-600">
+                      No disponible
+                    </span>
+                  </div>
+                  <div className="text-xs text-gray-500 mt-0.5">
+                    {item.description}
+                  </div>
+                </div>
+              );
+            }
+
+            return (
+              <Link
+                key={index}
+                to={item.href}
+                onClick={onItemClick}
+                className="block px-6 py-3 hover:bg-gradient-to-r hover:from-purple-50 hover:to-blue-50 transition-all duration-200 group border-b border-gray-100/50 last:border-b-0"
+              >
+                <div className="font-medium text-gray-800 group-hover:text-purple-700 text-sm transition-colors duration-200">
+                  {item.name}
+                </div>
+                <div className="text-xs text-gray-500 group-hover:text-purple-600 mt-0.5 transition-colors duration-200">
+                  {item.description}
+                </div>
+              </Link>
+            );
+          })}
         </div>
       </div>
     </div>

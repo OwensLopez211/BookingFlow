@@ -1,8 +1,9 @@
 import React, { useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { ToastProvider } from '@/components/ui';
+import { ToastProvider, LoadingScreen } from '@/components/ui';
 import { NotificationProvider } from '@/components/notifications';
 import { ToastProvider as LoginToastProvider } from '@/hooks/useToast';
+import { useAppLoading } from '@/hooks/useAppLoading';
 
 // Layouts
 import { PublicLayout } from '@/components/layout/PublicLayout';
@@ -17,6 +18,8 @@ import { useAuthStore } from '@/stores/authStore';
 import { HomePage } from '@/pages/HomePage';
 import { WelcomePage } from '@/pages/WelcomePage';
 import { BookingPage } from '@/pages/public/BookingPage';
+import RoadmapPage from '@/pages/RoadmapPage';
+import FeaturesPage from '@/pages/FeaturesPage';
 
 // Auth Pages
 import { LoginPage } from '@/pages/auth/LoginPage';
@@ -39,24 +42,27 @@ import { NotFoundPage } from '@/pages/NotFoundPage';
 
 function App() {
   const initialize = useAuthStore(state => state.initialize);
+  const { isLoading } = useAppLoading();
 
   useEffect(() => {
     initialize();
   }, [initialize]);
 
   return (
-    <Router>
-      <LoginToastProvider>
-        <NotificationProvider>
-          <div className="App">
+    <>
+      <LoadingScreen isLoading={isLoading} />
+      <Router>
+        <LoginToastProvider>
+          <NotificationProvider>
+            <div className="App">
           <Routes>
           {/* Public Routes */}
           <Route path="/" element={<PublicLayout />}>
             <Route index element={<HomePage />} />
-            <Route path="features" element={<div>Features Page</div>} />
+            <Route path="features" element={<FeaturesPage />} />
             <Route path="pricing" element={<div>Pricing Page</div>} />
             <Route path="about" element={<div>About Page</div>} />
-            <Route path="roadmap" element={<div>Roadmap Page</div>} />
+            <Route path="roadmap" element={<RoadmapPage />} />
             <Route path="demo" element={<div>Demo Page</div>} />
           </Route>
 
@@ -158,10 +164,11 @@ function App() {
 
           {/* Toast Notifications */}
           <ToastProvider />
-          </div>
-        </NotificationProvider>
-      </LoginToastProvider>
-    </Router>
+            </div>
+          </NotificationProvider>
+        </LoginToastProvider>
+      </Router>
+    </>
   );
 }
 

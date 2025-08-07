@@ -2,6 +2,7 @@ export { Button } from './Button';
 export { Input } from './Input';
 export { Card } from './Card';
 export { LoadingSpinner } from './LoadingSpinner';
+export { default as LoadingScreen } from './LoadingScreen';
 export { ToastProvider, showToast } from './ToastProvider';
 export { TrialStatusBadge } from './TrialStatusBadge';
 export { AppointmentTooltip } from './AppointmentTooltip';
