@@ -53,7 +53,7 @@ apiClient.interceptors.response.use(
     
     return response;
   },
-  (error) => {
+  async (error) => {
     // Track failed request
     if (error.config) {
       const duration = Date.now() - (error.config.metadata?.startTime || Date.now());
@@ -69,10 +69,25 @@ apiClient.interceptors.response.use(
     console.log('🔧 API Response Error:', error.response?.status, error.response?.data);
     
     if (error.response?.status === 401) {
-      // Unauthorized - redirect to login if needed
-      console.warn('🔧 401 Unauthorized - token may be invalid or expired');
-      const token = localStorage.getItem('accessToken');
-      console.warn('🔧 Current token in localStorage:', token ? 'Present' : 'Missing');
+      // Unauthorized - try to refresh token
+      console.warn('🔧 401 Unauthorized - attempting token refresh');
+      
+      try {
+        // Import authService dynamically to avoid circular dependency
+        const { authService } = await import('./authService');
+        const newTokens = await authService.refreshTokens();
+        
+        if (newTokens) {
+          console.log('🔄 Token refreshed, retrying original request');
+          // Retry the original request with new token
+          error.config.headers.Authorization = `Bearer ${newTokens.accessToken}`;
+          return apiClient.request(error.config);
+        } else {
+          console.warn('🔧 Token refresh failed - user needs to re-authenticate');
+        }
+      } catch (refreshError) {
+        console.error('🔧 Error during token refresh:', refreshError);
+      }
     }
     
     if (error.response?.status === 404) {

@@ -26,14 +26,38 @@ export const useOnboarding = () => {
   const { user, initialize } = useAuthStore();
 
   const fetchOnboardingStatus = async () => {
+    // No hacer la petición si ya sabemos que el usuario completó el onboarding
+    if (user?.onboardingStatus?.isCompleted) {
+      console.log('User onboarding already completed, skipping API call');
+      setOnboardingStatus(user.onboardingStatus);
+      return;
+    }
+    
     try {
       setIsLoading(true);
       setError(null);
       const status = await onboardingService.getStatus();
       setOnboardingStatus(status);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Error al cargar el estado del onboarding');
+      const errorMessage = err instanceof Error ? err.message : 'Error al cargar el estado del onboarding';
+      setError(errorMessage);
       console.error('Error fetching onboarding status:', err);
+      
+      // Si el endpoint no existe o retorna contenido no válido, crear un estado por defecto
+      if (errorMessage.includes('no disponible') || 
+          errorMessage.includes('Unexpected token') || 
+          errorMessage.includes('no es JSON válido') ||
+          errorMessage.includes('not valid JSON')) {
+        console.log('Creating default onboarding status due to missing/invalid endpoint');
+        const defaultStatus = {
+          isCompleted: false,
+          currentStep: 1,
+          completedSteps: [],
+          startedAt: new Date().toISOString()
+        };
+        setOnboardingStatus(defaultStatus);
+        setError(null); // Clear the error since we have a fallback
+      }
     } finally {
       setIsLoading(false);
     }
@@ -83,14 +107,23 @@ export const useOnboarding = () => {
   };
 
   useEffect(() => {
-    // Only fetch onboarding status if user doesn't have completed onboarding
-    if (user && !user.onboardingStatus?.isCompleted) {
+    // Solo cargar estado de onboarding si:
+    // 1. Hay un usuario autenticado
+    // 2. No tenemos ya un estado de onboarding cargado
+    // 3. El usuario no ha completado el onboarding según el auth store
+    if (user && !onboardingStatus && !user.onboardingStatus?.isCompleted) {
+      console.log('Fetching onboarding status for user...');
       fetchOnboardingStatus();
-    } else if (user?.onboardingStatus) {
-      // Use the user's onboarding status from auth store if available
+    } else if (user?.onboardingStatus && !onboardingStatus) {
+      // Usar el estado del auth store si está disponible
+      console.log('Using onboarding status from auth store');
       setOnboardingStatus(user.onboardingStatus);
+    } else if (!user) {
+      // Limpiar estado cuando no hay usuario
+      setOnboardingStatus(null);
+      setError(null);
     }
-  }, [user]);
+  }, [user, onboardingStatus]);
 
   return {
     onboardingStatus,

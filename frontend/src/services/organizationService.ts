@@ -1,7 +1,7 @@
 import { ApiResponse } from '../../types/common';
 import { Organization, UpdateOrganizationSettingsRequest } from '../../types/organization';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || import.meta.env.VITE_API_URL || 'http://localhost:3001';
 
 class OrganizationService {
   private getHeaders(): HeadersInit {
@@ -24,6 +24,17 @@ class OrganizationService {
       });
 
       console.log('📡 OrganizationService: Response status:', response.status);
+      console.log('📡 OrganizationService: Response headers:', Object.fromEntries(response.headers.entries()));
+      
+      // Verificar que la respuesta sea JSON
+      const contentType = response.headers.get('content-type');
+      if (!contentType || !contentType.includes('application/json')) {
+        console.warn('❌ OrganizationService: Response is not JSON, content-type:', contentType);
+        const text = await response.text();
+        console.log('📄 OrganizationService: Response text:', text.substring(0, 200));
+        throw new Error(`El servidor no devolvió JSON válido. Status: ${response.status}`);
+      }
+
       const data = await response.json();
       console.log('📥 OrganizationService: Response data:', data);
       
@@ -62,6 +73,17 @@ class OrganizationService {
       });
 
       console.log('📡 OrganizationService: Response status:', response.status);
+      console.log('📡 OrganizationService: Response headers:', Object.fromEntries(response.headers.entries()));
+      
+      // Verificar que la respuesta sea JSON
+      const contentType = response.headers.get('content-type');
+      if (!contentType || !contentType.includes('application/json')) {
+        console.warn('❌ OrganizationService: Response is not JSON, content-type:', contentType);
+        const text = await response.text();
+        console.log('📄 OrganizationService: Response text:', text.substring(0, 200));
+        throw new Error(`El servidor no devolvió JSON válido. Status: ${response.status}`);
+      }
+
       const data = await response.json();
       console.log('📥 OrganizationService: Response data:', JSON.stringify(data, null, 2));
       
@@ -90,6 +112,14 @@ class OrganizationService {
         headers: this.getHeaders(),
       });
 
+      // Verificar que la respuesta sea JSON
+      const contentType = response.headers.get('content-type');
+      if (!contentType || !contentType.includes('application/json')) {
+        const text = await response.text();
+        console.log('Response text:', text.substring(0, 200));
+        throw new Error(`El servidor no devolvió JSON válido. Status: ${response.status}`);
+      }
+
       const data = await response.json();
       
       if (!response.ok) {
@@ -111,6 +141,14 @@ class OrganizationService {
         method: 'GET',
         headers: this.getHeaders(),
       });
+
+      // Verificar que la respuesta sea JSON
+      const contentType = response.headers.get('content-type');
+      if (!contentType || !contentType.includes('application/json')) {
+        const text = await response.text();
+        console.log('Response text:', text.substring(0, 200));
+        throw new Error(`El servidor no devolvió JSON válido. Status: ${response.status}`);
+      }
 
       const data = await response.json();
       

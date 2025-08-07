@@ -60,8 +60,23 @@ class TransbankService {
     try {
       const response = await apiClient.get(`/v1/transbank/subscription/${organizationId}`);
       return response.data.data || response.data; // Handle both formats
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error fetching subscription status:', error);
+      
+      if (error.response?.status === 401) {
+        console.warn('🔧 Authentication error getting subscription status - user may need to re-login');
+        // Return null to indicate authentication issue
+        return null;
+      }
+      
+      if (error.response?.status === 404) {
+        console.warn('🔧 Subscription not found for organization:', organizationId);
+        // Return null to indicate no subscription
+        return null;
+      }
+      
+      // For other errors, still return null but log more details
+      console.error('🔧 Subscription fetch error details:', error.response?.data);
       return null;
     }
   }

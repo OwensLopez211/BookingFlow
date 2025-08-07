@@ -46,30 +46,12 @@ const IconX = ({ className = "w-4 h-4" }: { className?: string }) => (
 
 const plans: Plan[] = [
   {
-    id: 'free',
-    name: 'Plan Gratuito',
-    price: 'Gratis',
-    period: 'siempre',
-    description: 'Perfecto para emprendedores que están empezando y quieren probar la plataforma',
-    icon: IconBasic,
-    color: 'gray',
-    available: true,
-    popular: false,
-    features: [
-      { name: 'Hasta 1 recurso/profesional', included: true },
-      { name: 'Máximo 100 citas por mes', included: true },
-      { name: 'Solo 1 usuario (propietario)', included: true },
-      { name: 'Panel de control básico', included: true },
-      { name: 'Soporte por email', included: true },
-    ]
-  },
-  {
     id: 'basic',
     name: 'Plan Básico',
     price: '$14.990',
     period: 'por mes (+IVA)',
     description: 'Perfecto para pequeñas empresas que necesitan agilizar su gestión de citas',
-    icon: IconProfessional,
+    icon: IconBasic,
     color: 'blue',
     available: true,
     popular: true,
@@ -89,13 +71,13 @@ const plans: Plan[] = [
     ]
   },
   {
-    id: 'premium',
-    name: 'Plan Premium',
+    id: 'professional',
+    name: 'Plan Profesional',
     price: '$29.990',
     period: 'por mes (+IVA)',
-    description: 'Para empresas grandes con múltiples profesionales y alto volumen de citas',
-    icon: IconEnterprise,
-    color: 'purple',
+    description: 'Para empresas medianas con múltiples profesionales y más funcionalidades',
+    icon: IconProfessional,
+    color: 'green',
     available: false,
     popular: false,
     transbankAmount: 29990,
@@ -103,14 +85,39 @@ const plans: Plan[] = [
     features: [
       { name: 'Hasta 10 recursos/profesionales', included: true },
       { name: 'Máximo 2,500 citas por mes', included: true },
-      { name: 'Hasta 10 usuarios', included: true },
+      { name: 'Hasta 5 usuarios', included: true },
       { name: 'Todo del Plan Básico', included: true },
       { name: 'Reportes avanzados', included: true },
-      { name: 'API completa', included: true },
-      { name: 'Soporte prioritario 24/7', included: true },
-      { name: 'Personalización de marca', included: true },
+      { name: 'Recordatorios automáticos por SMS', included: true },
+      { name: 'Integraciones con calendario', included: true },
+      { name: 'Soporte prioritario por teléfono', included: true },
+      { name: 'Personalización de marca básica', included: true },
+      { name: 'Backup automático diario', included: true },
+    ]
+  },
+  {
+    id: 'enterprise',
+    name: 'Plan Enterprise',
+    price: '$59.990',
+    period: 'por mes (+IVA)',
+    description: 'Para empresas grandes con necesidades avanzadas y múltiples ubicaciones',
+    icon: IconEnterprise,
+    color: 'purple',
+    available: false,
+    popular: false,
+    transbankAmount: 59990,
+    trialDays: 30,
+    features: [
+      { name: 'Recursos/profesionales ilimitados', included: true },
+      { name: 'Citas ilimitadas por mes', included: true },
+      { name: 'Usuarios ilimitados', included: true },
+      { name: 'Todo del Plan Profesional', included: true },
+      { name: 'API completa para integraciones', included: true },
+      { name: 'Múltiples ubicaciones', included: true },
+      { name: 'Soporte dedicado 24/7', included: true },
+      { name: 'Personalización completa de marca', included: true },
       { name: 'Integraciones personalizadas', included: true },
-      { name: 'Backup automático', included: true },
+      { name: 'Backup en tiempo real', included: true },
     ]
   }
 ];
@@ -125,7 +132,7 @@ export const PlanSelectionStep: React.FC<PlanSelectionStepProps> = ({
 }) => {
   const { user } = useAuth();
   const [selectedPlan, setSelectedPlan] = useState<string>(
-    initialData?.planId || 'free'
+    initialData?.planId || 'basic'
   );
   const [showOneclickSetup, setShowOneclickSetup] = useState(false);
   const [oneclickForm, setOneclickForm] = useState<OneClickSetupFormData>({
@@ -144,23 +151,15 @@ export const PlanSelectionStep: React.FC<PlanSelectionStepProps> = ({
 
     const selectedPlanData = plans.find(p => p.id === selectedPlan);
     
-    // Si es plan básico o premium, mostrar configuración OneClick
-    if (selectedPlan === 'basic' || selectedPlan === 'premium') {
+    // Todos los planes disponibles requieren configuración OneClick
+    if (selectedPlanData?.available) {
       setShowOneclickSetup(true);
       return;
     }
 
-    // Plan gratuito - completar directamente
-    onComplete({
-      planId: selectedPlan,
-      planName: selectedPlanData?.name,
-      planPrice: selectedPlanData?.price,
-      planPeriod: selectedPlanData?.period,
-      transbankAmount: selectedPlanData?.transbankAmount,
-      trialDays: selectedPlanData?.trialDays,
-      requiresPayment: false,
-      enableOneClick: false,
-    });
+    // Fallback si no hay plan disponible seleccionado
+    alert('El plan seleccionado no está disponible actualmente');
+    return;
   };
 
   const handleOneclickSetup = async () => {
@@ -249,8 +248,8 @@ export const PlanSelectionStep: React.FC<PlanSelectionStepProps> = ({
     <div className="h-full flex flex-col">
       <form onSubmit={handleSubmit} className="flex-1 flex flex-col">
         {/* Plans Grid - Multiple plans */}
-        <div className="flex-1 overflow-hidden">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 max-w-6xl mx-auto">
+        <div className="flex-1 overflow-y-auto py-4">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 max-w-6xl mx-auto px-4">
             {plans.map((plan) => {
               const IconComponent = plan.icon;
               const isSelected = selectedPlan === plan.id;
@@ -260,101 +259,135 @@ export const PlanSelectionStep: React.FC<PlanSelectionStepProps> = ({
                 <div
                   key={plan.id}
                   className={`
-                    relative flex flex-col p-3 border-2 rounded-lg transition-all duration-200
-                    ${plan.available ? 'cursor-pointer hover:shadow-md group' : 'cursor-not-allowed'}
+                    relative flex flex-col border-2 rounded-2xl transition-all duration-300 transform
+                    ${plan.available ? 'cursor-pointer hover:shadow-2xl hover:scale-105 group' : 'cursor-not-allowed'}
                     ${colorClasses.bg} ${colorClasses.border}
-                    ${isSelected && plan.available ? 'shadow-md ring-2 ring-opacity-20' : ''}
-                    ${!plan.available ? 'opacity-75' : ''}
+                    ${isSelected && plan.available ? 'shadow-2xl ring-4 ring-blue-200 scale-105' : 'shadow-lg'}
+                    ${!plan.available ? 'opacity-60 grayscale' : ''}
+                    overflow-hidden
                   `}
                   onClick={() => plan.available && setSelectedPlan(plan.id)}
                 >
+                  {/* Background gradient overlay */}
+                  <div className={`absolute inset-0 opacity-5 ${
+                    plan.color === 'blue' ? 'bg-gradient-to-br from-blue-400 to-blue-600' :
+                    plan.color === 'green' ? 'bg-gradient-to-br from-green-400 to-green-600' :
+                    'bg-gradient-to-br from-purple-400 to-purple-600'
+                  }`} />
+
                   {/* Popular Badge */}
                   {plan.popular && (
-                    <div className="absolute -top-2 left-1/2 transform -translate-x-1/2">
-                      <div className="bg-orange-500 text-white text-xs px-2 py-1 rounded-full font-medium">
-                        Más Popular
+                    <div className="absolute -top-1 left-1/2 transform -translate-x-1/2 z-10">
+                      <div className="bg-gradient-to-r from-orange-400 to-orange-600 text-white text-sm px-4 py-2 rounded-full font-semibold shadow-lg">
+                        ⭐ Más Popular
                       </div>
                     </div>
                   )}
 
                   {/* Coming Soon Badge */}
                   {!plan.available && (
-                    <div className="absolute -top-2 right-2">
-                      <div className="bg-gray-500 text-white text-xs px-2 py-1 rounded-full font-medium">
-                        Próximamente
+                    <div className="absolute -top-1 right-4 z-10">
+                      <div className="bg-gradient-to-r from-gray-400 to-gray-600 text-white text-sm px-4 py-2 rounded-full font-semibold shadow-lg">
+                        🚀 Próximamente
                       </div>
                     </div>
                   )}
 
-                  {/* Header */}
-                  <div className="flex items-center justify-between mb-2">
-                    <div className={`p-1.5 rounded-md transition-colors duration-200 ${colorClasses.iconBg}`}>
-                      <IconComponent className={`w-5 h-5 ${colorClasses.icon}`} />
-                    </div>
-                    {plan.available && (
-                      <div className={`
-                        w-3 h-3 rounded-full border-2 flex items-center justify-center transition-all duration-200
-                        ${isSelected
-                          ? colorClasses.border.split(' ')[0] + ' ' + colorClasses.bg.split(' ')[0].replace('bg-', 'bg-').replace('-50', '-500')
-                          : 'border-gray-300 group-hover:border-gray-400'
-                        }
-                      `}>
-                        {isSelected && (
-                          <div className="w-1 h-1 bg-white rounded-full"></div>
-                        )}
+                  {/* Header Section */}
+                  <div className={`relative p-4 pb-3 ${plan.popular ? 'pt-6' : 'pt-4'}`}>
+                    {/* Icon and Selection Circle */}
+                    <div className="flex items-center justify-between mb-3">
+                      <div className={`p-2 rounded-xl transition-all duration-300 ${colorClasses.iconBg} ${isSelected ? 'scale-110' : 'group-hover:scale-105'}`}>
+                        <IconComponent className={`w-6 h-6 ${colorClasses.icon}`} />
                       </div>
-                    )}
-                  </div>
-
-                  {/* Plan Info */}
-                  <div className="flex-1">
-                    <h3 className={`font-bold text-sm mb-1 ${colorClasses.text}`}>
-                      {plan.name}
-                    </h3>
-                    
-                    <div className="mb-2">
-                      <span className={`text-lg font-bold ${colorClasses.text}`}>
-                        {plan.price}
-                      </span>
-                      {plan.period && (
-                        <span className="text-xs text-gray-500 ml-1">
-                          {plan.period}
-                        </span>
-                      )}
-                      {plan.trialDays && (
-                        <div className="text-xs text-green-600 font-medium mt-1">
-                          🎉 {plan.trialDays === 30 ? '1 mes completamente gratis' : `Prueba gratuita ${plan.trialDays} días`}
+                      {plan.available && (
+                        <div className={`
+                          w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all duration-300
+                          ${isSelected
+                            ? 'border-blue-500 bg-blue-500 shadow-lg'
+                            : 'border-gray-300 group-hover:border-blue-400 group-hover:bg-blue-50'
+                          }
+                        `}>
+                          {isSelected && (
+                            <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
+                              <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                            </svg>
+                          )}
                         </div>
                       )}
                     </div>
 
-                    <p className="text-xs text-gray-600 mb-3 leading-tight">
+                    {/* Plan Name and Price */}
+                    <div className="mb-3">
+                      <h3 className={`text-xl font-bold mb-1 ${colorClasses.text}`}>
+                        {plan.name}
+                      </h3>
+                      
+                      <div className="flex items-baseline mb-2">
+                        <span className={`text-2xl font-bold ${colorClasses.text}`}>
+                          {plan.price}
+                        </span>
+                        {plan.period && (
+                          <span className="text-xs text-gray-500 ml-1 font-medium">
+                            {plan.period}
+                          </span>
+                        )}
+                      </div>
+
+                      {plan.trialDays && (
+                        <div className="inline-flex items-center px-2 py-1 rounded-full bg-gradient-to-r from-green-100 to-emerald-100 border border-green-200">
+                          <span className="text-xs text-green-700 font-semibold">
+                            🎉 {plan.trialDays === 30 ? '1 mes gratis' : `${plan.trialDays} días gratis`}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+
+                    <p className="text-gray-600 leading-relaxed mb-4 text-sm">
                       {plan.description}
                     </p>
+                  </div>
 
-                    {/* Features - Compact list */}
-                    <div className="space-y-1">
-                      {plan.features.slice(0, 4).map((feature, index) => (
-                        <div key={index} className="flex items-center space-x-1">
-                          {feature.included ? (
-                            <IconCheck className="w-3 h-3 text-green-500 flex-shrink-0" />
-                          ) : (
-                            <IconX className="w-3 h-3 text-red-400 flex-shrink-0" />
-                          )}
-                          <span className={`text-xs leading-tight ${
-                            feature.included ? 'text-gray-700' : 'text-gray-400'
+                  {/* Features Section */}
+                  <div className="flex-1 px-4 pb-4">
+                    <div className="space-y-2">
+                      <h4 className="text-xs font-semibold text-gray-800 uppercase tracking-wide mb-3">
+                        Características incluidas
+                      </h4>
+                      
+                      {plan.features.map((feature, index) => (
+                        <div key={index} className="flex items-start space-x-2">
+                          <div className="flex-shrink-0 mt-0.5">
+                            {feature.included ? (
+                              <div className="w-4 h-4 bg-green-100 rounded-full flex items-center justify-center">
+                                <IconCheck className="w-2.5 h-2.5 text-green-600" />
+                              </div>
+                            ) : (
+                              <div className="w-4 h-4 bg-red-100 rounded-full flex items-center justify-center">
+                                <IconX className="w-2.5 h-2.5 text-red-500" />
+                              </div>
+                            )}
+                          </div>
+                          <span className={`text-xs leading-relaxed ${
+                            feature.included ? 'text-gray-700' : 'text-gray-400 line-through'
                           }`}>
                             {feature.name}
                           </span>
                         </div>
                       ))}
-                      {plan.features.length > 4 && (
-                        <div className="text-xs text-gray-400">
-                          +{plan.features.length - 4} características más
-                        </div>
-                      )}
                     </div>
                   </div>
+
+                  {/* Selection Overlay for Selected Plan */}
+                  {isSelected && plan.available && (
+                    <div className="absolute inset-0 border-4 border-blue-400 rounded-2xl pointer-events-none">
+                      <div className="absolute -top-2 -left-2 w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center">
+                        <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                        </svg>
+                      </div>
+                    </div>
+                  )}
 
                   {/* Hidden radio input */}
                   {plan.available && (
@@ -373,29 +406,25 @@ export const PlanSelectionStep: React.FC<PlanSelectionStepProps> = ({
           </div>
         </div>
 
-        {/* Info Notice */}
-        <div className="bg-blue-50 border border-blue-200 rounded-md p-2 mt-3">
-          <div className="flex">
-            <div className="flex-shrink-0">
-              <svg className="w-3 h-3 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-            </div>
-            <div className="ml-2">
-              <p className="text-xs text-blue-700">
-                <strong>Planes disponibles:</strong> Plan Gratuito para empezar y Plan Básico con 1 mes completamente gratis. El Plan Premium estará disponible próximamente.
-              </p>
-            </div>
+        {/* Info Notice - Compact */}
+        <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-xl p-3 mt-4 mx-4">
+          <div className="flex items-center space-x-2">
+            <svg className="w-4 h-4 text-blue-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <p className="text-sm text-blue-700">
+              <strong>Plan disponible:</strong> Plan Básico con 1 mes gratis. Planes Profesional y Enterprise próximamente.
+            </p>
           </div>
         </div>
 
         {/* Buttons - Fixed at bottom */}
-        <div className="flex justify-between pt-2 border-t border-gray-100 mt-2">
+        <div className="flex flex-col sm:flex-row justify-between gap-2 pt-3 border-t border-gray-200 mt-3 mx-4">
           {showBackInFooter && canGoBack && onPreviousStep ? (
             <button
               type="button"
               onClick={onPreviousStep}
-              className="flex items-center space-x-2 px-4 py-1.5 text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors duration-200 border border-gray-300"
+              className="flex items-center justify-center space-x-2 px-4 py-2 text-sm font-medium text-gray-700 hover:text-gray-900 bg-white hover:bg-gray-50 rounded-lg transition-all duration-200 border border-gray-300 shadow-sm"
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -403,21 +432,26 @@ export const PlanSelectionStep: React.FC<PlanSelectionStepProps> = ({
               <span>Atrás</span>
             </button>
           ) : (
-            <div></div>
+            <div className="hidden sm:block"></div>
           )}
           
           <Button
             type="submit"
             disabled={isLoading || !selectedPlan}
-            className="px-4 py-1.5 text-sm"
+            className="px-6 py-2 text-sm font-medium bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 rounded-lg shadow-lg transition-all duration-200"
           >
             {isLoading ? (
-              <div className="flex items-center">
-                <div className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin mr-1.5"></div>
+              <div className="flex items-center justify-center">
+                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
                 Completando registro...
               </div>
             ) : (
-              selectedPlan === 'basic' || selectedPlan === 'premium' ? 'Configurar método de pago' : 'Completar registro'
+              <div className="flex items-center justify-center">
+                <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                Configurar método de pago
+              </div>
             )}
           </Button>
         </div>
@@ -425,104 +459,183 @@ export const PlanSelectionStep: React.FC<PlanSelectionStepProps> = ({
 
       {/* OneClick Setup Modal */}
       {showOneclickSetup && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 w-full max-w-md mx-4">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold text-gray-900">
-                Configurar método de pago
-              </h3>
+        <div className="fixed inset-0 bg-black bg-opacity-60 backdrop-blur-sm flex items-center justify-center z-50 p-2 sm:p-4">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl mx-2 sm:mx-4 max-h-[95vh] sm:max-h-[90vh] overflow-y-auto">
+            {/* Header */}
+            <div className="relative bg-gradient-to-r from-blue-600 to-blue-700 text-white p-4 sm:p-6 rounded-t-2xl">
               <button
                 onClick={() => setShowOneclickSetup(false)}
-                className="text-gray-400 hover:text-gray-600"
+                className="absolute top-3 sm:top-4 right-3 sm:right-4 text-white/80 hover:text-white hover:bg-white/10 rounded-full p-2 transition-all duration-200"
+                disabled={isSettingUpOneclick}
               >
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                 </svg>
               </button>
+              
+              <div className="flex items-center space-x-3 pr-12">
+                <div className="p-2 sm:p-3 bg-white/10 rounded-xl">
+                  <svg className="w-6 h-6 sm:w-8 sm:h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+                  </svg>
+                </div>
+                <div>
+                  <h3 className="text-xl sm:text-2xl font-bold">
+                    Configurar método de pago
+                  </h3>
+                  <p className="text-blue-100 mt-1 text-sm sm:text-base">
+                    Configura tu suscripción para comenzar tu mes gratuito
+                  </p>
+                </div>
+              </div>
             </div>
 
-            <div className="mb-4">
-              <div className="bg-blue-50 border border-blue-200 rounded-md p-3 mb-4">
-                <div className="flex">
-                  <div className="flex-shrink-0">
-                    <svg className="w-4 h-4 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className="p-4 sm:p-6 space-y-4 sm:space-y-6">
+              {/* Plan Summary */}
+              <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-xl p-3 sm:p-4">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between space-y-2 sm:space-y-0">
+                  <div>
+                    <h4 className="font-semibold text-gray-900 text-sm sm:text-base">
+                      {plans.find(p => p.id === selectedPlan)?.name}
+                    </h4>
+                    <p className="text-xs sm:text-sm text-gray-600">
+                      {plans.find(p => p.id === selectedPlan)?.description}
+                    </p>
+                  </div>
+                  <div className="text-left sm:text-right">
+                    <div className="text-xl sm:text-2xl font-bold text-blue-600">
+                      {plans.find(p => p.id === selectedPlan)?.price}
+                    </div>
+                    <div className="text-xs sm:text-sm text-gray-500">
+                      {plans.find(p => p.id === selectedPlan)?.period}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* How it Works */}
+              <div className="bg-green-50 border border-green-200 rounded-xl p-4">
+                <div className="flex items-start space-x-3">
+                  <div className="flex-shrink-0 p-2 bg-green-100 rounded-lg">
+                    <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
                   </div>
-                  <div className="ml-2">
-                    <p className="text-sm text-blue-700">
-                      <strong>¿Cómo funciona?</strong>
-                    </p>
-                    <ul className="text-xs text-blue-600 mt-1 space-y-1">
-                      <li>• Registraremos tu tarjeta con un cobro de $1 peso</li>
-                      <li>• Comenzarás tu mes gratuito inmediatamente</li>
-                      <li>• Al finalizar el trial, se cobrará automáticamente</li>
-                      <li>• Puedes cancelar antes del cobro sin costos</li>
-                    </ul>
+                  <div>
+                    <h4 className="font-semibold text-green-800 mb-2">
+                      ¿Cómo funciona el proceso?
+                    </h4>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm text-green-700">
+                      <div className="flex items-center space-x-2">
+                        <div className="w-6 h-6 bg-green-500 text-white rounded-full flex items-center justify-center text-xs font-bold">1</div>
+                        <span>Registro seguro con Transbank</span>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <div className="w-6 h-6 bg-green-500 text-white rounded-full flex items-center justify-center text-xs font-bold">2</div>
+                        <span>Cargo de verificación de $1 peso</span>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <div className="w-6 h-6 bg-green-500 text-white rounded-full flex items-center justify-center text-xs font-bold">3</div>
+                        <span>Mes gratuito comienza inmediatamente</span>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <div className="w-6 h-6 bg-green-500 text-white rounded-full flex items-center justify-center text-xs font-bold">4</div>
+                        <span>Cancela antes del cobro sin costos</span>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
 
-              <div className="space-y-4">
-                <div className="bg-gray-50 border border-gray-200 rounded-md p-3">
-                  <div className="flex items-center">
-                    <div className="flex-shrink-0">
-                      <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.207" />
-                      </svg>
-                    </div>
-                    <div className="ml-2">
-                      <p className="text-sm text-gray-700">
-                        <strong>Email de confirmación:</strong> {user?.email}
-                      </p>
-                      <p className="text-xs text-gray-500">
-                        Se enviará la confirmación a este email después de configurar el método de pago.
-                      </p>
-                    </div>
+              {/* Email Confirmation */}
+              <div className="bg-gray-50 border border-gray-200 rounded-xl p-4">
+                <div className="flex items-center space-x-3">
+                  <div className="flex-shrink-0 p-2 bg-gray-100 rounded-lg">
+                    <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.207" />
+                    </svg>
+                  </div>
+                  <div>
+                    <h4 className="font-semibold text-gray-900">
+                      Email de confirmación
+                    </h4>
+                    <p className="text-sm text-gray-600">
+                      <strong>{user?.email}</strong>
+                    </p>
+                    <p className="text-xs text-gray-500 mt-1">
+                      Recibirás la confirmación y detalles de tu suscripción en este email.
+                    </p>
                   </div>
                 </div>
+              </div>
 
-                <div className="flex items-start">
-                  <input
-                    type="checkbox"
-                    id="acceptTerms"
-                    checked={oneclickForm.acceptTerms}
-                    onChange={(e) => setOneclickForm({ ...oneclickForm, acceptTerms: e.target.checked })}
-                    className="mt-1 mr-2"
-                    required
-                  />
-                  <label htmlFor="acceptTerms" className="text-xs text-gray-600">
-                    Acepto los <a href="#" className="text-blue-600 hover:underline">términos y condiciones</a> y 
-                    autorizo el cobro automático de mi suscripción mensual de{' '}
-                    <strong>${plans.find(p => p.id === selectedPlan)?.transbankAmount?.toLocaleString('es-CL')}</strong> 
-                    {' '}al finalizar el período de prueba gratuito de {plans.find(p => p.id === selectedPlan)?.trialDays} días.
-                  </label>
+              {/* Terms and Conditions */}
+              <div className="space-y-4">
+                <div className="border border-gray-200 rounded-xl p-4">
+                  <div className="flex items-start space-x-3">
+                    <input
+                      type="checkbox"
+                      id="acceptTerms"
+                      checked={oneclickForm.acceptTerms}
+                      onChange={(e) => setOneclickForm({ ...oneclickForm, acceptTerms: e.target.checked })}
+                      className="mt-1 w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                      required
+                    />
+                    <label htmlFor="acceptTerms" className="text-sm text-gray-700 leading-relaxed">
+                      <span className="font-semibold">Acepto los términos:</span>
+                      <ul className="mt-2 space-y-1 text-xs">
+                        <li>• Los <a href="#" className="text-blue-600 hover:underline font-medium">términos y condiciones</a> del servicio</li>
+                        <li>• El cobro automático mensual de <strong className="text-green-600">${plans.find(p => p.id === selectedPlan)?.transbankAmount?.toLocaleString('es-CL')}</strong></li>
+                        <li>• El período de prueba gratuito de <strong className="text-blue-600">{plans.find(p => p.id === selectedPlan)?.trialDays} días</strong></li>
+                        <li>• La posibilidad de cancelar en cualquier momento sin penalizaciones</li>
+                      </ul>
+                    </label>
+                  </div>
                 </div>
               </div>
             </div>
 
-            <div className="flex space-x-3">
-              <button
-                onClick={() => setShowOneclickSetup(false)}
-                className="flex-1 px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                disabled={isSettingUpOneclick}
-              >
-                Cancelar
-              </button>
-              <button
-                onClick={handleOneclickSetup}
-                disabled={!oneclickForm.acceptTerms || isSettingUpOneclick}
-                className="flex-1 px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {isSettingUpOneclick ? (
-                  <div className="flex items-center justify-center">
-                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
-                    Configurando...
-                  </div>
-                ) : (
-                  'Configurar método de pago'
-                )}
-              </button>
+            {/* Footer Actions */}
+            <div className="border-t border-gray-200 bg-gray-50 px-4 sm:px-6 py-4 rounded-b-2xl">
+              <div className="flex flex-col gap-3">
+                <div className="flex flex-col sm:flex-row gap-3">
+                  <button
+                    onClick={() => setShowOneclickSetup(false)}
+                    className="flex-1 px-4 sm:px-6 py-3 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-xl hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-200 shadow-sm"
+                    disabled={isSettingUpOneclick}
+                  >
+                    Cancelar
+                  </button>
+                  <button
+                    onClick={handleOneclickSetup}
+                    disabled={!oneclickForm.acceptTerms || isSettingUpOneclick}
+                    className="flex-1 px-4 sm:px-6 py-3 text-sm font-medium text-white bg-gradient-to-r from-blue-600 to-blue-700 border border-transparent rounded-xl hover:from-blue-700 hover:to-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 shadow-lg"
+                  >
+                    {isSettingUpOneclick ? (
+                      <div className="flex items-center justify-center">
+                        <div className="w-4 h-4 sm:w-5 sm:h-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
+                        <span className="hidden sm:inline">Configurando método de pago...</span>
+                        <span className="sm:hidden">Configurando...</span>
+                      </div>
+                    ) : (
+                      <div className="flex items-center justify-center">
+                        <svg className="w-4 h-4 sm:w-5 sm:h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        <span className="hidden sm:inline">Continuar con Transbank</span>
+                        <span className="sm:hidden">Continuar</span>
+                      </div>
+                    )}
+                  </button>
+                </div>
+                
+                <div className="flex items-center justify-center space-x-2 text-xs text-gray-500">
+                  <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd" />
+                  </svg>
+                  <span className="text-center">Transacción 100% segura con Transbank</span>
+                </div>
+              </div>
             </div>
           </div>
         </div>

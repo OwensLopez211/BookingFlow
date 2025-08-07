@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || import.meta.env.VITE_API_URL || 'http://localhost:3001';
 
 // Configure axios defaults
 const apiClient = axios.create({
@@ -135,6 +135,46 @@ export const authService = {
         success: false,
         error: error.response?.data?.error || 'Error during registration',
       };
+    }
+  },
+
+  async refreshTokens(): Promise<{ accessToken: string; idToken: string } | null> {
+    try {
+      const refreshToken = localStorage.getItem('refreshToken');
+      if (!refreshToken) {
+        console.warn('🔧 No refresh token available');
+        return null;
+      }
+
+      console.log('🔄 AuthService: Refreshing tokens...');
+      const response = await apiClient.post('/v1/auth/refresh', {
+        refreshToken
+      });
+
+      if (response.data.success && response.data.tokens) {
+        console.log('✅ AuthService: Tokens refreshed successfully');
+        localStorage.setItem('accessToken', response.data.tokens.accessToken);
+        localStorage.setItem('idToken', response.data.tokens.idToken);
+        if (response.data.tokens.refreshToken) {
+          localStorage.setItem('refreshToken', response.data.tokens.refreshToken);
+        }
+        return {
+          accessToken: response.data.tokens.accessToken,
+          idToken: response.data.tokens.idToken
+        };
+      }
+
+      return null;
+    } catch (error: any) {
+      console.error('❌ AuthService: Error refreshing tokens:', error);
+      console.warn('🔧 AuthService: Refresh token failed, but keeping localStorage intact for now');
+      // Don't automatically logout - let the user manually re-authenticate
+      // Only clear tokens if it's a specific auth error (401/403)
+      if (error.response?.status === 401 || error.response?.status === 403) {
+        console.warn('🔧 AuthService: Auth error during refresh - clearing tokens');
+        this.logout();
+      }
+      return null;
     }
   },
 

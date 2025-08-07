@@ -35,17 +35,29 @@ export const useSubscription = () => {
       setIsLoading(true);
       setError(null);
 
-      // Obtener estado de suscripción
+      // Usar el endpoint de suscripción
       const subscriptionData = await transbankService.getSubscriptionStatus(user.orgId);
+      
+      // Si es null por error 401, mostrar mensaje específico
+      if (subscriptionData === null && error === null) {
+        console.warn('🔧 Subscription data is null - possible auth issue');
+        setError('Error de autenticación - por favor actualiza la página');
+      }
+      
       setSubscription(subscriptionData);
 
       // Obtener estado OneClick
       const oneclickData = await fetchOneclickStatus();
       setOneclickStatus(oneclickData);
 
-    } catch (err) {
+    } catch (err: any) {
       console.error('Error fetching subscription status:', err);
-      setError(err instanceof Error ? err.message : 'Error desconocido');
+      
+      if (err.response?.status === 401) {
+        setError('Tu sesión ha expirado. Por favor, inicia sesión nuevamente.');
+      } else {
+        setError(err instanceof Error ? err.message : 'Error desconocido');
+      }
     } finally {
       setIsLoading(false);
     }
@@ -55,21 +67,19 @@ export const useSubscription = () => {
     if (!user?.orgId) return null;
 
     try {
-      const token = localStorage.getItem('accessToken');
-      const response = await fetch(`http://localhost:3001/v1/transbank/oneclick/status/${user.orgId}`, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
-      });
-
-      if (!response.ok) {
-        throw new Error('Error obteniendo estado OneClick');
-      }
-
-      const data = await response.json();
-      return data.data;
-    } catch (error) {
+      // Usar apiClient para consistencia
+      const { apiClient } = await import('../services/apiClient');
+      const response = await apiClient.get(`/v1/transbank/oneclick/status/${user.orgId}`);
+      return response.data.data || response.data;
+    } catch (error: any) {
       console.error('Error fetching OneClick status:', error);
+      
+      if (error.response?.status === 401) {
+        console.warn('🔧 Authentication error getting OneClick status');
+      } else if (error.response?.status === 404) {
+        console.warn('🔧 OneClick status not found - user might not have OneClick set up');
+      }
+      
       return null;
     }
   };

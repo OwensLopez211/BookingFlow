@@ -182,7 +182,7 @@ interface Organization {
   currency?: string;
   settings: OrganizationSettings;
   subscription: {
-    plan: 'free' | 'premium';
+    plan: 'free' | 'basic' | 'professional' | 'enterprise';
     limits: {
       maxResources: number;
       maxAppointmentsPerMonth: number;
@@ -1476,14 +1476,14 @@ app.post('/onboarding/update', authenticateToken, (req: any, res) => {
               
               const getPlanLimits = (planId: string) => {
                 switch (planId) {
-                  case 'free':
-                    return { plan: 'free' as const, maxResources: 1, maxAppointmentsPerMonth: 100, maxUsers: 1 };
                   case 'basic':
                     return { plan: 'basic' as const, maxResources: 5, maxAppointmentsPerMonth: 1000, maxUsers: 2 };
-                  case 'premium':
-                    return { plan: 'premium' as const, maxResources: 10, maxAppointmentsPerMonth: 2500, maxUsers: 10 };
+                  case 'professional':
+                    return { plan: 'professional' as const, maxResources: 10, maxAppointmentsPerMonth: 2500, maxUsers: 5 };
+                  case 'enterprise':
+                    return { plan: 'enterprise' as const, maxResources: -1, maxAppointmentsPerMonth: -1, maxUsers: -1 };
                   default:
-                    return { plan: 'free' as const, maxResources: 1, maxAppointmentsPerMonth: 100, maxUsers: 1 };
+                    return { plan: 'basic' as const, maxResources: 5, maxAppointmentsPerMonth: 1000, maxUsers: 2 };
                 }
               };
 
@@ -3021,8 +3021,78 @@ app.post('/v1/transbank/start-free-trial', authenticateToken, async (req, res) =
 });
 
 // =============================================
-// TRANSBANK ENDPOINTS (AWS LAMBDA PROXY - DISABLED IN DEV)
+// TRANSBANK ENDPOINTS (LOCAL IMPLEMENTATION FOR DEV)
 // =============================================
+
+// Get Subscription Status (Local Implementation)
+app.get('/v1/transbank/subscription/:organizationId', authenticateToken, async (req, res) => {
+  try {
+    console.log('💳 Get Subscription Status (Local Dev)');
+    const user = (req as any).user;
+    const { organizationId } = req.params;
+    
+    // Debug: Log user and organization info
+    console.log('🔍 Debug info:');
+    console.log('- User orgId:', user.orgId);
+    console.log('- Requested organizationId:', organizationId);
+    console.log('- Match:', user.orgId === organizationId);
+    console.log('- User role:', user.role);
+    
+    // Verify user has access to organization
+    if (user.orgId !== organizationId) {
+      console.log('❌ Access denied: orgId mismatch');
+      return res.status(403).json({
+        success: false,
+        error: 'No tienes permisos para esta organización'
+      });
+    }
+
+    // Find organization
+    const organization = organizations.find(org => org.id === organizationId);
+    if (!organization) {
+      return res.status(404).json({
+        success: false,
+        error: 'Organización no encontrada'
+      });
+    }
+
+    // Build subscription response similar to production
+    const subscriptionData = {
+      id: `sub_${organizationId}`,
+      status: organization.subscription.trial?.isActive ? 'trialing' : 'active',
+      plan: {
+        id: organization.subscription.plan,
+        name: organization.subscription.plan === 'basic' ? 'Plan Básico' : 
+              organization.subscription.plan === 'professional' ? 'Plan Profesional' : 'Plan Enterprise',
+        amount: organization.subscription.plan === 'basic' ? 14990 : 
+                organization.subscription.plan === 'professional' ? 29990 : 59990,
+        currency: organization.currency || 'CLP',
+        interval: 'month'
+      },
+      trial_end: organization.subscription.trial?.isActive 
+        ? Math.floor(new Date(organization.subscription.trial.endDate).getTime() / 1000) 
+        : undefined,
+      current_period_end: organization.subscription.trial?.isActive 
+        ? Math.floor(new Date(organization.subscription.trial.endDate).getTime() / 1000)
+        : undefined
+    };
+
+    console.log('✅ Subscription data retrieved:', subscriptionData);
+
+    res.json({
+      success: true,
+      message: 'Estado de suscripción obtenido exitosamente',
+      data: subscriptionData
+    });
+
+  } catch (error) {
+    console.error('❌ Error getting subscription status:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Error obteniendo suscripción: ' + (error instanceof Error ? error.message : 'Unknown error')
+    });
+  }
+});
 
 // Transbank middleware to handle remaining /v1/transbank/* routes  
 app.use('/v1/transbank', async (req, res) => {

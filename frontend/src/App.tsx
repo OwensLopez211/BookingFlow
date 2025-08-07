@@ -2,6 +2,7 @@ import React, { useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { ToastProvider } from '@/components/ui';
 import { NotificationProvider } from '@/components/notifications';
+import { ToastProvider as LoginToastProvider } from '@/hooks/useToast';
 
 // Layouts
 import { PublicLayout } from '@/components/layout/PublicLayout';
@@ -9,10 +10,12 @@ import { AuthLayout } from '@/components/layout/AuthLayout';
 import { PrivateLayout } from '@/components/layout/PrivateLayout';
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute';
 import { AuthRedirect } from '@/components/auth/AuthRedirect';
+import { AuthTransition } from '@/components/auth/AuthTransition';
 import { useAuthStore } from '@/stores/authStore';
 
 // Public Pages
 import { HomePage } from '@/pages/HomePage';
+import { WelcomePage } from '@/pages/WelcomePage';
 import { BookingPage } from '@/pages/public/BookingPage';
 
 // Auth Pages
@@ -43,8 +46,9 @@ function App() {
 
   return (
     <Router>
-      <NotificationProvider>
-        <div className="App">
+      <LoginToastProvider>
+        <NotificationProvider>
+          <div className="App">
           <Routes>
           {/* Public Routes */}
           <Route path="/" element={<PublicLayout />}>
@@ -52,23 +56,31 @@ function App() {
             <Route path="features" element={<div>Features Page</div>} />
             <Route path="pricing" element={<div>Pricing Page</div>} />
             <Route path="about" element={<div>About Page</div>} />
+            <Route path="roadmap" element={<div>Roadmap Page</div>} />
             <Route path="demo" element={<div>Demo Page</div>} />
           </Route>
+
+          {/* Welcome Route - Standalone (no layout for full-screen experience) */}
+          <Route path="/welcome" element={<WelcomePage />} />
 
           {/* Public Booking Routes - No layout wrapper for mobile app experience */}
           <Route path="/book/:orgId" element={<BookingPage />} />
 
           {/* Auth Routes */}
-          {/* Login and Register have their own custom layouts */}
+          {/* Login and Register have their own custom layouts with transitions */}
           <Route path="/auth/login" element={
             <AuthRedirect>
-              <LoginPage />
+              <AuthTransition>
+                <LoginPage />
+              </AuthTransition>
             </AuthRedirect>
           } />
           
           <Route path="/auth/register" element={
             <AuthRedirect>
-              <RegisterPage />
+              <AuthTransition>
+                <RegisterPage />
+              </AuthTransition>
             </AuthRedirect>
           } />
           
@@ -146,8 +158,9 @@ function App() {
 
           {/* Toast Notifications */}
           <ToastProvider />
-        </div>
-      </NotificationProvider>
+          </div>
+        </NotificationProvider>
+      </LoginToastProvider>
     </Router>
   );
 }

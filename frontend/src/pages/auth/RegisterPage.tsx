@@ -1,10 +1,20 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { motion } from 'framer-motion';
 import { useAuthStore } from '@/stores/authStore';
 import { EyeIcon, EyeSlashIcon } from '@heroicons/react/24/outline';
+import toast from 'react-hot-toast';
+import { PasswordRequirements } from '@/components/ui/PasswordRequirements';
+import { PasswordStrengthMeter } from '@/components/ui/PasswordStrengthMeter';
 
 
-export const RegisterPage: React.FC = () => {
+interface RegisterPageProps {
+  heroVariants?: any;
+  formVariants?: any;
+  decorativeVariants?: any;
+}
+
+export const RegisterPage: React.FC<RegisterPageProps> = ({ heroVariants, formVariants, decorativeVariants }) => {
   const navigate = useNavigate();
   const { register, isLoading } = useAuthStore();
   
@@ -18,90 +28,194 @@ export const RegisterPage: React.FC = () => {
 
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [errors, setErrors] = useState<Record<string, string>>({});
+
+  const validateForm = (): boolean => {
+    const newErrors: Record<string, string> = {};
+    
+    // Validar campos obligatorios
+    if (!formData.firstName.trim()) {
+      newErrors.firstName = 'El nombre es obligatorio';
+    }
+    
+    if (!formData.lastName.trim()) {
+      newErrors.lastName = 'El apellido es obligatorio';
+    }
+    
+    if (!formData.email.trim()) {
+      newErrors.email = 'El correo electrónico es obligatorio';
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+      newErrors.email = 'El correo electrónico no es válido';
+    }
+    
+    if (!formData.password) {
+      newErrors.password = 'La contraseña es obligatoria';
+    } else {
+      // Validar requisitos de contraseña
+      const passwordChecks = [
+        { test: formData.password.length >= 8, message: 'Mínimo 8 caracteres' },
+        { test: /[A-Z]/.test(formData.password), message: 'Una letra mayúscula' },
+        { test: /[a-z]/.test(formData.password), message: 'Una letra minúscula' },
+        { test: /\d/.test(formData.password), message: 'Un número' },
+        { test: /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(formData.password), message: 'Un carácter especial' }
+      ];
+      
+      const failedChecks = passwordChecks.filter(check => !check.test);
+      if (failedChecks.length > 0) {
+        newErrors.password = `Faltan: ${failedChecks.map(check => check.message).join(', ')}`;
+      }
+    }
+    
+    if (!formData.confirmPassword) {
+      newErrors.confirmPassword = 'Confirma tu contraseña';
+    } else if (formData.password !== formData.confirmPassword) {
+      newErrors.confirmPassword = 'Las contraseñas no coinciden';
+    }
+    
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    e.stopPropagation();
     
-    if (formData.password !== formData.confirmPassword) {
-      alert('Las contraseñas no coinciden');
-      return;
+    if (!validateForm()) {
+      toast.error('Por favor corrige los errores antes de continuar', {
+        duration: 4000,
+        position: 'top-center',
+      });
+      return false;
+    }
+    
+    if (isLoading) {
+      return false; // Prevenir múltiples submissions
     }
 
-    const success = await register({
-      email: formData.email,
-      password: formData.password,
-      firstName: formData.firstName,
-      lastName: formData.lastName,
-      organizationName: 'Mi Empresa', // Temporal, se configurará en onboarding
-      templateType: 'custom', // Temporal, se configurará en onboarding
-    });
+    try {
+      const success = await register({
+        email: formData.email,
+        password: formData.password,
+        firstName: formData.firstName,
+        lastName: formData.lastName,
+        organizationName: 'Mi Empresa', // Temporal, se configurará en onboarding
+        templateType: 'custom', // Temporal, se configurará en onboarding
+      });
 
-    if (success) {
-      navigate('/onboarding');
+      if (success) {
+        toast.success('¡Cuenta creada exitosamente! Bienvenido a BookFlow', {
+          duration: 4000,
+          position: 'top-center',
+        });
+        navigate('/onboarding');
+      }
+    } catch (error) {
+      toast.error('Error al crear la cuenta. Verifica tus datos e intenta nuevamente', {
+        duration: 4000,
+        position: 'top-center',
+      });
     }
+    
+    return false;
   };
 
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
+    
+    // Limpiar error del campo cuando el usuario empiece a escribir
+    if (errors[field]) {
+      setErrors(prev => ({
+        ...prev,
+        [field]: ''
+      }));
+    }
   };
 
-  const handleGoogleSignup = () => {
+  const handleGoogleSignup = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
     console.log('Google signup será implementado próximamente');
+    toast('La autenticación con Google estará disponible pronto', {
+      duration: 3000,
+      position: 'top-center',
+      icon: '🚀',
+    });
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50">
-      {/* Hero Section - Desktop Only */}
-      <div className="hidden lg:block fixed inset-y-0 left-0 w-1/2 bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-800 overflow-hidden">
+    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-pink-50">
+      {/* Hero Section - Desktop Only - Lado Derecho */}
+      <motion.div 
+        variants={heroVariants}
+        className="hidden lg:block fixed inset-y-0 right-0 w-1/2 bg-gradient-to-bl from-purple-600 via-violet-700 to-indigo-800 overflow-hidden">
         <div className="flex flex-col justify-center h-full px-12 xl:px-16 relative">
-          <div className="max-w-md relative z-10">
-            <div className="flex items-center space-x-3 mb-8">
+          <div className="max-w-md relative z-10 ml-auto text-right">
+            <div className="flex items-center justify-end space-x-3 mb-8">
+              <span className="text-3xl font-bold text-white tracking-tight">BookFlow</span>
               <div className="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center">
                 <img src="/bookingflowlogo.png" alt="BookFlow" className="w-8 h-8" />
               </div>
-              <span className="text-3xl font-bold text-white tracking-tight">BookFlow</span>
             </div>
             
             <h1 className="text-4xl xl:text-5xl font-bold text-white leading-tight mb-6">
               Comienza tu
-              <span className="bg-gradient-to-r from-blue-200 to-white bg-clip-text text-transparent"> transformación digital</span>
+              <span className="bg-gradient-to-r from-purple-200 to-white bg-clip-text text-transparent block"> transformación digital</span>
             </h1>
             
-            <p className="text-blue-100 text-lg leading-relaxed mb-8">
+            <p className="text-purple-100 text-lg leading-relaxed mb-8">
               Únete a miles de profesionales que ya confían en BookFlow para gestionar sus citas de manera inteligente.
             </p>
             
             <div className="space-y-4">
-              <div className="flex items-center space-x-3 text-blue-100">
-                <div className="w-2 h-2 bg-blue-300 rounded-full"></div>
+              <div className="flex items-center justify-end space-x-3 text-purple-100">
                 <span>Configuración rápida en menos de 5 minutos</span>
+                <div className="w-2 h-2 bg-purple-300 rounded-full"></div>
               </div>
-              <div className="flex items-center space-x-3 text-blue-100">
-                <div className="w-2 h-2 bg-blue-300 rounded-full"></div>
+              <div className="flex items-center justify-end space-x-3 text-purple-100">
                 <span>30 días de prueba gratuita sin tarjeta de crédito</span>
+                <div className="w-2 h-2 bg-purple-300 rounded-full"></div>
               </div>
-              <div className="flex items-center space-x-3 text-blue-100">
-                <div className="w-2 h-2 bg-blue-300 rounded-full"></div>
+              <div className="flex items-center justify-end space-x-3 text-purple-100">
                 <span>Soporte técnico en español las 24/7</span>
+                <div className="w-2 h-2 bg-purple-300 rounded-full"></div>
               </div>
             </div>
           </div>
           
           {/* Decorative Elements */}
-          <div className="absolute top-20 right-20 w-72 h-72 bg-white/5 rounded-full blur-3xl"></div>
-          <div className="absolute bottom-32 right-32 w-48 h-48 bg-blue-400/10 rounded-full blur-2xl"></div>
-          <div className="absolute top-1/2 right-10 w-32 h-32 bg-indigo-300/10 rounded-full blur-xl"></div>
+          <motion.div 
+            variants={decorativeVariants}
+            className="absolute top-20 left-20 w-72 h-72 bg-white/5 rounded-full blur-3xl"
+          ></motion.div>
+          <motion.div 
+            variants={decorativeVariants}
+            className="absolute bottom-32 left-32 w-48 h-48 bg-purple-400/10 rounded-full blur-2xl"
+          ></motion.div>
+          <motion.div 
+            variants={decorativeVariants}
+            className="absolute top-1/2 left-10 w-32 h-32 bg-violet-300/10 rounded-full blur-xl"
+          ></motion.div>
+          <motion.div 
+            variants={decorativeVariants}
+            className="absolute bottom-10 right-10 w-20 h-20 bg-indigo-300/10 rounded-full blur-lg"
+          ></motion.div>
+          <motion.div 
+            variants={decorativeVariants}
+            className="absolute top-32 right-32 w-16 h-16 bg-purple-300/5 rounded-full blur-md"
+          ></motion.div>
         </div>
-      </div>
+      </motion.div>
 
-      {/* Register Form */}
-      <div className="lg:ml-[50%] flex min-h-screen">
-        <div className="flex-1 flex flex-col justify-center px-6 sm:px-8 lg:px-12 xl:px-16 py-12">
+      {/* Register Form - Lado Izquierdo */}
+      <motion.div 
+        variants={formVariants}
+        className="lg:mr-[50%] flex min-h-screen">
+        <div className="flex-1 flex flex-col justify-center px-6 sm:px-8 lg:px-12 xl:px-16 py-8 lg:py-12 min-h-screen lg:min-h-0">
           <div className="mx-auto w-full max-w-md">
             {/* Mobile Logo */}
             <div className="lg:hidden flex items-center justify-center mb-8">
               <div className="flex items-center space-x-3">
-                <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-blue-700 rounded-xl flex items-center justify-center shadow-lg">
+                <div className="w-10 h-10 bg-gradient-to-br from-purple-600 to-violet-700 rounded-xl flex items-center justify-center shadow-lg">
                   <img src="/bookingflowlogo.png" alt="BookFlow" className="w-6 h-6" />
                 </div>
                 <span className="text-2xl font-bold text-gray-900 tracking-tight">BookFlow</span>
@@ -120,6 +234,7 @@ export const RegisterPage: React.FC = () => {
 
             {/* Google Button */}
             <button
+              type="button"
               onClick={handleGoogleSignup}
               className="w-full flex items-center justify-center px-4 py-3 border border-gray-300 rounded-lg text-gray-700 bg-white hover:bg-gray-50 hover:border-gray-400 transition-all duration-200 shadow-sm hover:shadow-md mb-5 group"
             >
@@ -143,12 +258,16 @@ export const RegisterPage: React.FC = () => {
             </div>
 
             {/* Form */}
-            <form onSubmit={handleSubmit} className="space-y-4">
+            <form 
+              onSubmit={handleSubmit} 
+              className="space-y-4"
+              noValidate
+            >
               {/* Información Personal */}
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-semibold text-gray-700 mb-2">
-                    Nombre
+                    Nombre <span className="text-red-500">*</span>
                   </label>
                   <input
                     type="text"
@@ -156,12 +275,23 @@ export const RegisterPage: React.FC = () => {
                     onChange={(e) => handleInputChange('firstName', e.target.value)}
                     required
                     placeholder="Juan"
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-white placeholder-gray-400 text-gray-900"
+                    className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-200 bg-white placeholder-gray-400 text-gray-900 ${
+                      errors.firstName ? 'border-red-500' : 'border-gray-300'
+                    }`}
                   />
+                  {errors.firstName && (
+                    <motion.p
+                      initial={{ opacity: 0, y: -5 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="text-red-500 text-xs mt-1"
+                    >
+                      {errors.firstName}
+                    </motion.p>
+                  )}
                 </div>
                 <div>
                   <label className="block text-sm font-semibold text-gray-700 mb-2">
-                    Apellido
+                    Apellido <span className="text-red-500">*</span>
                   </label>
                   <input
                     type="text"
@@ -169,14 +299,25 @@ export const RegisterPage: React.FC = () => {
                     onChange={(e) => handleInputChange('lastName', e.target.value)}
                     required
                     placeholder="Pérez"
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-white placeholder-gray-400 text-gray-900"
+                    className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-200 bg-white placeholder-gray-400 text-gray-900 ${
+                      errors.lastName ? 'border-red-500' : 'border-gray-300'
+                    }`}
                   />
+                  {errors.lastName && (
+                    <motion.p
+                      initial={{ opacity: 0, y: -5 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="text-red-500 text-xs mt-1"
+                    >
+                      {errors.lastName}
+                    </motion.p>
+                  )}
                 </div>
               </div>
 
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-2">
-                  Correo electrónico
+                  Correo electrónico <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="email"
@@ -184,15 +325,26 @@ export const RegisterPage: React.FC = () => {
                   onChange={(e) => handleInputChange('email', e.target.value)}
                   required
                   placeholder="tu@email.com"
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-white placeholder-gray-400 text-gray-900"
+                  className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-200 bg-white placeholder-gray-400 text-gray-900 ${
+                    errors.email ? 'border-red-500' : 'border-gray-300'
+                  }`}
                 />
+                {errors.email && (
+                  <motion.p
+                    initial={{ opacity: 0, y: -5 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="text-red-500 text-xs mt-1"
+                  >
+                    {errors.email}
+                  </motion.p>
+                )}
               </div>
 
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-4">
                 <div>
                   <label className="block text-sm font-semibold text-gray-700 mb-2">
-                    Contraseña
+                    Contraseña <span className="text-red-500">*</span>
                   </label>
                   <div className="relative">
                     <input
@@ -201,7 +353,9 @@ export const RegisterPage: React.FC = () => {
                       onChange={(e) => handleInputChange('password', e.target.value)}
                       required
                       placeholder="••••••••"
-                      className="w-full px-4 py-3 pr-12 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-white placeholder-gray-400 text-gray-900"
+                      className={`w-full px-4 py-3 pr-12 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-200 bg-white placeholder-gray-400 text-gray-900 ${
+                        errors.password ? 'border-red-500' : 'border-gray-300'
+                      }`}
                     />
                     <button
                       type="button"
@@ -215,10 +369,24 @@ export const RegisterPage: React.FC = () => {
                       )}
                     </button>
                   </div>
+                  {errors.password && (
+                    <motion.p
+                      initial={{ opacity: 0, y: -5 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="text-red-500 text-xs mt-1"
+                    >
+                      {errors.password}
+                    </motion.p>
+                  )}
+                  
+                  {/* Componentes de validación de contraseña */}
+                  <PasswordStrengthMeter password={formData.password} />
+                  <PasswordRequirements password={formData.password} />
                 </div>
+                
                 <div>
                   <label className="block text-sm font-semibold text-gray-700 mb-2">
-                    Confirmar contraseña
+                    Confirmar contraseña <span className="text-red-500">*</span>
                   </label>
                   <div className="relative">
                     <input
@@ -227,7 +395,9 @@ export const RegisterPage: React.FC = () => {
                       onChange={(e) => handleInputChange('confirmPassword', e.target.value)}
                       required
                       placeholder="••••••••"
-                      className="w-full px-4 py-3 pr-12 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-white placeholder-gray-400 text-gray-900"
+                      className={`w-full px-4 py-3 pr-12 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-200 bg-white placeholder-gray-400 text-gray-900 ${
+                        errors.confirmPassword ? 'border-red-500' : 'border-gray-300'
+                      }`}
                     />
                     <button
                       type="button"
@@ -241,6 +411,15 @@ export const RegisterPage: React.FC = () => {
                       )}
                     </button>
                   </div>
+                  {errors.confirmPassword && (
+                    <motion.p
+                      initial={{ opacity: 0, y: -5 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="text-red-500 text-xs mt-1"
+                    >
+                      {errors.confirmPassword}
+                    </motion.p>
+                  )}
                 </div>
               </div>
 
@@ -248,7 +427,7 @@ export const RegisterPage: React.FC = () => {
               <button
                 type="submit"
                 disabled={isLoading}
-                className="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-semibold py-3 px-6 rounded-lg transition-all duration-200 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed transform hover:scale-[1.02] active:scale-[0.98]"
+                className="w-full bg-gradient-to-r from-purple-600 to-violet-700 hover:from-purple-700 hover:to-violet-800 text-white font-semibold py-3 px-6 rounded-lg transition-all duration-200 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed transform hover:scale-[1.02] active:scale-[0.98]"
               >
                 {isLoading ? (
                   <div className="flex items-center justify-center">
@@ -267,15 +446,32 @@ export const RegisterPage: React.FC = () => {
                 ¿Ya tienes una cuenta?{' '}
                 <Link
                   to="/auth/login"
-                  className="font-semibold text-blue-600 hover:text-blue-700 transition-colors"
+                  className="font-semibold text-purple-600 hover:text-purple-700 transition-all duration-300 hover:underline underline-offset-4"
                 >
                   Inicia sesión
                 </Link>
               </p>
             </div>
+            
+            {/* Quick Switch Button */}
+            <div className="mt-6 text-center">
+              <Link
+                to="/auth/login"
+                className="inline-flex items-center justify-center w-full px-4 py-2 text-sm font-medium text-gray-600 bg-transparent border border-gray-300 rounded-lg hover:bg-gray-50 hover:text-purple-700 hover:border-purple-500 transition-all duration-300 group"
+              >
+                <motion.span
+                  whileHover={{ x: 5 }}
+                  transition={{ duration: 0.2 }}
+                  className="mr-2"
+                >
+                  →
+                </motion.span>
+                Cambiar a Inicio de Sesión
+              </Link>
+            </div>
           </div>
         </div>
-      </div>
+      </motion.div>
     </div>
   );
 };
