@@ -1776,19 +1776,50 @@ app.get('/public/organization/:orgId/availability/daily-counts', (req, res) => {
       const startMinutes = startHour * 60 + startMin;
       const endMinutes = endHour * 60 + endMin;
 
+      // Get existing appointments for this date and organization
+      const existingAppointments = appointments.filter(apt => 
+        apt.organizationId === orgId && apt.date === date && apt.status !== 'cancelled' && apt.status !== 'no_show'
+      );
+      console.log(`📅 [Daily Dev] Found ${existingAppointments.length} existing appointments for ${date} in org ${orgId}`);
+
       let availableSlotCount = 0;
+      const appointmentModel = organization.settings.appointmentSystem?.appointmentModel;
 
       for (let minutes = startMinutes; minutes + duration <= endMinutes; minutes += duration + buffer) {
-        // For resource-based systems, each time slot can have multiple appointments
-        const appointmentModel = organization.settings.appointmentSystem?.appointmentModel;
+        const hour = Math.floor(minutes / 60);
+        const min = minutes % 60;
+        const timeString = `${hour.toString().padStart(2, '0')}:${min.toString().padStart(2, '0')}`;
+        
+        // Count existing appointments at this time slot
+        const appointmentsAtTime = existingAppointments.filter(apt => apt.time === timeString);
+        console.log(`🔍 [Daily Dev] Time slot ${timeString}: Found ${appointmentsAtTime.length} existing appointments`);
         
         if (appointmentModel === 'resource_based') {
-          // For resource-based, each time slot can have multiple appointments
-          const resourceCount = organization.settings.appointmentSystem?.maxResources || 1;
-          availableSlotCount += resourceCount;
+          // For resource-based, calculate remaining slots
+          const maxResources = organization.settings.appointmentSystem?.maxResources || 1;
+          const occupiedSlots = appointmentsAtTime.length;
+          const availableAtThisTime = Math.max(0, maxResources - occupiedSlots);
+          availableSlotCount += availableAtThisTime;
+          console.log(`📊 [Daily Dev Resource] ${timeString}: ${availableAtThisTime}/${maxResources} slots available`);
         } else {
-          // For professional-based, each time slot is one appointment
-          availableSlotCount += 1;
+          // For professional-based, check if time slot is available
+          if (professionalId) {
+            // Check if this specific professional is available
+            const professionalBooked = appointmentsAtTime.some(apt => 
+              apt.professionalId === professionalId
+            );
+            if (!professionalBooked) {
+              availableSlotCount += 1;
+            }
+            console.log(`📊 [Daily Dev Prof] ${timeString}: Professional ${professionalId} ${professionalBooked ? 'booked' : 'available'}`);
+          } else {
+            // Check if any professional can take this slot
+            const totalProfessionals = organization.settings.appointmentSystem?.maxProfessionals || 1;
+            const occupiedSlots = appointmentsAtTime.length;
+            const availableAtThisTime = Math.max(0, totalProfessionals - occupiedSlots);
+            availableSlotCount += availableAtThisTime > 0 ? 1 : 0;
+            console.log(`📊 [Daily Dev General] ${timeString}: ${occupiedSlots}/${totalProfessionals} professionals booked`);
+          }
         }
       }
 
@@ -1863,6 +1894,12 @@ app.get('/public/organization/:orgId/availability', (req, res) => {
     const startMinutes = startHour * 60 + startMin;
     const endMinutes = endHour * 60 + endMin;
 
+    // Get existing appointments for this date and organization
+    const existingAppointments = appointments.filter(apt => 
+      apt.organizationId === orgId && apt.date === date && apt.status !== 'cancelled' && apt.status !== 'no_show'
+    );
+    console.log(`📅 [Availability Dev] Found ${existingAppointments.length} existing appointments for ${date} in org ${orgId}`);
+
     const availableSlots = [];
     const appointmentModel = organization.settings.appointmentSystem?.appointmentModel;
 
@@ -1871,22 +1908,49 @@ app.get('/public/organization/:orgId/availability', (req, res) => {
       const min = minutes % 60;
       const timeString = `${hour.toString().padStart(2, '0')}:${min.toString().padStart(2, '0')}`;
       
-      // For development, all slots are available
+      // Count existing appointments at this time slot
+      const appointmentsAtTime = existingAppointments.filter(apt => apt.time === timeString);
+      console.log(`🔍 [Availability Dev] Time slot ${timeString}: Found ${appointmentsAtTime.length} existing appointments`);
+      
       if (appointmentModel === 'resource_based') {
-        // For resource-based systems, show available count
-        const resourceCount = organization.settings.appointmentSystem?.maxResources || 1;
+        // For resource-based systems, calculate remaining slots
+        const maxResources = organization.settings.appointmentSystem?.maxResources || 1;
+        const occupiedSlots = appointmentsAtTime.length;
+        const availableCount = Math.max(0, maxResources - occupiedSlots);
+        
         availableSlots.push({
           time: timeString,
-          available: true,
-          availableCount: resourceCount,
+          available: availableCount > 0,
+          availableCount: availableCount,
           professionalId: null,
         });
+        console.log(`📊 [Availability Dev Resource] ${timeString}: ${availableCount}/${maxResources} slots available`);
       } else {
-        // For professional-based systems, show single availability
+        // For professional-based systems, check availability
+        let isAvailable = false;
+        let availableCount = 0;
+        
+        if (professionalId) {
+          // Check if this specific professional is available
+          const professionalBooked = appointmentsAtTime.some(apt => 
+            apt.professionalId === professionalId
+          );
+          isAvailable = !professionalBooked;
+          availableCount = isAvailable ? 1 : 0;
+          console.log(`📊 [Availability Dev Prof] ${timeString}: Professional ${professionalId} ${professionalBooked ? 'booked' : 'available'}`);
+        } else {
+          // Check if any professional can take this slot
+          const totalProfessionals = organization.settings.appointmentSystem?.maxProfessionals || 1;
+          const occupiedSlots = appointmentsAtTime.length;
+          availableCount = Math.max(0, totalProfessionals - occupiedSlots);
+          isAvailable = availableCount > 0;
+          console.log(`📊 [Availability Dev General] ${timeString}: ${occupiedSlots}/${totalProfessionals} professionals booked`);
+        }
+        
         availableSlots.push({
           time: timeString,
-          available: true,
-          availableCount: 1,
+          available: isAvailable,
+          availableCount: availableCount,
           professionalId: professionalId || null,
         });
       }
@@ -1959,6 +2023,44 @@ app.post('/public/organization/:orgId/appointments', (req, res) => {
           message: 'Profesional no encontrado o no disponible',
         });
       }
+    }
+
+    // Check if time slot is still available before creating
+    const existingAppointments = appointments.filter(apt => 
+      apt.organizationId === orgId && apt.date === appointmentData.date && apt.status !== 'cancelled' && apt.status !== 'no_show'
+    );
+    
+    const appointmentsAtTime = existingAppointments.filter(apt => apt.time === appointmentData.time);
+    const appointmentModel = organization.settings.appointmentSystem?.appointmentModel;
+    let canBook = false;
+
+    if (appointmentModel === 'resource_based') {
+      const maxResources = organization.settings.appointmentSystem?.maxResources || 1;
+      const occupiedSlots = appointmentsAtTime.length;
+      canBook = occupiedSlots < maxResources;
+      console.log(`🔍 [Create Dev Resource] Time ${appointmentData.time}: ${occupiedSlots}/${maxResources} slots occupied, can book: ${canBook}`);
+    } else {
+      if (appointmentData.professionalId) {
+        // Check if specific professional is available
+        const professionalBooked = appointmentsAtTime.some(apt => 
+          apt.professionalId === appointmentData.professionalId
+        );
+        canBook = !professionalBooked;
+        console.log(`🔍 [Create Dev Prof] Time ${appointmentData.time}: Professional ${appointmentData.professionalId} ${professionalBooked ? 'booked' : 'available'}`);
+      } else {
+        // Check if any professional can take this slot
+        const totalProfessionals = organization.settings.appointmentSystem?.maxProfessionals || 1;
+        const occupiedSlots = appointmentsAtTime.length;
+        canBook = occupiedSlots < totalProfessionals;
+        console.log(`🔍 [Create Dev General] Time ${appointmentData.time}: ${occupiedSlots}/${totalProfessionals} professionals booked, can book: ${canBook}`);
+      }
+    }
+
+    if (!canBook) {
+      return res.status(409).json({
+        success: false,
+        message: 'El horario seleccionado ya no está disponible. Por favor selecciona otro horario.',
+      });
     }
 
     // Create the appointment

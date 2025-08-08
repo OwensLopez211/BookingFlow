@@ -4,6 +4,7 @@ import { ToastProvider, LoadingScreen } from '@/components/ui';
 import { NotificationProvider } from '@/components/notifications';
 import { ToastProvider as LoginToastProvider } from '@/hooks/useToast';
 import { useAppLoading } from '@/hooks/useAppLoading';
+import '@/services/cacheService'; // Inicializar servicio de caché automáticamente
 
 // Layouts
 import { PublicLayout } from '@/components/layout/PublicLayout';

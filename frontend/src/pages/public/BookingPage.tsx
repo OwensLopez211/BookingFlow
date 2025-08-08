@@ -539,6 +539,7 @@ const DateTimeSelection: React.FC<{
   const [dailyAvailability, setDailyAvailability] = useState<DailyAvailabilityCount[]>([]);
   const [isLoadingSlots, setIsLoadingSlots] = useState(false);
   const [isLoadingDaily, setIsLoadingDaily] = useState(false);
+  const [lastRefreshTime, setLastRefreshTime] = useState<Date | null>(null);
 
   // Get effective schedule (professional's custom schedule or business hours)
   const getEffectiveSchedule = () => {
@@ -618,33 +619,45 @@ const DateTimeSelection: React.FC<{
     return dates;
   };
 
+  // Function to load daily availability that can be called multiple times
+  const loadDailyAvailability = async () => {
+    const availableDates = getAvailableDates();
+    const dateStrings = availableDates.map(d => d.date);
+    
+    if (dateStrings.length === 0) return;
+
+    setIsLoadingDaily(true);
+    try {
+      const dailyCounts = await publicBookingService.getDailyAvailabilityCounts(
+        orgId,
+        dateStrings,
+        service.duration,
+        selectedProfessional?.id
+      );
+      setDailyAvailability(dailyCounts);
+      setLastRefreshTime(new Date());
+    } catch (error: any) {
+      console.warn('Could not load daily availability counts, using fallback:', error.message);
+      // Keep dailyAvailability empty to trigger fallback behavior
+      setDailyAvailability([]);
+    } finally {
+      setIsLoadingDaily(false);
+    }
+  };
+
   // Load daily availability counts when component mounts or professional changes
   useEffect(() => {
-    const loadDailyAvailability = async () => {
-      const availableDates = getAvailableDates();
-      const dateStrings = availableDates.map(d => d.date);
-      
-      if (dateStrings.length === 0) return;
-
-      setIsLoadingDaily(true);
-      try {
-        const dailyCounts = await publicBookingService.getDailyAvailabilityCounts(
-          orgId,
-          dateStrings,
-          service.duration,
-          selectedProfessional?.id
-        );
-        setDailyAvailability(dailyCounts);
-      } catch (error: any) {
-        console.warn('Could not load daily availability counts, using fallback:', error.message);
-        // Keep dailyAvailability empty to trigger fallback behavior
-        setDailyAvailability([]);
-      } finally {
-        setIsLoadingDaily(false);
-      }
-    };
-
     loadDailyAvailability();
+  }, [orgId, service.duration, selectedProfessional]);
+
+  // Auto-refresh daily availability every 60 seconds
+  useEffect(() => {
+    const interval = setInterval(() => {
+      console.log('🔄 Auto-refreshing daily availability...');
+      loadDailyAvailability();
+    }, 60000); // 60 seconds
+
+    return () => clearInterval(interval);
   }, [orgId, service.duration, selectedProfessional]);
 
   // Reset selected date when professional changes (schedule might be different)
@@ -699,22 +712,21 @@ const DateTimeSelection: React.FC<{
     return resourceSlots;
   };
 
-  // Load availability slots when date changes
-  useEffect(() => {
-    const loadAvailability = async () => {
-      if (!selectedDate) {
-        setAvailableSlots([]);
-        return;
-      }
+  // Function to load availability that can be called multiple times
+  const loadAvailability = async () => {
+    if (!selectedDate) {
+      setAvailableSlots([]);
+      return;
+    }
 
-      setIsLoadingSlots(true);
-      try {
-        const baseSlots = await publicBookingService.getAvailability(
-          orgId,
-          selectedDate,
-          service.duration,
-          selectedProfessional?.id
-        );
+    setIsLoadingSlots(true);
+    try {
+      const baseSlots = await publicBookingService.getAvailability(
+        orgId,
+        selectedDate,
+        service.duration,
+        selectedProfessional?.id
+      );
         
         // Filter out past time slots if the selected date is today
         const now = new Date();
@@ -746,13 +758,27 @@ const DateTimeSelection: React.FC<{
       } catch (error: any) {
         console.error('Error loading availability:', error);
         setAvailableSlots([]);
-      } finally {
-        setIsLoadingSlots(false);
-      }
-    };
+    } finally {
+      setIsLoadingSlots(false);
+    }
+  };
 
+  // Load availability slots when date changes
+  useEffect(() => {
     loadAvailability();
   }, [selectedDate, selectedProfessional, orgId, service.duration, isResourceBased, maxResources]);
+
+  // Auto-refresh availability every 30 seconds to catch new bookings
+  useEffect(() => {
+    if (!selectedDate) return;
+
+    const interval = setInterval(() => {
+      console.log('🔄 Auto-refreshing availability...');
+      loadAvailability();
+    }, 30000); // 30 seconds
+
+    return () => clearInterval(interval);
+  }, [selectedDate]);
 
   const availableDates = getAvailableDates();
 
@@ -898,6 +924,15 @@ const DateTimeSelection: React.FC<{
               </p>
             </div>
           )}
+          
+          {lastRefreshTime && (
+            <div className="bg-gray-50 px-3 py-2 rounded-xl border border-gray-100">
+              <p className="text-xs text-gray-600 flex items-center">
+                <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse mr-2"></span>
+                Actualizado {lastRefreshTime.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}
+              </p>
+            </div>
+          )}
         </div>
       </div>
 
@@ -969,14 +1004,19 @@ const DateTimeSelection: React.FC<{
                       )}
                       {showCount && (
                         <div className={`text-xs font-medium px-2 py-1 rounded-full ${
-                          isResourceBased && availableCount > Math.floor(maxResources * 0.6) ? 'bg-green-100 text-green-700' :
-                          isResourceBased && availableCount > 0 ? 'bg-amber-100 text-amber-700' :
+                          isResourceBased && availableCount > Math.floor(maxResources * 0.7) ? 'bg-green-100 text-green-700' :
+                          isResourceBased && availableCount > Math.floor(maxResources * 0.3) ? 'bg-amber-100 text-amber-700' :
+                          isResourceBased && availableCount > 0 ? 'bg-red-100 text-red-700' :
                           'bg-green-100 text-green-700'
                         }`}>
-                          {isResourceBased ? 
-                            `${availableCount} slot${availableCount !== 1 ? 's' : ''}` :
+                          {isResourceBased ? (
+                            <span>
+                              {availableCount}
+                              {availableCount === 1 ? ' slot' : ' slots'}
+                            </span>
+                          ) : (
                             `${availableCount} cita${availableCount !== 1 ? 's' : ''}`
-                          }
+                          )}
                         </div>
                       )}
                       {!hasAvailability && (
@@ -1065,19 +1105,24 @@ const DateTimeSelection: React.FC<{
                           </div>
                           {hasAvailable && (
                             <div className={`text-xs font-medium px-2 py-1 rounded-full ${
-                              isResourceBased && availableCount > Math.floor(totalCount * 0.6) ? 'bg-green-100 text-green-700' :
-                              isResourceBased && availableCount > 0 ? 'bg-amber-100 text-amber-700' :
+                              isResourceBased && availableCount > Math.floor(maxResources * 0.7) ? 'bg-green-100 text-green-700' :
+                              isResourceBased && availableCount > Math.floor(maxResources * 0.3) ? 'bg-amber-100 text-amber-700' :
+                              isResourceBased && availableCount > 0 ? 'bg-red-100 text-red-700' :
                               'bg-blue-100 text-blue-700'
                             }`}>
-                              {isResourceBased ? 
-                                `${availableCount} slot${availableCount !== 1 ? 's' : ''}` :
+                              {isResourceBased ? (
+                                <span>
+                                  {availableCount}/{totalCount}
+                                  {availableCount === 1 ? ' slot' : ' slots'}
+                                </span>
+                              ) : (
                                 'Disponible'
-                              }
+                              )}
                             </div>
                           )}
                           {!hasAvailable && (
                             <div className="text-xs text-gray-400 px-2 py-1 bg-gray-100 rounded-full">
-                              Ocupado
+                              {isResourceBased ? 'Completo' : 'Ocupado'}
                             </div>
                           )}
                         </div>

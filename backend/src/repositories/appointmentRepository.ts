@@ -1,5 +1,6 @@
 import { v4 as uuidv4 } from 'uuid';
-import { getItem, putItem, query, deleteItem, TABLES } from '../utils/dynamodb';
+import { getItem, putItem, deleteItem, TABLES, dynamoClient } from '../utils/dynamodb';
+import { QueryCommand } from '@aws-sdk/lib-dynamodb';
 import { Appointment } from '../../../shared/types/business';
 
 export const createAppointment = async (
@@ -42,7 +43,8 @@ export const getAppointmentsByOrgAndDate = async (
   orgId: string, 
   date: string
 ): Promise<Appointment[]> => {
-  const result = await query(TABLES.ORGANIZATIONS, {
+  const command = new QueryCommand({
+    TableName: TABLES.ORGANIZATIONS,
     IndexName: 'GSI1',
     KeyConditionExpression: 'GSI1PK = :pk AND GSI1SK = :sk',
     ExpressionAttributeValues: {
@@ -50,6 +52,8 @@ export const getAppointmentsByOrgAndDate = async (
       ':sk': `DATE#${date}`,
     },
   });
+
+  const result = await dynamoClient.send(command);
 
   if (!result.Items) return [];
 
@@ -64,7 +68,8 @@ export const getAppointmentsByOrgAndDateRange = async (
   startDate: string, 
   endDate: string
 ): Promise<Appointment[]> => {
-  const result = await query(TABLES.ORGANIZATIONS, {
+  const command = new QueryCommand({
+    TableName: TABLES.ORGANIZATIONS,
     IndexName: 'GSI1',
     KeyConditionExpression: 'GSI1PK = :pk AND GSI1SK BETWEEN :start AND :end',
     ExpressionAttributeValues: {
@@ -73,6 +78,8 @@ export const getAppointmentsByOrgAndDateRange = async (
       ':end': `DATE#${endDate}`,
     },
   });
+
+  const result = await dynamoClient.send(command);
 
   if (!result.Items) return [];
 
@@ -86,7 +93,8 @@ export const getAppointmentsByStaffAndDate = async (
   staffId: string, 
   date: string
 ): Promise<Appointment[]> => {
-  const result = await query(TABLES.ORGANIZATIONS, {
+  const command = new QueryCommand({
+    TableName: TABLES.ORGANIZATIONS,
     IndexName: 'GSI2',
     KeyConditionExpression: 'GSI2PK = :pk AND GSI2SK = :sk',
     ExpressionAttributeValues: {
@@ -94,6 +102,8 @@ export const getAppointmentsByStaffAndDate = async (
       ':sk': `DATE#${date}`,
     },
   });
+
+  const result = await dynamoClient.send(command);
 
   if (!result.Items) return [];
 
@@ -108,7 +118,8 @@ export const getAppointmentsByStaffAndDateRange = async (
   startDate: string, 
   endDate: string
 ): Promise<Appointment[]> => {
-  const result = await query(TABLES.ORGANIZATIONS, {
+  const command = new QueryCommand({
+    TableName: TABLES.ORGANIZATIONS,
     IndexName: 'GSI2',
     KeyConditionExpression: 'GSI2PK = :pk AND GSI2SK BETWEEN :start AND :end',
     ExpressionAttributeValues: {
@@ -117,6 +128,8 @@ export const getAppointmentsByStaffAndDateRange = async (
       ':end': `DATE#${endDate}`,
     },
   });
+
+  const result = await dynamoClient.send(command);
 
   if (!result.Items) return [];
 

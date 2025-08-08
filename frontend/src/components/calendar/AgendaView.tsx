@@ -26,6 +26,14 @@ interface Organization {
       appointmentModel?: 'professional_based' | 'resource_based';
       professionals?: Professional[];
     };
+    services?: Array<{
+      id: string;
+      name: string;
+      description?: string;
+      duration: number;
+      price: number;
+      isActive?: boolean;
+    }>;
   };
 }
 
@@ -56,6 +64,19 @@ export const AgendaView: React.FC<AgendaViewProps> = ({ selectedDate, appointmen
     time: string;
     professionalId?: string;
   } | null>(null);
+  
+  // Mobile detection hook
+  const [isMobile, setIsMobile] = useState(false);
+  
+  React.useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 1024); // lg breakpoint
+    };
+    
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   // Handle time slot click
   const handleTimeSlotClick = (time: string, professionalId?: string) => {
@@ -191,6 +212,150 @@ export const AgendaView: React.FC<AgendaViewProps> = ({ selectedDate, appointmen
   };
 
   const timeSlots = getTimeSlots();
+
+  // Helper function to convert time to minutes for comparison
+  const timeToMinutes = (timeStr: string): number => {
+    const [hours, minutes] = timeStr.split(':').map(Number);
+    return hours * 60 + minutes;
+  };
+
+  // Helper function to calculate precise appointment positioning based on time slots
+  const calculateAppointmentPosition = (appointment: Appointment, timeSlots: any[]) => {
+    if (timeSlots.length === 0) return { startPosition: 0, height: 48 };
+    
+    // Debug time parsing
+    console.log(`🔧 Parsing times for ${appointment.id}:`, {
+      startTimeRaw: appointment.startTime,
+      endTimeRaw: appointment.endTime,
+      startTimeParsed: timeToMinutes(appointment.startTime),
+      endTimeParsed: timeToMinutes(appointment.endTime)
+    });
+    
+    const startTimeMinutes = timeToMinutes(appointment.startTime);
+    const endTimeMinutes = timeToMinutes(appointment.endTime);
+    
+    // Find the first and last time slots to get business hours bounds
+    const firstSlot = timeSlots[0];
+    const lastSlot = timeSlots[timeSlots.length - 1];
+    const businessStartMinutes = firstSlot.hour * 60 + firstSlot.minute;
+    const businessEndMinutes = lastSlot.hour * 60 + lastSlot.minute + 30; // Add 30 minutes for last slot duration
+    
+    // Each time slot is 30 minutes and 48px high
+    const slotDurationMinutes = 30;
+    const slotHeightPx = 48;
+    const pixelsPerMinute = slotHeightPx / slotDurationMinutes; // 1.6 pixels per minute
+    
+    // Clamp appointment times to business hours for positioning
+    const clampedStartMinutes = Math.max(businessStartMinutes, Math.min(startTimeMinutes, businessEndMinutes));
+    const clampedEndMinutes = Math.max(businessStartMinutes, Math.min(endTimeMinutes, businessEndMinutes));
+    
+    // Calculate start position relative to business hours start
+    const startOffsetMinutes = clampedStartMinutes - businessStartMinutes;
+    const startPosition = startOffsetMinutes * pixelsPerMinute;
+    
+    // Calculate height based on clamped appointment duration
+    const appointmentDurationMinutes = clampedEndMinutes - clampedStartMinutes;
+    const height = Math.max(24, appointmentDurationMinutes * pixelsPerMinute); // Minimum 24px height
+    
+    console.log('🔧 Precise positioning calculation:', {
+      appointmentId: appointment.id,
+      appointmentTitle: appointment.title || 'No title',
+      startTime: appointment.startTime,
+      endTime: appointment.endTime,
+      originalStartMinutes: startTimeMinutes,
+      originalEndMinutes: endTimeMinutes,
+      clampedStartMinutes,
+      clampedEndMinutes,
+      businessStartMinutes,
+      businessEndMinutes,
+      startOffsetMinutes,
+      appointmentDurationMinutes,
+      startPosition: Math.round(startPosition),
+      height: Math.round(height),
+      pixelsPerMinute,
+      isStartClamped: startTimeMinutes < businessStartMinutes,
+      isEndClamped: endTimeMinutes > businessEndMinutes,
+      timeSlotCount: timeSlots.length,
+      rawAppointmentData: {
+        startTime: appointment.startTime,
+        endTime: appointment.endTime,
+        id: appointment.id,
+        title: appointment.title
+      }
+    });
+    
+    return {
+      startPosition: Math.round(startPosition),
+      height: Math.round(height)
+    };
+  };
+
+  // Helper function to check if two appointments overlap
+  const appointmentsOverlap = (apt1: Appointment, apt2: Appointment): boolean => {
+    const apt1Start = timeToMinutes(apt1.startTime);
+    const apt1End = timeToMinutes(apt1.endTime);
+    const apt2Start = timeToMinutes(apt2.startTime);
+    const apt2End = timeToMinutes(apt2.endTime);
+    
+    return apt1Start < apt2End && apt2Start < apt1End;
+  };
+
+  // Helper function to group overlapping appointments
+  const groupOverlappingAppointments = (appointments: Appointment[]): Appointment[][] => {
+    const groups: Appointment[][] = [];
+    const processed = new Set<string>();
+    
+    for (const appointment of appointments) {
+      if (processed.has(appointment.id)) continue;
+      
+      const group = [appointment];
+      processed.add(appointment.id);
+      
+      // Find all appointments that overlap with this one or any in the group
+      for (const otherAppointment of appointments) {
+        if (processed.has(otherAppointment.id)) continue;
+        
+        const overlapsWithAny = group.some(groupApt => 
+          appointmentsOverlap(groupApt, otherAppointment)
+        );
+        
+        if (overlapsWithAny) {
+          group.push(otherAppointment);
+          processed.add(otherAppointment.id);
+        }
+      }
+      
+      groups.push(group);
+    }
+    
+    return groups;
+  };
+
+  // Helper function to calculate layout for overlapping appointments
+  const calculateAppointmentLayout = (appointment: Appointment, groupAppointments: Appointment[], isMobile?: boolean) => {
+    // Sort appointments in the group by start time, then by id for consistency
+    const sortedGroup = [...groupAppointments].sort((a, b) => {
+      const timeComparison = timeToMinutes(a.startTime) - timeToMinutes(b.startTime);
+      return timeComparison !== 0 ? timeComparison : a.id.localeCompare(b.id);
+    });
+    
+    const appointmentIndex = sortedGroup.findIndex(apt => apt.id === appointment.id);
+    const totalInGroup = sortedGroup.length;
+    
+    // Calculate width and left offset - adjust for mobile
+    const baseWidth = isMobile && totalInGroup > 2 ? 85 : 90; // Slightly wider on mobile for 3+ appointments
+    const width = totalInGroup > 1 ? `${Math.floor(baseWidth / totalInGroup)}%` : `${baseWidth}%`;
+    const leftOffset = totalInGroup > 1 ? `${appointmentIndex * (baseWidth / totalInGroup) + (isMobile ? 3 : 2)}%` : `${isMobile ? 3 : 2}%`;
+    
+    return {
+      width,
+      leftOffset,
+      zIndex: 20 + appointmentIndex, // Higher index = higher z-index
+      totalInGroup,
+      appointmentIndex,
+      isMobile
+    };
+  };
 
   // Helper functions
   function getStatusColor(status: string) {
@@ -429,9 +594,10 @@ export const AgendaView: React.FC<AgendaViewProps> = ({ selectedDate, appointmen
                         return null;
                       })()}
 
-                      {/* Appointments for this professional */}
-                      {dayAppointments
-                        .filter(appointment => {
+                      {/* Appointments for this professional with overlap handling */}
+                      {(() => {
+                        // Filter appointments for this professional
+                        const professionalAppointments = dayAppointments.filter(appointment => {
                           const matches = appointment.professionalId === professional.id;
                           console.log(`🔧 Professional filter for ${professional.name}:`, {
                             appointmentId: appointment.id,
@@ -441,85 +607,72 @@ export const AgendaView: React.FC<AgendaViewProps> = ({ selectedDate, appointmen
                             matches
                           });
                           return matches;
-                        })
+                        });
+
+                        // Group overlapping appointments for this professional
+                        const appointmentGroups = groupOverlappingAppointments(professionalAppointments);
+                        
+                        console.log(`🔧 Professional ${professional.name} appointment groups:`, {
+                          totalAppointments: professionalAppointments.length,
+                          groups: appointmentGroups.map((group, index) => ({
+                            groupIndex: index,
+                            appointmentCount: group.length,
+                            appointments: group.map(apt => ({
+                              id: apt.id,
+                              title: apt.title,
+                              startTime: apt.startTime,
+                              endTime: apt.endTime
+                            }))
+                          }))
+                        });
+                        
+                        return appointmentGroups.flat();
+                      })()
                         .map((appointment) => {
-                          const startHour = parseInt(appointment.startTime.split(':')[0]);
-                          const startMinute = parseInt(appointment.startTime.split(':')[1]);
-                          const endHour = parseInt(appointment.endTime.split(':')[0]);
-                          const endMinute = parseInt(appointment.endTime.split(':')[1]);
+                          // Find which group this appointment belongs to (for this professional)
+                          const professionalAppointments = dayAppointments.filter(apt => 
+                            apt.professionalId === professional.id
+                          );
+                          const appointmentGroups = groupOverlappingAppointments(professionalAppointments);
+                          const groupAppointments = appointmentGroups.find(group => 
+                            group.some(apt => apt.id === appointment.id)
+                          ) || [appointment];
                           
-                          // Find start and end slot indexes - more flexible approach
-                          let startSlotIndex = -1;
-                          let endSlotIndex = -1;
+                          // Calculate layout for this appointment
+                          const layout = calculateAppointmentLayout(appointment, groupAppointments, isMobile);
                           
-                          // Find the closest slot to start time
-                          for (let i = 0; i < timeSlots.length; i++) {
-                            const slot = timeSlots[i];
-                            const slotMinutes = slot.hour * 60 + slot.minute;
-                            const startMinutes = startHour * 60 + startMinute;
-                            
-                            if (slotMinutes <= startMinutes) {
-                              startSlotIndex = i;
-                            } else {
-                              break;
-                            }
-                          }
-                          
-                          // If no exact match found, use the first available slot
-                          if (startSlotIndex === -1 && timeSlots.length > 0) {
-                            startSlotIndex = 0;
-                          }
-                          
-                          // Find the closest slot to end time
-                          const endMinutes = endHour * 60 + endMinute;
-                          for (let i = startSlotIndex; i < timeSlots.length; i++) {
-                            const slot = timeSlots[i];
-                            const slotMinutes = slot.hour * 60 + slot.minute;
-                            
-                            if (slotMinutes >= endMinutes) {
-                              endSlotIndex = i;
-                              break;
-                            }
-                          }
-                          
-                          // If no end slot found, use a default duration
-                          if (endSlotIndex === -1) {
-                            endSlotIndex = Math.min(startSlotIndex + 2, timeSlots.length - 1);
-                          }
-                          
-                          console.log('🔧 Slot calculation for professional appointment:', {
-                            appointmentId: appointment.id,
-                            startTime: `${startHour}:${startMinute}`,
-                            endTime: `${endHour}:${endMinute}`,
-                            startSlotIndex,
-                            endSlotIndex,
-                            totalSlots: timeSlots.length
-                          });
-                          
-                          if (startSlotIndex === -1 || timeSlots.length === 0) {
-                            console.log('🔧 Skipping appointment - no start slot found or no time slots');
-                            return null;
-                          }
-                          
-                          const actualEndIndex = endSlotIndex !== -1 ? endSlotIndex : startSlotIndex + 1;
-                          const startPosition = startSlotIndex * 48;
-                          const height = Math.max((actualEndIndex - startSlotIndex + 1) * 48 - 4, 44);
+                          // Calculate precise positioning based on actual time
+                          const position = calculateAppointmentPosition(appointment, timeSlots);
                           
                           console.log('🔧 Rendering professional appointment:', {
                             appointmentId: appointment.id,
                             professionalName: professional.name,
-                            startPosition,
-                            height
+                            startPosition: position.startPosition,
+                            height: position.height,
+                            startTime: appointment.startTime,
+                            endTime: appointment.endTime,
+                            layout: layout,
+                            appointmentData: appointment
                           });
+                          
+                          // Final verification before rendering
+                          console.log(`🔧 FINAL HEIGHT CHECK - ${appointment.id}: ${position.height}px (${appointment.startTime} - ${appointment.endTime})`);
                           
                           return (
                             <div
                               key={appointment.id}
-                              className="absolute left-1 right-1 z-20"
+                              className="absolute z-20"
                               style={{
-                                top: `${startPosition + 2}px`,
-                                height: `${height}px`
+                                top: `${position.startPosition + 2}px`,
+                                height: `${position.height}px`,
+                                left: layout.leftOffset,
+                                width: layout.width,
+                                zIndex: layout.zIndex
                               }}
+                              data-appointment-id={appointment.id}
+                              data-height={position.height}
+                              data-start-time={appointment.startTime}
+                              data-end-time={appointment.endTime}
                             >
                               <AppointmentTooltip appointment={appointment}>
                                 <div 
@@ -527,35 +680,52 @@ export const AgendaView: React.FC<AgendaViewProps> = ({ selectedDate, appointmen
                                     h-full rounded-lg border-l-4 backdrop-blur-sm cursor-pointer transition-all duration-300 
                                     hover:scale-[1.02] hover:shadow-lg group relative overflow-hidden
                                     ${getAppointmentColor(appointment.status)}
-                                    p-2
+                                    ${layout.totalInGroup > 1 ? (isMobile ? 'p-1' : 'p-1') : (isMobile ? 'p-2' : 'p-2')}
                                   `}
                                 >
                                   <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent transform -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-700"></div>
                                   
                                   <div className="relative z-10 h-full flex flex-col">
-                                    <div className="flex items-start justify-between mb-1">
-                                      <h4 className="font-semibold text-gray-900 text-xs leading-tight truncate pr-1">
+                                    <div className={`flex items-start justify-between ${isMobile && layout.totalInGroup > 1 ? 'mb-0.5' : 'mb-1'}`}>
+                                      <h4 className={`
+                                        font-semibold text-gray-900 leading-tight truncate pr-1
+                                        ${layout.totalInGroup > 2 ? (isMobile ? 'text-xs' : 'text-xs') : layout.totalInGroup > 1 ? (isMobile ? 'text-xs' : 'text-xs') : (isMobile ? 'text-xs' : 'text-sm')}
+                                      `}>
                                         {appointment.title}
                                       </h4>
-                                      <span className={`
-                                        px-1.5 py-0.5 text-xs font-medium rounded-full shrink-0 
-                                        ${getStatusColor(appointment.status)}
-                                        shadow-sm
-                                      `}>
-                                        {getStatusText(appointment.status)}
-                                      </span>
+                                      {(isMobile ? layout.totalInGroup <= 1 : layout.totalInGroup <= 2) && (
+                                        <span className={`
+                                          px-1.5 py-0.5 text-xs font-medium rounded-full shrink-0 
+                                          ${getStatusColor(appointment.status)}
+                                          shadow-sm
+                                        `}>
+                                          {getStatusText(appointment.status)}
+                                        </span>
+                                      )}
                                     </div>
                                     
-                                    <div className="space-y-1 flex-1">
-                                      <div className="flex items-center text-xs text-gray-700">
-                                        <ClockIcon className="h-3 w-3 mr-1 text-gray-500" />
+                                    <div className={`flex-1 ${layout.totalInGroup > 2 ? (isMobile ? 'space-y-0.5' : 'space-y-0.5') : isMobile ? 'space-y-0.5' : 'space-y-1'}`}>
+                                      <div className={`flex items-center text-gray-700 ${layout.totalInGroup > 2 ? (isMobile ? 'text-xs' : 'text-xs') : (isMobile ? 'text-xs' : 'text-xs')}`}>
+                                        <ClockIcon className={`mr-1 text-gray-500 ${layout.totalInGroup > 2 ? 'h-3 w-3' : 'h-3 w-3'}`} />
                                         <span className="font-medium">{appointment.startTime} - {appointment.endTime}</span>
                                       </div>
                                       
-                                      <div className="flex items-center text-xs text-gray-700">
-                                        <UserIcon className="h-3 w-3 mr-1 text-gray-500" />
+                                      <div className={`flex items-center text-gray-700 ${layout.totalInGroup > 2 ? (isMobile ? 'text-xs' : 'text-xs') : (isMobile ? 'text-xs' : 'text-xs')}`}>
+                                        <UserIcon className={`mr-1 text-gray-500 ${layout.totalInGroup > 2 ? 'h-3 w-3' : 'h-3 w-3'}`} />
                                         <span className="truncate">{appointment.client}</span>
                                       </div>
+                                      
+                                      {/* Show status for compressed appointments */}
+                                      {(isMobile ? layout.totalInGroup > 1 : layout.totalInGroup > 2) && (
+                                        <div className="flex items-center">
+                                          <span className={`
+                                            px-1 py-0.5 text-xs font-medium rounded shrink-0 
+                                            ${getStatusColor(appointment.status)}
+                                          `}>
+                                            {getStatusText(appointment.status)}
+                                          </span>
+                                        </div>
+                                      )}
                                     </div>
                                   </div>
                                 </div>
@@ -573,11 +743,13 @@ export const AgendaView: React.FC<AgendaViewProps> = ({ selectedDate, appointmen
                 {/* Time slot grid */}
                 <div className="space-y-0">
                   {timeSlots.map((slot) => {
-                    // Check if there's an appointment at this time
-                    const hasAppointment = dayAppointments.some(apt => 
-                      apt.startTime <= slot.time &&
-                      apt.endTime > slot.time
+                    // Count appointments at this time slot
+                    const appointmentsAtTime = dayAppointments.filter(apt => 
+                      timeToMinutes(apt.startTime) <= timeToMinutes(slot.time) &&
+                      timeToMinutes(apt.endTime) > timeToMinutes(slot.time)
                     );
+                    
+                    const hasAppointment = appointmentsAtTime.length > 0;
                     
                     return (
                       <div
@@ -634,130 +806,126 @@ export const AgendaView: React.FC<AgendaViewProps> = ({ selectedDate, appointmen
                   return null;
                 })()}
 
-                {/* Appointments */}
-                {dayAppointments.map((appointment) => {
-                  console.log('🔧 Rendering single column appointment:', {
-                    id: appointment.id,
-                    title: appointment.title,
-                    startTime: appointment.startTime,
-                    endTime: appointment.endTime,
-                    professionalId: appointment.professionalId
-                  });
-                  const startHour = parseInt(appointment.startTime.split(':')[0]);
-                  const startMinute = parseInt(appointment.startTime.split(':')[1]);
-                  const endHour = parseInt(appointment.endTime.split(':')[0]);
-                  const endMinute = parseInt(appointment.endTime.split(':')[1]);
+                {/* Appointments with overlap handling */}
+                {(() => {
+                  // Group overlapping appointments
+                  const appointmentGroups = groupOverlappingAppointments(dayAppointments);
                   
-                  // Find start and end slot indexes - more flexible approach
-                  let startSlotIndex = -1;
-                  let endSlotIndex = -1;
-                  
-                  // Find the closest slot to start time
-                  for (let i = 0; i < timeSlots.length; i++) {
-                    const slot = timeSlots[i];
-                    const slotMinutes = slot.hour * 60 + slot.minute;
-                    const startMinutes = startHour * 60 + startMinute;
-                    
-                    if (slotMinutes <= startMinutes) {
-                      startSlotIndex = i;
-                    } else {
-                      break;
-                    }
-                  }
-                  
-                  // If no exact match found, use the first available slot
-                  if (startSlotIndex === -1 && timeSlots.length > 0) {
-                    startSlotIndex = 0;
-                  }
-                  
-                  // Find the closest slot to end time
-                  const endMinutes = endHour * 60 + endMinute;
-                  for (let i = startSlotIndex; i < timeSlots.length; i++) {
-                    const slot = timeSlots[i];
-                    const slotMinutes = slot.hour * 60 + slot.minute;
-                    
-                    if (slotMinutes >= endMinutes) {
-                      endSlotIndex = i;
-                      break;
-                    }
-                  }
-                  
-                  // If no end slot found, use a default duration
-                  if (endSlotIndex === -1) {
-                    endSlotIndex = Math.min(startSlotIndex + 2, timeSlots.length - 1);
-                  }
-                  
-                  console.log('🔧 Slot calculation for single column appointment:', {
-                    appointmentId: appointment.id,
-                    startTime: `${startHour}:${startMinute}`,
-                    endTime: `${endHour}:${endMinute}`,
-                    startSlotIndex,
-                    endSlotIndex,
-                    totalSlots: timeSlots.length,
-                    firstSlot: timeSlots[0],
-                    lastSlot: timeSlots[timeSlots.length - 1]
+                  console.log('🔧 Single column appointment groups:', {
+                    totalAppointments: dayAppointments.length,
+                    groups: appointmentGroups.map((group, index) => ({
+                      groupIndex: index,
+                      appointmentCount: group.length,
+                      appointments: group.map(apt => ({
+                        id: apt.id,
+                        title: apt.title,
+                        startTime: apt.startTime,
+                        endTime: apt.endTime
+                      }))
+                    }))
                   });
                   
-                  if (startSlotIndex === -1 || timeSlots.length === 0) {
-                    console.log('🔧 Skipping single column appointment - no start slot found or no time slots');
-                    return null;
-                  }
-                  
-                  const actualEndIndex = endSlotIndex !== -1 ? endSlotIndex : startSlotIndex + 1;
-                  const startPosition = startSlotIndex * 48;
-                  const height = Math.max((actualEndIndex - startSlotIndex + 1) * 48 - 4, 44);
-                  
-                  return (
-                    <div
-                      key={appointment.id}
-                      className="absolute left-2 right-2 z-20"
-                      style={{
-                        top: `${startPosition + 2}px`,
-                        height: `${height}px`
-                      }}
-                    >
-                      <AppointmentTooltip appointment={appointment}>
-                        <div 
-                          className={`
-                            h-full rounded-lg border-l-4 backdrop-blur-sm cursor-pointer transition-all duration-300 
-                            hover:scale-[1.02] hover:shadow-lg group relative overflow-hidden
-                            ${getAppointmentColor(appointment.status)}
-                            p-3
-                          `}
-                        >
-                          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent transform -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-700"></div>
-                          
-                          <div className="relative z-10 h-full flex flex-col">
-                            <div className="flex items-start justify-between mb-2">
-                              <h4 className="font-semibold text-gray-900 text-sm leading-tight truncate pr-2">
-                                {appointment.title}
-                              </h4>
-                              <span className={`
-                                px-2 py-1 text-xs font-medium rounded-full shrink-0 
-                                ${getStatusColor(appointment.status)}
-                                shadow-sm
-                              `}>
-                                {getStatusText(appointment.status)}
-                              </span>
-                            </div>
+                  return appointmentGroups.flat().map((appointment) => {
+                    // Find which group this appointment belongs to
+                    const groupAppointments = appointmentGroups.find(group => 
+                      group.some(apt => apt.id === appointment.id)
+                    ) || [appointment];
+                    
+                    // Calculate layout for this appointment
+                    const layout = calculateAppointmentLayout(appointment, groupAppointments, isMobile);
+                    
+                    // Calculate precise positioning based on actual time
+                    const position = calculateAppointmentPosition(appointment, timeSlots);
+                    
+                    console.log('🔧 Rendering single column appointment:', {
+                      id: appointment.id,
+                      title: appointment.title,
+                      startTime: appointment.startTime,
+                      endTime: appointment.endTime,
+                      startPosition: position.startPosition,
+                      height: position.height,
+                      layout: layout
+                    });
+                    
+                    // Final verification before rendering
+                    console.log(`🔧 FINAL HEIGHT CHECK SINGLE - ${appointment.id}: ${position.height}px (${appointment.startTime} - ${appointment.endTime})`);
+                    
+                    return (
+                      <div
+                        key={appointment.id}
+                        className="absolute"
+                        style={{
+                          top: `${position.startPosition + 2}px`,
+                          height: `${position.height}px`,
+                          left: layout.leftOffset,
+                          width: layout.width,
+                          zIndex: layout.zIndex
+                        }}
+                        data-appointment-id={appointment.id}
+                        data-height={position.height}
+                        data-start-time={appointment.startTime}
+                        data-end-time={appointment.endTime}
+                      >
+                        <AppointmentTooltip appointment={appointment}>
+                          <div 
+                            className={`
+                              h-full rounded-lg border-l-4 backdrop-blur-sm cursor-pointer transition-all duration-300 
+                              hover:scale-[1.02] hover:shadow-lg group relative overflow-hidden
+                              ${getAppointmentColor(appointment.status)}
+                              ${layout.totalInGroup > 1 ? (isMobile ? 'p-1.5' : 'p-2') : (isMobile ? 'p-2.5' : 'p-3')}
+                            `}
+                          >
+                            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent transform -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-700"></div>
                             
-                            <div className="space-y-1.5 flex-1">
-                              <div className="flex items-center text-sm text-gray-700">
-                                <ClockIcon className="h-4 w-4 mr-2 text-gray-500" />
-                                <span className="font-medium">{appointment.startTime} - {appointment.endTime}</span>
+                            <div className="relative z-10 h-full flex flex-col">
+                              <div className={`flex items-start justify-between ${isMobile && layout.totalInGroup > 1 ? 'mb-0.5' : 'mb-1'}`}>
+                                <h4 className={`
+                                  font-semibold text-gray-900 leading-tight truncate pr-1
+                                  ${layout.totalInGroup > 2 ? (isMobile ? 'text-xs' : 'text-xs') : layout.totalInGroup > 1 ? (isMobile ? 'text-xs' : 'text-sm') : (isMobile ? 'text-sm' : 'text-sm')}
+                                `}>
+                                  {appointment.title}
+                                </h4>
+                                {(isMobile ? layout.totalInGroup <= 1 : layout.totalInGroup <= 2) && (
+                                  <span className={`
+                                    px-1.5 py-0.5 text-xs font-medium rounded-full shrink-0 
+                                    ${getStatusColor(appointment.status)}
+                                    shadow-sm
+                                  `}>
+                                    {getStatusText(appointment.status)}
+                                  </span>
+                                )}
                               </div>
                               
-                              <div className="flex items-center text-sm text-gray-700">
-                                <UserIcon className="h-4 w-4 mr-2 text-gray-500" />
-                                <span className="truncate">{appointment.client}</span>
+                              <div className={`flex-1 ${layout.totalInGroup > 2 ? (isMobile ? 'space-y-0.5' : 'space-y-0.5') : isMobile ? 'space-y-0.5' : 'space-y-1'}`}>
+                                <div className={`flex items-center text-gray-700 ${layout.totalInGroup > 2 ? (isMobile ? 'text-xs' : 'text-xs') : (isMobile ? 'text-xs' : 'text-sm')}`}>
+                                  <ClockIcon className={`mr-1 text-gray-500 ${layout.totalInGroup > 2 ? 'h-3 w-3' : (isMobile ? 'h-3 w-3' : 'h-4 w-4')}`} />
+                                  <span className="font-medium">{appointment.startTime} - {appointment.endTime}</span>
+                                </div>
+                                
+                                <div className={`flex items-center text-gray-700 ${layout.totalInGroup > 2 ? (isMobile ? 'text-xs' : 'text-xs') : (isMobile ? 'text-xs' : 'text-sm')}`}>
+                                  <UserIcon className={`mr-1 text-gray-500 ${layout.totalInGroup > 2 ? 'h-3 w-3' : (isMobile ? 'h-3 w-3' : 'h-4 w-4')}`} />
+                                  <span className="truncate">{appointment.client}</span>
+                                </div>
+                                
+                                {/* Show status for compressed appointments */}
+                                {(isMobile ? layout.totalInGroup > 1 : layout.totalInGroup > 2) && (
+                                  <div className="flex items-center">
+                                    <span className={`
+                                      px-1 py-0.5 text-xs font-medium rounded shrink-0 
+                                      ${getStatusColor(appointment.status)}
+                                    `}>
+                                      {getStatusText(appointment.status)}
+                                    </span>
+                                  </div>
+                                )}
                               </div>
                             </div>
                           </div>
-                        </div>
-                      </AppointmentTooltip>
-                    </div>
-                  );
-                })}
+                        </AppointmentTooltip>
+                      </div>
+                    );
+                  });
+                })()}
 
                 {/* Empty state for single column */}
                 {dayAppointments.length === 0 && (

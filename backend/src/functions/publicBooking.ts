@@ -4,6 +4,7 @@ import {
   getOrganizationById, 
   Organization 
 } from '../repositories/organizationRepository';
+import { getAppointmentsByOrgAndDate, createAppointment } from '../repositories/appointmentRepository';
 
 // GET /public/organization/{orgId}
 export const getPublicOrganization = async (
@@ -223,7 +224,19 @@ export const getPublicDailyAvailabilityCounts = async (
     for (const date of dates) {
       const requestDate = new Date(date);
       const dayName = requestDate.toLocaleDateString('es-ES', { weekday: 'long' }).toLowerCase();
-      const businessDay = organization.settings.businessHours[dayName];
+      
+      // Map Spanish day names to English keys for businessHours
+      const dayMapping: Record<string, string> = {
+        'lunes': 'monday',
+        'martes': 'tuesday', 
+        'miércoles': 'wednesday',
+        'jueves': 'thursday',
+        'viernes': 'friday',
+        'sábado': 'saturday',
+        'domingo': 'sunday'
+      };
+      const dayKey = dayMapping[dayName] || dayName;
+      const businessDay = organization.settings.businessHours[dayKey];
 
       if (!businessDay?.isOpen) {
         dailyCounts.push({
@@ -232,6 +245,16 @@ export const getPublicDailyAvailabilityCounts = async (
         });
         continue;
       }
+
+      // Get existing appointments for this date
+      const existingAppointments = await getAppointmentsByOrgAndDate(orgId, date);
+      console.log(`📅 [Daily] Found ${existingAppointments.length} total appointments for ${date}:`, existingAppointments);
+      
+      // Filter out cancelled appointments
+      const activeAppointments = existingAppointments.filter(
+        apt => apt.status !== 'cancelled' && apt.status !== 'no_show'
+      );
+      console.log(`✅ [Daily] ${activeAppointments.length} active appointments after filtering cancelled/no-show`);
 
       // Generate time slots for this date
       const startTime = businessDay.openTime;
@@ -245,20 +268,53 @@ export const getPublicDailyAvailabilityCounts = async (
       const endMinutes = endHour * 60 + endMin;
 
       let availableSlotCount = 0;
+      const appointmentModel = organization.settings.appointmentSystem?.appointmentModel;
 
       for (let minutes = startMinutes; minutes + serviceDuration <= endMinutes; minutes += serviceDuration + buffer) {
-        // TODO: In a real implementation, check against existing appointments
-        // For resource-based systems, also consider available resource count
+        const hour = Math.floor(minutes / 60);
+        const min = minutes % 60;
+        const timeString = `${hour.toString().padStart(2, '0')}:${min.toString().padStart(2, '0')}`;
         
-        const appointmentModel = organization.settings.appointmentSystem?.appointmentModel;
+        // Count existing appointments at this time slot
+        const appointmentsAtTime = activeAppointments.filter(apt => {
+          // Parse appointment time from datetime string or time field
+          const appointmentTime = apt.datetime ? 
+            new Date(apt.datetime).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }) :
+            apt.time; // Fallback to time field if datetime is not available
+          
+          console.log(`🔍 Comparing appointment time "${appointmentTime}" with slot time "${timeString}"`);
+          const matches = appointmentTime === timeString;
+          if (matches) {
+            console.log(`✅ Found matching appointment at ${timeString}:`, apt);
+          }
+          return matches;
+        });
         
+        console.log(`📊 Time slot ${timeString}: Found ${appointmentsAtTime.length} existing appointments from ${activeAppointments.length} total active appointments`);
+
         if (appointmentModel === 'resource_based') {
-          // For resource-based, each time slot can have multiple appointments
-          const resourceCount = organization.settings.appointmentSystem?.maxResources || 1;
-          availableSlotCount += resourceCount;
+          // For resource-based, calculate remaining slots
+          const maxResources = organization.settings.appointmentSystem?.maxResources || 1;
+          const occupiedSlots = appointmentsAtTime.length;
+          const availableAtThisTime = Math.max(0, maxResources - occupiedSlots);
+          availableSlotCount += availableAtThisTime;
         } else {
-          // For professional-based, each time slot is one appointment
-          availableSlotCount += 1;
+          // For professional-based, check if time slot is available
+          if (professionalId) {
+            // Check if this specific professional is available
+            const professionalBooked = appointmentsAtTime.some(apt => 
+              apt.professionalId === professionalId || apt.staffId === professionalId
+            );
+            if (!professionalBooked) {
+              availableSlotCount += 1;
+            }
+          } else {
+            // Check if any professional can take this slot
+            const totalProfessionals = organization.settings.appointmentSystem?.maxProfessionals || 1;
+            const occupiedSlots = appointmentsAtTime.length;
+            const availableAtThisTime = Math.max(0, totalProfessionals - occupiedSlots);
+            availableSlotCount += availableAtThisTime > 0 ? 1 : 0;
+          }
         }
       }
 
@@ -322,7 +378,19 @@ export const getPublicAvailability = async (
     // Get business hours for the requested date
     const requestDate = new Date(date);
     const dayName = requestDate.toLocaleDateString('es-ES', { weekday: 'long' }).toLowerCase();
-    const businessDay = organization.settings.businessHours[dayName];
+    
+    // Map Spanish day names to English keys for businessHours
+    const dayMapping: Record<string, string> = {
+      'lunes': 'monday',
+      'martes': 'tuesday', 
+      'miércoles': 'wednesday',
+      'jueves': 'thursday',
+      'viernes': 'friday',
+      'sábado': 'saturday',
+      'domingo': 'sunday'
+    };
+    const dayKey = dayMapping[dayName] || dayName;
+    const businessDay = organization.settings.businessHours[dayKey];
 
     if (!businessDay?.isOpen) {
       return createResponse(200, {
@@ -331,6 +399,16 @@ export const getPublicAvailability = async (
         message: 'No hay horarios disponibles para esta fecha',
       });
     }
+
+    // Get existing appointments for this date
+    const existingAppointments = await getAppointmentsByOrgAndDate(orgId, date);
+    console.log(`📅 [Availability] Found ${existingAppointments.length} total appointments for ${date}:`, existingAppointments);
+    
+    // Filter out cancelled appointments
+    const activeAppointments = existingAppointments.filter(
+      apt => apt.status !== 'cancelled' && apt.status !== 'no_show'
+    );
+    console.log(`✅ [Availability] ${activeAppointments.length} active appointments after filtering cancelled/no-show`);
 
     // Generate time slots
     const startTime = businessDay.openTime;
@@ -351,24 +429,59 @@ export const getPublicAvailability = async (
       const min = minutes % 60;
       const timeString = `${hour.toString().padStart(2, '0')}:${min.toString().padStart(2, '0')}`;
       
-      // TODO: In a real implementation, check against existing appointments
-      // For now, we'll return all possible slots as available
+      // Count existing appointments at this time slot
+      const appointmentsAtTime = activeAppointments.filter(apt => {
+        // Parse appointment time from datetime string or time field
+        const appointmentTime = apt.datetime ? 
+          new Date(apt.datetime).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }) :
+          apt.time; // Fallback to time field if datetime is not available
+        
+        console.log(`🔍 [Availability] Comparing appointment time "${appointmentTime}" with slot time "${timeString}"`);
+        const matches = appointmentTime === timeString;
+        if (matches) {
+          console.log(`✅ [Availability] Found matching appointment at ${timeString}:`, apt);
+        }
+        return matches;
+      });
       
+      console.log(`📊 [Availability] Time slot ${timeString}: Found ${appointmentsAtTime.length} existing appointments from ${activeAppointments.length} total active appointments`);
+
       if (appointmentModel === 'resource_based') {
-        // For resource-based systems, show available count
-        const resourceCount = organization.settings.appointmentSystem?.maxResources || 1;
+        // For resource-based systems, calculate remaining slots
+        const maxResources = organization.settings.appointmentSystem?.maxResources || 1;
+        const occupiedSlots = appointmentsAtTime.length;
+        const availableCount = Math.max(0, maxResources - occupiedSlots);
+        
         availableSlots.push({
           time: timeString,
-          available: true,
-          availableCount: resourceCount,
+          available: availableCount > 0,
+          availableCount: availableCount,
           professionalId: null,
         });
       } else {
-        // For professional-based systems, show single availability
+        // For professional-based systems, check availability
+        let isAvailable = false;
+        let availableCount = 0;
+        
+        if (professionalId) {
+          // Check if this specific professional is available
+          const professionalBooked = appointmentsAtTime.some(apt => 
+            apt.professionalId === professionalId || apt.staffId === professionalId
+          );
+          isAvailable = !professionalBooked;
+          availableCount = isAvailable ? 1 : 0;
+        } else {
+          // Check if any professional can take this slot
+          const totalProfessionals = organization.settings.appointmentSystem?.maxProfessionals || 1;
+          const occupiedSlots = appointmentsAtTime.length;
+          availableCount = Math.max(0, totalProfessionals - occupiedSlots);
+          isAvailable = availableCount > 0;
+        }
+        
         availableSlots.push({
           time: timeString,
-          available: true,
-          availableCount: 1,
+          available: isAvailable,
+          availableCount: availableCount,
           professionalId: professionalId || null,
         });
       }
@@ -460,29 +573,73 @@ export const createPublicAppointment = async (
       }
     }
 
-    // TODO: In a real implementation, save to appointments table
-    // For now, we'll simulate the appointment creation
-    const appointmentId = `apt_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    // Create datetime ISO string from date and time
+    const [year, month, day] = appointmentData.date.split('-').map(Number);
+    const [hour, minute] = appointmentData.time.split(':').map(Number);
+    const appointmentDateTime = new Date(year, month - 1, day, hour, minute);
     
-    const newAppointment = {
-      id: appointmentId,
-      organizationId: orgId,
+    // Check if time slot is still available before creating
+    const existingAppointments = await getAppointmentsByOrgAndDate(orgId, appointmentData.date);
+    const activeAppointments = existingAppointments.filter(
+      apt => apt.status !== 'cancelled' && apt.status !== 'no_show'
+    );
+    
+    const appointmentsAtTime = activeAppointments.filter(apt => {
+      const appointmentTime = apt.datetime ? 
+        new Date(apt.datetime).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }) :
+        apt.time;
+      return appointmentTime === appointmentData.time;
+    });
+
+    const appointmentModel = organization.settings.appointmentSystem?.appointmentModel;
+    let canBook = false;
+
+    if (appointmentModel === 'resource_based') {
+      const maxResources = organization.settings.appointmentSystem?.maxResources || 1;
+      const occupiedSlots = appointmentsAtTime.length;
+      canBook = occupiedSlots < maxResources;
+    } else {
+      if (appointmentData.professionalId) {
+        // Check if specific professional is available
+        const professionalBooked = appointmentsAtTime.some(apt => 
+          apt.professionalId === appointmentData.professionalId || apt.staffId === appointmentData.professionalId
+        );
+        canBook = !professionalBooked;
+      } else {
+        // Check if any professional can take this slot
+        const totalProfessionals = organization.settings.appointmentSystem?.maxProfessionals || 1;
+        const occupiedSlots = appointmentsAtTime.length;
+        canBook = occupiedSlots < totalProfessionals;
+      }
+    }
+
+    if (!canBook) {
+      return createResponse(409, {
+        success: false,
+        message: 'El horario seleccionado ya no está disponible. Por favor selecciona otro horario.',
+      });
+    }
+
+    // Create the appointment in the database
+    const newAppointment = await createAppointment({
+      orgId: orgId,
       serviceId: appointmentData.serviceId,
-      serviceName: service.name,
-      servicePrice: service.price,
-      serviceDuration: service.duration,
-      professionalId: appointmentData.professionalId || null,
-      date: appointmentData.date,
-      time: appointmentData.time,
+      staffId: appointmentData.professionalId || undefined, // Staff ID for professional
+      professionalId: appointmentData.professionalId || undefined, // Keep professional ID separate
+      resourceId: appointmentModel === 'resource_based' ? 'default-resource' : undefined,
+      datetime: appointmentDateTime.toISOString(),
+      duration: service.duration,
+      status: appointmentData.status || 'pending',
       clientName: appointmentData.clientName,
       clientPhone: appointmentData.clientPhone,
       clientEmail: appointmentData.clientEmail,
       notes: appointmentData.notes || '',
-      status: 'confirmed',
-      createdAt: new Date().toISOString(),
-    };
+      serviceName: service.name,
+      servicePrice: service.price,
+      time: appointmentData.time, // Store time separately for easier queries
+    });
 
-    console.log('✅ Public appointment created successfully:', appointmentId);
+    console.log('✅ Public appointment created successfully:', newAppointment.id);
 
     return createResponse(201, {
       success: true,

@@ -132,12 +132,12 @@ export interface Appointment extends BaseEntity {
   orgId: string;
   staffId?: string; // For professional_based or hybrid models
   resourceId?: string; // For resource_based or hybrid models
-  clientInfo: ClientInfo;
-  serviceInfo: ServiceInfo;
+  clientInfo?: ClientInfo; // Make optional for backwards compatibility
+  serviceInfo?: ServiceInfo; // Make optional for backwards compatibility
   datetime: string; // ISO string
   duration: number; // minutos
   status: 'pending' | 'confirmed' | 'cancelled' | 'completed' | 'no_show' | 'rescheduled';
-  assignmentType: 'staff_only' | 'resource_only' | 'staff_and_resource';
+  assignmentType?: 'staff_only' | 'resource_only' | 'staff_and_resource'; // Make optional
   notes?: string;
   customFields?: { [fieldId: string]: any };
   cancellationInfo?: {
@@ -148,6 +148,16 @@ export interface Appointment extends BaseEntity {
   };
   reschedulingHistory?: ReschedulingRecord[];
   metadata?: Record<string, any>;
+  
+  // Additional fields for public booking compatibility
+  serviceId?: string;
+  professionalId?: string; // Alias for staffId for frontend compatibility
+  time?: string; // HH:MM format for easier queries
+  clientName?: string;
+  clientPhone?: string;
+  clientEmail?: string;
+  serviceName?: string;
+  servicePrice?: number;
 }
 
 export interface ReschedulingRecord {

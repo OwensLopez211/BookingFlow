@@ -5,11 +5,14 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "prebuild": "node scripts/updateServiceWorkerVersion.cjs",
     "build": "tsc && vite build",
+    "postbuild": "echo 'Build completed with automatic cache versioning'",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "lint:fix": "eslint . --ext ts,tsx --fix",
     "preview": "vite preview",
-    "type-check": "tsc --noEmit"
+    "type-check": "tsc --noEmit",
+    "cache:clean": "node -e \"console.log('Requesting cache cleanup...'); if (typeof window !== 'undefined' && 'serviceWorker' in navigator) { navigator.serviceWorker.ready.then(reg => reg.active?.postMessage({type: 'FORCE_CACHE_CLEANUP'})); }\""
   },
   "dependencies": {
     "@aws-amplify/auth": "^6.14.0",
