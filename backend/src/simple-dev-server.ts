@@ -651,6 +651,144 @@ app.get('/v1/auth/me', authenticateToken, (req: any, res) => {
   }
 });
 
+// Google OAuth
+app.post('/v1/auth/google', async (req, res) => {
+  try {
+    console.log('🔐 Google OAuth attempt');
+    const { googleToken, organizationName, templateType } = req.body;
+    
+    if (!googleToken) {
+      return res.status(400).json({ success: false, error: 'Token de Google requerido' });
+    }
+
+    // Import Google Auth Library for token verification
+    const { OAuth2Client } = await import('google-auth-library');
+    const clientId = process.env.GOOGLE_CLIENT_ID || process.env.VITE_GOOGLE_CLIENT_ID;
+    if (!clientId) {
+      return res.status(500).json({ success: false, error: 'Google Client ID no configurado' });
+    }
+    
+    const client = new OAuth2Client(clientId);
+    
+    // Verify Google token
+    const ticket = await client.verifyIdToken({
+      idToken: googleToken,
+      audience: clientId,
+    });
+
+    const payload = ticket.getPayload();
+    if (!payload || !payload.email) {
+      return res.status(400).json({ success: false, error: 'Token de Google inválido' });
+    }
+
+    const { email, given_name, family_name, sub: googleId, picture } = payload;
+
+    // Check if user already exists
+    let existingUser = users.find(u => u.email === email);
+    let organization = null;
+
+    if (!existingUser) {
+      // New user - create organization and user with temporary data
+      // The onboarding process will collect the real data
+      const tempOrgName = organizationName || `Organización de ${given_name || 'Usuario'}`;
+      const tempTemplateType = templateType || 'beauty_salon';
+
+      // Create organization
+      organization = {
+        id: uuidv4(),
+        name: tempOrgName,
+        templateType: tempTemplateType,
+        settings: {
+          timezone: 'America/Santiago',
+          businessHours: {},
+          notifications: {},
+        },
+        subscription: {
+          plan: 'free' as const,
+          limits: {
+            maxResources: 2,
+            maxAppointmentsPerMonth: 100,
+            maxUsers: 3,
+          },
+        },
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      };
+      organizations.push(organization);
+
+      // Create user
+      existingUser = {
+        id: uuidv4(),
+        cognitoId: `google_${googleId}`,
+        email,
+        password: '', // No password for Google users
+        role: 'owner' as const,
+        orgId: organization.id,
+        profile: {
+          firstName: given_name || 'Usuario',
+          lastName: family_name || '',
+          avatar: picture,
+        },
+        onboardingStatus: {
+          isCompleted: false,
+          currentStep: 1,
+          completedSteps: [],
+          startedAt: new Date().toISOString(),
+        },
+        provider: 'google',
+        googleId,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      };
+      users.push(existingUser);
+    } else {
+      // Update avatar if available
+      if (picture && existingUser.profile.avatar !== picture) {
+        existingUser.profile.avatar = picture;
+      }
+    }
+
+    // Generate JWT token
+    const token = jwt.sign(
+      { 
+        userId: existingUser.id, 
+        email: existingUser.email, 
+        role: existingUser.role,
+        orgId: existingUser.orgId,
+        provider: 'google',
+        googleId
+      },
+      JWT_SECRET,
+      { expiresIn: '24h' }
+    );
+
+    console.log('✅ Google OAuth successful for:', email);
+    res.json({
+      success: true,
+      message: `¡Bienvenido ${existingUser.profile.firstName}!`,
+      user: {
+        id: existingUser.id,
+        email: existingUser.email,
+        role: existingUser.role,
+        orgId: existingUser.orgId,
+        profile: existingUser.profile,
+        onboardingStatus: existingUser.onboardingStatus,
+      },
+      organization: organization || organizations.find(org => org.id === existingUser.orgId),
+      tokens: {
+        accessToken: token,
+        idToken: token,
+        refreshToken: token,
+      },
+      expiresIn: 86400, // 24 hours
+    });
+
+  } catch (error: any) {
+    console.error('❌ Google OAuth error:', error);
+    res.status(500).json({ success: false, error: 'Error durante la autenticación con Google' });
+  }
+});
+
 // =============================================
 // REAL-TIME NOTIFICATIONS ENDPOINTS
 // =============================================

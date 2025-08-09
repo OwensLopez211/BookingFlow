@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useAuthStore } from '@/stores/authStore';
@@ -16,7 +16,7 @@ interface RegisterPageProps {
 
 export const RegisterPage: React.FC<RegisterPageProps> = ({ heroVariants, formVariants, decorativeVariants }) => {
   const navigate = useNavigate();
-  const { register, isLoading } = useAuthStore();
+  const { register, googleAuth, isLoading } = useAuthStore();
   
   const [formData, setFormData] = useState({
     firstName: '',
@@ -29,6 +29,9 @@ export const RegisterPage: React.FC<RegisterPageProps> = ({ heroVariants, formVa
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  
+  // No necesitamos estado adicional para Google OAuth
+  // El onboarding manejará toda la configuración
 
   const validateForm = (): boolean => {
     const newErrors: Record<string, string> = {};
@@ -131,15 +134,129 @@ export const RegisterPage: React.FC<RegisterPageProps> = ({ heroVariants, formVa
     }
   };
 
+  // Initialize Google Sign-In when component mounts
+  useEffect(() => {
+    console.log('🔐 RegisterPage mounted, checking for Google script');
+    
+    const checkGoogleAndInit = () => {
+      if (window.google) {
+        console.log('🔐 Google script detected, initializing...');
+        initializeGoogleSignIn();
+      } else {
+        console.log('🔐 Google script not ready yet, will try with manual click');
+      }
+    };
+    
+    checkGoogleAndInit();
+    const timer = setTimeout(checkGoogleAndInit, 1000);
+    
+    return () => clearTimeout(timer);
+  }, []);
+
+  const initializeGoogleSignIn = () => {
+    const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
+    
+    console.log('🔐 Inicializando Google Sign-In para registro con Client ID:', clientId);
+    
+    if (!clientId) {
+      console.error('Google Client ID no está configurado');
+      toast.error('Google Client ID no está configurado', { position: 'top-center' });
+      return;
+    }
+
+    try {
+      window.google.accounts.id.initialize({
+        client_id: clientId,
+        callback: async (response: any) => {
+          console.log('🔐 Respuesta de Google recibida en registro:', response);
+          if (response.credential) {
+            // Procesar directamente el registro con Google
+            await handleGoogleCallback(response.credential);
+          } else {
+            toast.error('No se recibió credencial de Google', { position: 'top-center' });
+          }
+        },
+        use_fedcm_for_prompt: false,
+        auto_select: false,
+        cancel_on_tap_outside: true
+      });
+
+      // Intentar renderizar el botón oficial de Google
+      const googleButtonContainer = document.getElementById('google-register-button');
+      if (googleButtonContainer) {
+        console.log('🔐 Renderizando botón oficial de Google para registro');
+        
+        try {
+          window.google.accounts.id.renderButton(googleButtonContainer, {
+            theme: 'outline',
+            size: 'large',
+            text: 'signup_with',
+            width: '100%'
+          });
+          
+          // Si el botón se renderiza correctamente, ocultar el botón personalizado
+          const customButton = googleButtonContainer.nextElementSibling;
+          if (customButton) {
+            (customButton as HTMLElement).style.display = 'none';
+          }
+          
+          console.log('✅ Botón oficial de Google para registro renderizado exitosamente');
+          return;
+        } catch (renderError) {
+          console.log('🔐 Error renderizando botón oficial:', renderError);
+        }
+      }
+
+    } catch (error) {
+      console.error('🔐 Error inicializando Google Sign-In:', error);
+      toast.error('Error inicializando Google Sign-In', { position: 'top-center' });
+    }
+  };
+
   const handleGoogleSignup = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    console.log('Google signup será implementado próximamente');
-    toast('La autenticación con Google estará disponible pronto', {
-      duration: 3000,
-      position: 'top-center',
-      icon: '🚀',
-    });
+    
+    console.log('🔐 Iniciando proceso de Google Signup');
+    
+    // Cargar el script de Google Identity Services si no está ya cargado
+    if (!window.google) {
+      console.log('🔐 Cargando script de Google Identity Services');
+      const script = document.createElement('script');
+      script.src = 'https://accounts.google.com/gsi/client';
+      script.async = true;
+      script.defer = true;
+      script.onload = () => {
+        console.log('🔐 Script de Google cargado exitosamente');
+        setTimeout(initializeGoogleSignIn, 100);
+      };
+      script.onerror = (error) => {
+        console.error('🔐 Error cargando script de Google:', error);
+        toast.error('No se pudo cargar el script de Google. Verifica tu conexión a internet.', { position: 'top-center' });
+      };
+      document.head.appendChild(script);
+    } else {
+      console.log('🔐 Script de Google ya está cargado');
+      initializeGoogleSignIn();
+    }
+  };
+
+  const handleGoogleCallback = async (credential: string) => {
+    try {
+      console.log('🔐 Procesando registro con Google...');
+      
+      // Registrar con datos temporales - el onboarding completará la configuración
+      const success = await googleAuth(credential);
+      
+      if (success) {
+        console.log('✅ Registro con Google exitoso');
+        navigate('/onboarding');
+      }
+      // Los errores ya son manejados por el store con toasts
+    } catch (error: any) {
+      console.error('❌ Error en registro con Google:', error);
+      toast.error('Error durante el registro con Google', { position: 'top-center' });
+    }
   };
 
   return (
@@ -232,7 +349,10 @@ export const RegisterPage: React.FC<RegisterPageProps> = ({ heroVariants, formVa
               </p>
             </div>
 
-            {/* Google Button */}
+            {/* Google Button - Container que será reemplazado por Google */}
+            <div id="google-register-button"></div>
+            
+            {/* Botón fallback personalizado */}
             <button
               type="button"
               onClick={handleGoogleSignup}
@@ -244,7 +364,7 @@ export const RegisterPage: React.FC<RegisterPageProps> = ({ heroVariants, formVa
                 <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
                 <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
               </svg>
-              <span className="font-medium">Continuar con Google</span>
+              <span className="font-medium">Registrarse con Google</span>
             </button>
 
             {/* Divider */}
@@ -472,6 +592,7 @@ export const RegisterPage: React.FC<RegisterPageProps> = ({ heroVariants, formVa
           </div>
         </div>
       </motion.div>
+
     </div>
   );
 };

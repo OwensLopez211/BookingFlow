@@ -267,4 +267,39 @@ export const authService = {
       return null;
     }
   },
+
+  async googleAuth(googleToken: string, organizationName?: string, templateType?: 'beauty_salon' | 'hyperbaric_center'): Promise<AuthResponse> {
+    try {
+      console.log('🚀 AuthService: Enviando solicitud de Google OAuth');
+      
+      const response = await apiClient.post('/v1/auth/google', {
+        googleToken,
+        organizationName,
+        templateType
+      });
+      
+      if (response.data.success && response.data.tokens) {
+        localStorage.setItem('accessToken', response.data.tokens.accessToken);
+        localStorage.setItem('idToken', response.data.tokens.idToken);
+        localStorage.setItem('refreshToken', response.data.tokens.refreshToken);
+        
+        // Store user data for easy access
+        if (response.data.user && response.data.organization) {
+          localStorage.setItem('userData', JSON.stringify({
+            user: response.data.user,
+            organization: response.data.organization
+          }));
+        }
+      }
+      
+      console.log('✅ AuthService: Google OAuth exitoso');
+      return response.data;
+    } catch (error: any) {
+      console.error('❌ AuthService: Error de Google OAuth:', error);
+      return {
+        success: false,
+        error: error.response?.data?.error || error.message || 'Error durante la autenticación con Google',
+      };
+    }
+  },
 };

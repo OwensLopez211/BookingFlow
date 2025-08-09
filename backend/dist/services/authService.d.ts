@@ -75,3 +75,32 @@ export declare const getCurrentUserService: (accessToken: string) => Promise<{
         cognitoId: string;
     };
 }>;
+export interface GoogleAuthData {
+    googleToken: string;
+    organizationName?: string;
+    templateType?: 'beauty_salon' | 'hyperbaric_center';
+}
+export declare const googleAuthService: (data: GoogleAuthData) => Promise<{
+    success: boolean;
+    tokens: {
+        accessToken: string;
+        idToken: string;
+        refreshToken: string;
+    };
+    user: {
+        id: string;
+        email: string;
+        role: "owner" | "admin" | "staff";
+        orgId: string | undefined;
+        profile: {
+            firstName: string;
+            lastName: string;
+            phone?: string;
+            avatar?: string;
+        };
+        cognitoId: string;
+    };
+    organization: import("../repositories/organizationRepository").Organization | undefined;
+    expiresIn: number;
+    message: string;
+}>;

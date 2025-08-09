@@ -88,6 +88,21 @@ const handler = async (event) => {
             console.log('Get current user successful');
             return (0, response_1.successResponse)(result, 'Información del usuario obtenida');
         }
+        // GOOGLE AUTH ENDPOINT
+        if (path?.endsWith('/auth/google') && httpMethod === 'POST') {
+            console.log('=== GOOGLE AUTH REQUEST ===');
+            const { googleToken, organizationName, templateType } = requestData;
+            if (!googleToken) {
+                return (0, response_1.errorResponse)('Token de Google es requerido', 400);
+            }
+            const result = await (0, authService_1.googleAuthService)({
+                googleToken,
+                organizationName,
+                templateType
+            });
+            console.log('Google auth successful');
+            return (0, response_1.successResponse)(result, 'Autenticación con Google exitosa');
+        }
         // REFRESH TOKEN ENDPOINT
         if (path?.endsWith('/auth/refresh') && httpMethod === 'POST') {
             console.log('=== REFRESH TOKEN REQUEST ===');

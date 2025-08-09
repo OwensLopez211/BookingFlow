@@ -1,4 +1,4 @@
-// Updated: 2025-08-08T06:43:09.247Z
+// Updated: 2025-08-09T01:40:25.139Z
 // BookFlow Service Worker
 const VERSION = '0.0.0'; // Se actualizará automáticamente durante el build
 const CACHE_NAME = `bookflow-v${VERSION}`;

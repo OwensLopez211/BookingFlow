@@ -69,6 +69,7 @@ interface AuthState {
   
   login: (credentials: LoginRequest) => Promise<boolean>;
   register: (data: RegisterRequest) => Promise<boolean>;
+  googleAuth: (googleToken: string, organizationName?: string, templateType?: 'beauty_salon' | 'hyperbaric_center') => Promise<boolean>;
   logout: () => void;
   clearError: () => void;
   setLoading: (loading: boolean) => void;
@@ -189,6 +190,64 @@ export const useAuthStore = create<AuthState>()(
           showToast.error(
             'Error de conexión',
             'No se pudo conectar con el servidor durante el registro.'
+          );
+          return false;
+        }
+      },
+
+      googleAuth: async (googleToken: string, organizationName?: string, templateType?: 'beauty_salon' | 'hyperbaric_center'): Promise<boolean> => {
+        console.log('🔐 AuthStore: Iniciando Google Auth');
+        set({ isLoading: true, error: null });
+        
+        try {
+          const response = await authService.googleAuth(googleToken, organizationName, templateType);
+          console.log('📨 AuthStore: Respuesta del servicio de Google Auth:', response);
+          
+          if (response.success && response.user) {
+            const user = response.user as User;
+            set({
+              user,
+              organization: response.organization || null,
+              isAuthenticated: true,
+              isLoading: false,
+              error: null,
+            });
+            
+            // Welcome toast with user's name
+            const firstName = user.profile?.firstName || 'Usuario';
+            const timeOfDay = new Date().getHours() < 12 ? 'Buenos días' : 
+                             new Date().getHours() < 18 ? 'Buenas tardes' : 'Buenas noches';
+            
+            showToast.success(
+              `¡${timeOfDay}, ${firstName}!`,
+              'Bienvenido a BookFlow. ¡Tu cuenta está lista!'
+            );
+            
+            return true;
+          } else {
+            console.log('❌ AuthStore: Google Auth falló:', response.error);
+            set({
+              isLoading: false,
+              error: response.error || 'Error durante la autenticación con Google',
+            });
+            
+            showToast.error(
+              'Error de autenticación',
+              response.error || 'No se pudo autenticar con Google. Por favor intenta de nuevo.'
+            );
+            return false;
+          }
+        } catch (error: any) {
+          console.log('🚨 AuthStore: Excepción durante Google Auth:', error);
+          const errorMessage = error.message || 'Error durante la autenticación con Google';
+          set({
+            isLoading: false,
+            error: errorMessage,
+          });
+          
+          showToast.error(
+            'Error de conexión',
+            'No se pudo conectar con el servidor. Verifica tu conexión a internet.'
           );
           return false;
         }

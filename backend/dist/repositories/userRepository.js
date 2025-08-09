@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.updateUserOnboarding = exports.getUserByCognitoId = exports.getUserById = exports.createUser = void 0;
+exports.updateUserOnboarding = exports.getUserByEmail = exports.getUserByCognitoId = exports.getUserById = exports.createUser = void 0;
 const uuid_1 = require("uuid");
 const dynamodb_1 = require("../utils/dynamodb");
 const createUser = async (userData) => {
@@ -44,6 +44,14 @@ const getUserByCognitoId = async (cognitoId) => {
     return user;
 };
 exports.getUserByCognitoId = getUserByCognitoId;
+const getUserByEmail = async (email) => {
+    const items = await (0, dynamodb_1.queryItems)(dynamodb_1.TABLES.USERS, 'email = :email', undefined, { ':email': email }, 'email-index');
+    if (!items.length)
+        return null;
+    const { PK, SK, ...user } = items[0];
+    return user;
+};
+exports.getUserByEmail = getUserByEmail;
 const updateUserOnboarding = async (userId, stepNumber, stepData) => {
     const user = await (0, exports.getUserById)(userId);
     if (!user)

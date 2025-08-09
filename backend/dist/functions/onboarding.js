@@ -212,20 +212,20 @@ const getPlanLimits = (planId) => {
     switch (planId) {
         case 'basic':
             return {
-                plan: 'free',
+                plan: 'premium',
                 limits: {
-                    maxResources: 1,
-                    maxAppointmentsPerMonth: 100,
-                    maxUsers: 3
+                    maxResources: 5,
+                    maxAppointmentsPerMonth: 1000,
+                    maxUsers: 2
                 }
             };
         case 'professional':
             return {
                 plan: 'premium',
                 limits: {
-                    maxResources: 5,
-                    maxAppointmentsPerMonth: 1000,
-                    maxUsers: 10
+                    maxResources: 10,
+                    maxAppointmentsPerMonth: 2500,
+                    maxUsers: 5
                 }
             };
         case 'enterprise':
@@ -240,11 +240,11 @@ const getPlanLimits = (planId) => {
         default:
             // Default to basic plan
             return {
-                plan: 'free',
+                plan: 'premium',
                 limits: {
-                    maxResources: 1,
-                    maxAppointmentsPerMonth: 100,
-                    maxUsers: 3
+                    maxResources: 5,
+                    maxAppointmentsPerMonth: 1000,
+                    maxUsers: 2
                 }
             };
     }

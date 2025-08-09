@@ -86,6 +86,21 @@ export const getUserByCognitoId = async (cognitoId: string): Promise<User | null
   return user as User;
 };
 
+export const getUserByEmail = async (email: string): Promise<User | null> => {
+  const items = await queryItems(
+    TABLES.USERS,
+    'email = :email',
+    undefined,
+    { ':email': email },
+    'email-index'
+  );
+
+  if (!items.length) return null;
+
+  const { PK, SK, ...user } = items[0];
+  return user as User;
+};
+
 export const updateUserOnboarding = async (
   userId: string, 
   stepNumber: number, 

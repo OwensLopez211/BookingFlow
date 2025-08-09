@@ -115,12 +115,12 @@ export interface Appointment extends BaseEntity {
     orgId: string;
     staffId?: string;
     resourceId?: string;
-    clientInfo: ClientInfo;
-    serviceInfo: ServiceInfo;
+    clientInfo?: ClientInfo;
+    serviceInfo?: ServiceInfo;
     datetime: string;
     duration: number;
     status: 'pending' | 'confirmed' | 'cancelled' | 'completed' | 'no_show' | 'rescheduled';
-    assignmentType: 'staff_only' | 'resource_only' | 'staff_and_resource';
+    assignmentType?: 'staff_only' | 'resource_only' | 'staff_and_resource';
     notes?: string;
     customFields?: {
         [fieldId: string]: any;
@@ -133,6 +133,14 @@ export interface Appointment extends BaseEntity {
     };
     reschedulingHistory?: ReschedulingRecord[];
     metadata?: Record<string, any>;
+    serviceId?: string;
+    professionalId?: string;
+    time?: string;
+    clientName?: string;
+    clientPhone?: string;
+    clientEmail?: string;
+    serviceName?: string;
+    servicePrice?: number;
 }
 export interface ReschedulingRecord {
     previousDatetime: string;

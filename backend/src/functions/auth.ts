@@ -2,7 +2,8 @@ import { APIGatewayProxyEvent, APIGatewayProxyResult } from 'aws-lambda';
 import { 
   registerUserAndOrganization, 
   loginUserService, 
-  getCurrentUserService 
+  getCurrentUserService,
+  googleAuthService
 } from '../services/authService';
 import { 
   createResponse, 
@@ -124,6 +125,26 @@ export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPr
 
       console.log('Get current user successful');
       return successResponse(result, 'Información del usuario obtenida');
+    }
+
+    // GOOGLE AUTH ENDPOINT
+    if (path?.endsWith('/auth/google') && httpMethod === 'POST') {
+      console.log('=== GOOGLE AUTH REQUEST ===');
+      
+      const { googleToken, organizationName, templateType } = requestData;
+      
+      if (!googleToken) {
+        return errorResponse('Token de Google es requerido', 400);
+      }
+
+      const result = await googleAuthService({
+        googleToken,
+        organizationName,
+        templateType
+      });
+
+      console.log('Google auth successful');
+      return successResponse(result, 'Autenticación con Google exitosa');
     }
 
     // REFRESH TOKEN ENDPOINT

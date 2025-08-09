@@ -50,6 +50,10 @@
     <link rel="dns-prefetch" href="//api.bookflow.app" />
     <link rel="preconnect" href="https://api.bookflow.app" crossorigin />
     
+    <!-- Google Identity Services -->
+    <link rel="dns-prefetch" href="//accounts.google.com" />
+    <link rel="preconnect" href="https://accounts.google.com" crossorigin />
+    
     
     <!-- Preload critical assets -->
     <link rel="preload" href="/miniatura.webp" as="image" type="image/webp" />
@@ -58,6 +62,9 @@
   <body>
     <!-- App Root -->
     <div id="root"></div>
+    
+    <!-- Google Identity Services -->
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
     
     <!-- Main App Script -->
     <script type="module" src="/src/main.tsx"></script>

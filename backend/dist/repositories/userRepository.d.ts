@@ -32,4 +32,5 @@ export interface OnboardingStep {
 export declare const createUser: (userData: Omit<User, "id" | "createdAt" | "updatedAt">) => Promise<User>;
 export declare const getUserById: (userId: string) => Promise<User | null>;
 export declare const getUserByCognitoId: (cognitoId: string) => Promise<User | null>;
+export declare const getUserByEmail: (email: string) => Promise<User | null>;
 export declare const updateUserOnboarding: (userId: string, stepNumber: number, stepData: Record<string, any>) => Promise<User | null>;

@@ -3,6 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.getAppointmentStats = exports.deleteAppointment = exports.markNoShow = exports.completeAppointment = exports.confirmAppointment = exports.rescheduleAppointment = exports.cancelAppointment = exports.updateAppointment = exports.getAppointmentsByResource = exports.getAppointmentsByStaffAndDateRange = exports.getAppointmentsByStaffAndDate = exports.getAppointmentsByOrgAndDateRange = exports.getAppointmentsByOrgAndDate = exports.getAppointmentById = exports.createAppointment = void 0;
 const uuid_1 = require("uuid");
 const dynamodb_1 = require("../utils/dynamodb");
+const lib_dynamodb_1 = require("@aws-sdk/lib-dynamodb");
 const createAppointment = async (appointmentData) => {
     const appointment = {
         id: (0, uuid_1.v4)(),
@@ -35,7 +36,8 @@ const getAppointmentById = async (orgId, appointmentId) => {
 };
 exports.getAppointmentById = getAppointmentById;
 const getAppointmentsByOrgAndDate = async (orgId, date) => {
-    const result = await (0, dynamodb_1.query)(dynamodb_1.TABLES.ORGANIZATIONS, {
+    const command = new lib_dynamodb_1.QueryCommand({
+        TableName: dynamodb_1.TABLES.ORGANIZATIONS,
         IndexName: 'GSI1',
         KeyConditionExpression: 'GSI1PK = :pk AND GSI1SK = :sk',
         ExpressionAttributeValues: {
@@ -43,6 +45,7 @@ const getAppointmentsByOrgAndDate = async (orgId, date) => {
             ':sk': `DATE#${date}`,
         },
     });
+    const result = await dynamodb_1.dynamoClient.send(command);
     if (!result.Items)
         return [];
     return result.Items.map(item => {
@@ -52,7 +55,8 @@ const getAppointmentsByOrgAndDate = async (orgId, date) => {
 };
 exports.getAppointmentsByOrgAndDate = getAppointmentsByOrgAndDate;
 const getAppointmentsByOrgAndDateRange = async (orgId, startDate, endDate) => {
-    const result = await (0, dynamodb_1.query)(dynamodb_1.TABLES.ORGANIZATIONS, {
+    const command = new lib_dynamodb_1.QueryCommand({
+        TableName: dynamodb_1.TABLES.ORGANIZATIONS,
         IndexName: 'GSI1',
         KeyConditionExpression: 'GSI1PK = :pk AND GSI1SK BETWEEN :start AND :end',
         ExpressionAttributeValues: {
@@ -61,6 +65,7 @@ const getAppointmentsByOrgAndDateRange = async (orgId, startDate, endDate) => {
             ':end': `DATE#${endDate}`,
         },
     });
+    const result = await dynamodb_1.dynamoClient.send(command);
     if (!result.Items)
         return [];
     return result.Items.map(item => {
@@ -70,7 +75,8 @@ const getAppointmentsByOrgAndDateRange = async (orgId, startDate, endDate) => {
 };
 exports.getAppointmentsByOrgAndDateRange = getAppointmentsByOrgAndDateRange;
 const getAppointmentsByStaffAndDate = async (staffId, date) => {
-    const result = await (0, dynamodb_1.query)(dynamodb_1.TABLES.ORGANIZATIONS, {
+    const command = new lib_dynamodb_1.QueryCommand({
+        TableName: dynamodb_1.TABLES.ORGANIZATIONS,
         IndexName: 'GSI2',
         KeyConditionExpression: 'GSI2PK = :pk AND GSI2SK = :sk',
         ExpressionAttributeValues: {
@@ -78,6 +84,7 @@ const getAppointmentsByStaffAndDate = async (staffId, date) => {
             ':sk': `DATE#${date}`,
         },
     });
+    const result = await dynamodb_1.dynamoClient.send(command);
     if (!result.Items)
         return [];
     return result.Items.map(item => {
@@ -87,7 +94,8 @@ const getAppointmentsByStaffAndDate = async (staffId, date) => {
 };
 exports.getAppointmentsByStaffAndDate = getAppointmentsByStaffAndDate;
 const getAppointmentsByStaffAndDateRange = async (staffId, startDate, endDate) => {
-    const result = await (0, dynamodb_1.query)(dynamodb_1.TABLES.ORGANIZATIONS, {
+    const command = new lib_dynamodb_1.QueryCommand({
+        TableName: dynamodb_1.TABLES.ORGANIZATIONS,
         IndexName: 'GSI2',
         KeyConditionExpression: 'GSI2PK = :pk AND GSI2SK BETWEEN :start AND :end',
         ExpressionAttributeValues: {
@@ -96,6 +104,7 @@ const getAppointmentsByStaffAndDateRange = async (staffId, startDate, endDate) =
             ':end': `DATE#${endDate}`,
         },
     });
+    const result = await dynamodb_1.dynamoClient.send(command);
     if (!result.Items)
         return [];
     return result.Items.map(item => {
